@@ -15,7 +15,6 @@ void main(List<String> arguments) {
       help:
       "the xml file to parse");
 
-  print('Hello world!');
   Map<String,dynamic> data = {};
   String usage = args.usage;
   data["error"] = false;
@@ -40,10 +39,8 @@ void main(List<String> arguments) {
   }
   if (data.containsKey("file")) {
     String fname = data['file'];
-    print('begore replace ${fname}!');
     fname = tildeExpansion(fname);
     fname = path.canonicalize(fname);
-    print('aftger replace ${fname}!');
     parser.parse(fname);
   }
 }
