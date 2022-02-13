@@ -76,6 +76,7 @@ class LogideeTools
   }
 
   void processTxt(XmlText node) {
-    print("found XmlText : ${node.text}");
+    //ignore empty nodes
+    if(node.text.trim().isNotEmpty) print("found XmlText : '${node.text}'");
   }
 }
