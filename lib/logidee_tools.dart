@@ -399,13 +399,24 @@ class LogideeTools
           //\htmlref{text to have highlighted}{Label_name}magg
         }
         else print("failed parsing paragraph url ${href} $name ");
-      } else if(node is XmlElement) print("parsing paragraph unknwon elemebnt ${node.name}");
+      }
+      else if(node is XmlElement && node.name.toString() == "image") {
+        String src = node.getAttribute("src") ?? "";
+        bool visible =  ((node.getAttribute("visible")??"false") == "true")? true: false;
+        if(visible) {
+          String urlref ="\includegraphics[scale=1]{$src}";
+          XmlNode txtNode = XmlText(urlref);
+          toReplace[node] = txtNode;
+        }
+        else print("rejected image ${node}");
+      }
+      else if(node is XmlElement) print("parsing paragraph unknwon elemebnt ${node.name}");
       else print("parsing paragraph unknwon  ${node.runtimeType}");
     }
 
     for (var node in toReplace.keys) {
       node.replace(toReplace[node]);
-      print("swapped ${node} with ${toReplace[node]}");
+      //print("swapped ${node} with ${toReplace[node]}");
     }
     scriptsink.write("${paragraph.text}\n\n");
   }
