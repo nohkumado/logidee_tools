@@ -187,8 +187,11 @@ class LogideeTools
       parseTheme(node);
     }
     else {
-      if(node is XmlElement) print("parsing formation unknwon elemebnt ${node.name}");
-      else print("parsing formation unknwon  ${node.runtimeType}");
+      if(node is XmlElement) {
+        print("parsing formation unknwon elemebnt ${node.name}");
+      } else {
+        print("parsing formation unknwon  ${node.runtimeType}");
+      }
     }
     }
     //var info = node.getElement("info");
@@ -199,11 +202,16 @@ class LogideeTools
     cleanList(theme.children);
 
     for (var node in theme.children) {
-      if(node is XmlElement && node.name.toString() == "info") parseInfo(node);
-      else if(node is XmlElement && node.name.toString() == "module") parseModule(node);
-      else {
-        if(node is XmlElement) print("parsing formation unknwon elemebnt ${node.name}");
-        else print("parsing formation unknwon  ${node.runtimeType}");
+      if(node is XmlElement && node.name.toString() == "info") {
+        parseInfo(node);
+      } else if(node is XmlElement && node.name.toString() == "module") {
+        parseModule(node);
+      } else {
+        if(node is XmlElement) {
+          print("parsing formation unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing formation unknwon  ${node.runtimeType}");
+        }
       }
     }
     //var info = node.getElement("info");
@@ -214,11 +222,16 @@ class LogideeTools
     cleanList(module.children);
 
     for (var node in module.children) {
-      if(node is XmlElement && node.name.toString() == "info") parseInfo(node, level: 1);
-      else if(node is XmlElement && node.name.toString() == "page") parsePage(node);
-      else {
-        if(node is XmlElement) print("parsing formation unknwon elemebnt ${node.name}");
-        else print("parsing formation unknwon  ${node.runtimeType}");
+      if(node is XmlElement && node.name.toString() == "info") {
+        parseInfo(node, level: 1);
+      } else if(node is XmlElement && node.name.toString() == "page") {
+        parsePage(node);
+      } else {
+        if(node is XmlElement) {
+          print("parsing formation unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing formation unknwon  ${node.runtimeType}");
+        }
       }
     }
     //var info = node.getElement("info");
@@ -228,13 +241,16 @@ class LogideeTools
     //remove empty stuff
     var toRemove = [];
     for (var node in nodes) {
-      if(node is XmlText && node.toString().trim().isEmpty) toRemove.add(node);
-      else if(node is XmlComment) toRemove.add(node);
+      if(node is XmlText && node.toString().trim().isEmpty) {
+        toRemove.add(node);
+      } else if(node is XmlComment) {
+        toRemove.add(node);
+      }
     }
        nodes.removeWhere((element) => toRemove.contains(element));
   }
 
-  void parseInfo(XmlElement? info, {int level :0}) {
+  void parseInfo(XmlElement? info, {int level  =0}) {
     String title = info?.getElement("title")?.text??"";
     var version = info?.getElement("version");
     String date =version?.getAttribute("number")??"";
@@ -254,14 +270,15 @@ class LogideeTools
       slidesink.write(
           "\\usetheme{$theme}\n"); // % Berlin, Darmstadt, Goettingen, Hannover, Singapore
       slidesink.write("\\title{$title}\n");
-      slidesink.write("\\subtitle{${desc}\n");
+      slidesink.write("\\subtitle{$desc}\n");
       slidesink.write("\\author{$author}\n");
       slidesink.write("\\institute{Beamer Slides}\n");
       slidesink.write("\\date{$date}\n");
       //% Image Logo\n");
-      if(File("logo.png").existsSync())
-      slidesink.write(
+      if(File("logo.png").existsSync()) {
+        slidesink.write(
           "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n");
+      }
       slidesink.write("\\begin{document}\n");
       slidesink.write("\\begin{frame}\n");
       //% Print the title page as the first slide\n");
@@ -278,14 +295,17 @@ class LogideeTools
         if(objectives != null)
           {
             cleanList(objectives.children);
-            if(objectives.children.length > 0)
+            if(objectives.children.isNotEmpty)
               {
                 desc += "\\begin{itemize}\n";
 
                 for(XmlNode item in objectives.children)
                   {
-                   if(item is XmlElement) desc += "\\item ${item.text}\n";
-                   else print("$item is no an Exmelement??");
+                   if(item is XmlElement) {
+                     desc += "\\item ${item.text}\n";
+                   } else {
+                     print("$item is no an Exmelement??");
+                   }
                   }
                 desc += "\\end{itemize}\n";
 
@@ -303,7 +323,7 @@ class LogideeTools
 
         slidesink.write("\\begin{frame}\n");
         slidesink.write("\\Large{$title}\n");
-        slidesink.write("${desc}\n");
+        slidesink.write("$desc\n");
         slidesink.write("\\end{frame}\n");
       }
     documentBegun = true;
@@ -327,10 +347,14 @@ class LogideeTools
         slidesink.write("\\Large{$title}\n");
         startFrame = true;
         parseSection(node, level : 0);
-      } else if(node is XmlElement && node.name.toString() == "slide") parseSlide(node);
-      else {
-        if(node is XmlElement) print("parsing page unknwon elemebnt ${node.name}");
-        else print("parsing page unknwon  ${node.runtimeType}");
+      } else if(node is XmlElement && node.name.toString() == "slide") {
+        parseSlide(node);
+      } else {
+        if(node is XmlElement) {
+          print("parsing page unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing page unknwon  ${node.runtimeType}");
+        }
       }
     }
     if(startFrame) slidesink.write("\\end{frame}\n");
@@ -340,7 +364,7 @@ class LogideeTools
     return node.text;
   }
 
-  void parseSection(XmlElement section, {int level : 0, bool silent: false}) {
+  void parseSection(XmlElement section, {int level  = 0, bool silent = false}) {
     String divider = (level == 0)? "section":(level == 1)? "subsection":(level == 2)? "subsubsection":(level == 3)? "paragraph": "subparagraph";
     cleanList(section.children);
     for (var node in section.children) {
@@ -348,15 +372,24 @@ class LogideeTools
         String title = parseTitle(node);
         //print("need to parse section ${node.text}");
         scriptsink.write("\\$divider{$title}\n");
-        if(silent) slidesink.write("\\item $title\n");
-        else slidesink.write("$title\n");
+        if(silent) {
+          slidesink.write("\\item $title\n");
+        } else {
+          slidesink.write("$title\n");
+        }
       }
-      else if(node is XmlElement && node.name.toString() == "section") parseSection(node, level : level+1, silent : silent);
-      else if(node is XmlElement && node.name.toString() == "para") parsePara(node, silent : silent);
-      else if(node is XmlElement && node.name.toString() == "slide") parseSlide(node);
-      else {
-        if(node is XmlElement) print("parsing section unknwon elemebnt ${node.name}");
-        else print("parsing section unknwon  ${node.runtimeType}");
+      else if(node is XmlElement && node.name.toString() == "section") {
+        parseSection(node, level : level+1, silent : silent);
+      } else if(node is XmlElement && node.name.toString() == "para") {
+        parsePara(node, silent : silent);
+      } else if(node is XmlElement && node.name.toString() == "slide") {
+        parseSlide(node);
+      } else {
+        if(node is XmlElement) {
+          print("parsing section unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing section unknwon  ${node.runtimeType}");
+        }
       }
     }
   }
@@ -371,22 +404,28 @@ class LogideeTools
         String title = parseTitle(node);
         slidesink.write("\\Large{$title}\n");
       }
-      else if(node is XmlElement && node.name.toString() == "section") parseSection(node, silent : true);
-      else if(node is XmlElement && node.name.toString() == "para") parsePara(node, silent : true);
-      else {
-        if(node is XmlElement) print("parsing slide unknwon elemebnt ${node.name}");
-        else print("parsing slide unknwon  ${node.runtimeType}");
+      else if(node is XmlElement && node.name.toString() == "section") {
+        parseSection(node, silent : true);
+      } else if(node is XmlElement && node.name.toString() == "para") {
+        parsePara(node, silent : true);
+      } else {
+        if(node is XmlElement) {
+          print("parsing slide unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing slide unknwon  ${node.runtimeType}");
+        }
       }
     }
     slidesink.write("\\end{frame}\n");
   }
 
-  void parsePara(XmlElement paragraph, {bool silent: false}) {
+  void parsePara(XmlElement paragraph, {bool silent = false}) {
     cleanList(paragraph.children);
     var toReplace = {};
     for (var node in paragraph.children) {
-      if(node is XmlText) parseText(node);
-      else if(node is XmlElement && node.name.toString() == "url") {
+      if(node is XmlText) {
+        parseText(node);
+      } else if(node is XmlElement && node.name.toString() == "url") {
         String href = node.getAttribute("href") ?? "";
         String name = node.getAttribute("name") ?? "";
         if(name.isEmpty) name = href;
@@ -398,20 +437,51 @@ class LogideeTools
           //To create a link to another place in your own document
           //\htmlref{text to have highlighted}{Label_name}magg
         }
-        else print("failed parsing paragraph url ${href} $name ");
+        else {
+          print("failed parsing paragraph url $href $name ");
+        }
       }
       else if(node is XmlElement && node.name.toString() == "image") {
         String src = node.getAttribute("src") ?? "";
-        bool visible =  ((node.getAttribute("visible")??"false") == "true")? true: false;
+        bool visible =  ((node.getAttribute("visible")??"true") == "true")? true: false;
         if(visible) {
-          String urlref ="\includegraphics[scale=1]{$src}";
+          String urlref ="\\includegraphics[scale=1]{$src}";
           XmlNode txtNode = XmlText(urlref);
           toReplace[node] = txtNode;
         }
-        else print("rejected image ${node}");
+        else {
+          print("rejected image $node");
+        }
       }
-      else if(node is XmlElement) print("parsing paragraph unknwon elemebnt ${node.name}");
-      else print("parsing paragraph unknwon  ${node.runtimeType}");
+      else if(node is XmlElement && node.name.toString() == "list")
+        {
+         print("found list $node") ;
+        }
+      else if(node is XmlElement && node.name.toString() == "cmd")
+      {
+        String urlref ="{\\tt ";
+        for (var p0 in node.children) { urlref += p0.text+"\n";}
+        urlref +="} ";
+        XmlNode txtNode = XmlText(urlref);
+        toReplace[node] = txtNode;
+      }
+      else if(node is XmlElement && node.name.toString() == "menu")
+      {
+        print("found menu $node") ;
+      }
+      else if(node is XmlElement && node.name.toString() == "code")
+      {
+        String urlref ="\\begin{code}\n";
+        for (var p0 in node.children) { urlref += p0.text+" ";}
+        urlref +="\\end{code}\n";
+        XmlNode txtNode = XmlText(urlref);
+        toReplace[node] = txtNode;
+      }
+      else if(node is XmlElement) {
+        print("parsing paragraph unknwon elemebnt ${node.name}");
+      } else {
+        print("parsing paragraph unknwon  ${node.runtimeType}");
+      }
     }
 
     for (var node in toReplace.keys) {
@@ -423,13 +493,19 @@ class LogideeTools
 
   void parseText(XmlText txtnode)
   {
-    if(txtnode.children.length == 0) scriptsink.write("${txtnode.text}\n\n");
-    else print("txt : ${txtnode.children.length} ${txtnode.text}");
+    if(txtnode.children.isEmpty) {
+      scriptsink.write("${txtnode.text}\n\n");
+    } else {
+      print("txt : ${txtnode.children.length} ${txtnode.text}");
+    }
     for (var node in txtnode.children) {
       //if(node is XmlText) parseText(node);
       //else
-        if(node is XmlElement) print("parsing txt unknwon elemebnt ${node.name}");
-      else print("parsing txt unknwon  ${node.runtimeType}");
+        if(node is XmlElement) {
+          print("parsing txt unknwon elemebnt ${node.name}");
+        } else {
+          print("parsing txt unknwon  ${node.runtimeType}");
+        }
     }
 
   }
