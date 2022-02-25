@@ -455,10 +455,17 @@ class LogideeTools
       }
       else if(node is XmlElement && node.name.toString() == "list")
         {
-         print("found list $node") ;
+         //print("found list $node") ;
+         String urlref ="\\begin{itemize}\n";
+         cleanList(node.children);
+         for (var p0 in node.children) { urlref += "\\item ${p0.text} ";}
+         urlref +="\\end{itemize}\n";
+         XmlNode txtNode = XmlText(urlref);
+         toReplace[node] = txtNode;
         }
       else if(node is XmlElement && node.name.toString() == "cmd")
       {
+        cleanList(node.children);
         String urlref ="{\\tt ";
         for (var p0 in node.children) { urlref += p0.text+"\n";}
         urlref +="} ";
@@ -467,10 +474,16 @@ class LogideeTools
       }
       else if(node is XmlElement && node.name.toString() == "menu")
       {
-        print("found menu $node") ;
+        cleanList(node.children);
+        String urlref ="{\\bfseries\large  ";
+        for (var p0 in node.children) { urlref += p0.text+"\n";}
+        urlref +="} ";
+        XmlNode txtNode = XmlText(urlref);
+        toReplace[node] = txtNode;
       }
       else if(node is XmlElement && node.name.toString() == "code")
       {
+        cleanList(node.children);
         String urlref ="\\begin{code}\n";
         for (var p0 in node.children) { urlref += p0.text+" ";}
         urlref +="\\end{code}\n";
