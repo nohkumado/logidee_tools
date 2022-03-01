@@ -476,21 +476,7 @@ class LogideeTools
       }
       else if(node is XmlElement && node.name.toString() == "url")
       {
-        String href = node.getAttribute("href") ?? "";
-        String name = node.getAttribute("name") ?? "";
-        if(name.isEmpty) name = href;
-        if(href.isNotEmpty)
-        {
-          String urlref ="\\htmladdnormallink{$name}{$href}";
-          XmlNode txtNode = XmlText(urlref);
-          toReplace[node] = txtNode;
-          //To create a link to another place in your own document
-          //\htmlref{text to have highlighted}{Label_name}
-        }
-        else {
-          errmsg += "failed parsing paragraph url $href $name \n";
-          parsevalid = false;
-        }
+        errmsg += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       }
       else if(node is XmlElement && node.name.toString() == "image")
       {
@@ -627,6 +613,29 @@ class LogideeTools
      else if(nowrite) return urlref;
 
      return "";
+   }
+
+  String parseUrl(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+   {
+     String errmsg = "";
+     String href = node.getAttribute("href") ?? "";
+     String name = node.getAttribute("name") ?? "";
+     if(name.isEmpty) name = href;
+     if(href.isNotEmpty)
+     {
+       String urlref ="\\htmladdnormallink{$name}{$href}";
+       //To create a link to another place in your own document
+       //\htmlref{text to have highlighted}{Label_name}
+       if(toReplace != null) {
+         XmlNode txtNode = XmlText(urlref);
+         toReplace[node] = txtNode;
+       } else if(nowrite) errmsg += urlref;
+     }
+     else {
+       errmsg += "failed parsing paragraph url $href $name \n";
+       parsevalid = false;
+     }
+     return errmsg;
    }
 
 }

@@ -31,24 +31,24 @@ void main()
       expect(list.length,1);
       String result = "\\textbf{texte en évidence}";
       expect(parser.parseEm(list.first, nowrite: true, verbose: true),result);
-      print("got back list: ${list.length} and $list");
       list = parser.document!.findAllElements('menu');
       expect(list.length,1);
       result = "{\\bfseries \\large  Fichier } ";
-      print("got back list: ${list.length} and $list");
       expect(parser.parseMenu(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('cmd');
       expect(list.length,1);
       result = "{\\tt ls -al } ";
-      print("got back list: ${list.length} and $list");
       expect(parser.parseCmd(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('file');
       expect(list.length,1);
       result = "{\\tt /etc/passwd } ";
-      print("got back list: ${list.length} and $list");
       expect(parser.parseFile(list.first, nowrite: true, verbose: true),result);
+      list = parser.document!.findAllElements('url');
+      expect(list.length,1);
+      result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
+      print("got back list: ${list.length} and $list");
+      expect(parser.parseUrl(list.first, nowrite: true, verbose: true),result);
       //   <page>
-      // <url href="http://linux-france.org"/>
       expect(true,true);
     });
   });
