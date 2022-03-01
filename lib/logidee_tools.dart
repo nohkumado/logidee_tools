@@ -471,13 +471,8 @@ class LogideeTools
     var toReplace = {};
     for (var node in paragraph.children) {
       print("parsepara child loop treating $node of ${node.runtimeType}");
-      if(node is XmlText) {
-        parseText(node, nowrite: nowrite, verbose:verbose);
-      }
-      else if(node is XmlElement && node.name.toString() == "url")
-      {
-        errmsg += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
-      }
+      if(node is XmlText) parseText(node, nowrite: nowrite, verbose:verbose);
+      else if(node is XmlElement && node.name.toString() == "url") errmsg += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "image")
       {
         String src = node.getAttribute("src") ?? "";
@@ -511,15 +506,7 @@ class LogideeTools
       else if(node is XmlElement && node.name.toString() == "file")
         errmsg += parseFile(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "code")
-      {
-        cleanList(node.children);
-        String proglang = node.getAttribute("lang") ?? "";
-        String urlref ="\\begin{minted}{$proglang}\n";
-        for (var p0 in node.children) { urlref += p0.text+" ";}
-        urlref +="\\end{minted}\n";
-        XmlNode txtNode = XmlText(urlref);
-        toReplace[node] = txtNode;
-      }
+        errmsg += parseCode(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement) {
         errmsg += "parsing paragraph unknown element ${node.name}\n";
       } else {
@@ -637,5 +624,19 @@ class LogideeTools
      }
      return errmsg;
    }
+
+  String parseCode(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace}) {
+    String errmsg = "";
+    cleanList(node.children);
+    String proglang = node.getAttribute("lang") ?? "";
+    String urlref ="\\begin{minted}{$proglang}\n";
+    for (var p0 in node.children) { urlref += p0.text+"\n";}
+    urlref +="\\end{minted}\n";
+    if(toReplace != null) {
+      XmlNode txtNode = XmlText(urlref);
+      toReplace[node] = txtNode;
+    } else if(nowrite) errmsg += urlref;
+    return errmsg;
+  }
 
 }
