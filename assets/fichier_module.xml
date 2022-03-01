@@ -1,0 +1,38 @@
+<module>
+    <page>
+    <em>texte en évidence</em>
+    <menu>Fichier</menu>
+    <cmd>ls -al</cmd>
+    <file>/etc/passwd</file>
+    <url href="http://linux-france.org"/>
+    <code>
+      ...
+      void main (void) {
+    	  printf("Hello World.\n");
+      }
+</code>
+<image src="logo.eps" scale="0.5"/>
+      <image src="schema.eps">
+        <legend>Schéma d'interconnexion</legend>
+      </image>
+       <table>
+       <row>
+         <col> col1 </col>
+         <col> col2 </col>
+       </row>
+       <row>
+         <col> col3 </col>
+         <col> col4 </col>
+       </row>
+     </table>
+     <math notation="tex"><![CDATA[
+  $ E = MC^2 $
+  ]]></math>
+  <math notation="code">
+  [ Energie = Masse * Célérité au carré ]
+  </math>
+    </page>
+    <page>
+      ...
+    </page>
+  </module>

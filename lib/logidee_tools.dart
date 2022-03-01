@@ -10,15 +10,19 @@ class LogideeTools
   String theme = "";
   late IOSink slidesink;
   late IOSink scriptsink;
+  bool parsevalid= true;
 
   bool documentBegun = false;
-  void parse(String fname)
+  XmlDocument? document;
+
+  bool parse(String fname, {String outdir = "", bool verbose = false})
   {
+    String errmsg = "";
     dirname = path.dirname(fname);
-    String outname = dirname+path.separator+path.basenameWithoutExtension(fname);
+    String outname = ((outdir.isNotEmpty)? outdir: dirname)+path.separator+path.basenameWithoutExtension(fname);
     String slidename = outname+"_gen_slides.tex";
     String scriptname = outname+"_gen.tex";
-    print("ouputname = $slidename $scriptname");
+    if(verbose)print("ouputname = $slidename $scriptname");
     if(dirname.isNotEmpty)dirname += path.separator;
     final file= File(fname);
     final slidefile= File(slidename);
@@ -35,14 +39,14 @@ class LogideeTools
     writeslide('\\newcounter{paragraph}\n\\newcommand{\\paragraph}\n');//otherwise html stop compilation
     writeslide('\\usepackage{html}\n' );
     writeslide('\\usepackage{minted}\n' );
-    final document = XmlDocument.parse(file.readAsStringSync());
+    document = XmlDocument.parse(file.readAsStringSync());
 
-    for (var element in document.attributes) { print("root node att : $element");}
+    //for (var element in document.attributes) { print("root node att : $element");}
     //print("parsed doc = $document");
-    document.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
+    document!.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
 
     bool ignore = true;
-    for (var node in document.children) {
+    for (var node in document!.children) {
       if (ignore)
       {
         if(node is XmlDeclaration ) {
@@ -63,13 +67,13 @@ class LogideeTools
       }
       else {
         if(node is XmlElement && node.name.toString() == "formation") {
-          parseFormation(node);
+          errmsg += parseFormation(node, verbose: verbose);
         } else if(node is XmlText && node.toString().trim().isEmpty) {}
         else {
-          print("tag formation expected, don't know how to handle ${node.runtimeType} $node");
+          errmsg += "tag formation expected, don't know how to handle ${node.runtimeType} $node\n";
+          parsevalid = false;
         }
       }
-      //processNode(node);
     }
 
     writeslide("\\end{document}\n");
@@ -79,6 +83,9 @@ class LogideeTools
     writescript("\\listoftables        % Liste des tableaux\n");
     writescript("\\end{document}\n");
     scriptsink.close();
+    if(verbose) print(errmsg);
+    if(!parsevalid && verbose) print("Errors occurred, check the log");
+    return parsevalid;
   }
 /// replace recursively the xi:include by the file given in the href
   void processInclude(XmlElement toInc) {
@@ -86,11 +93,15 @@ class LogideeTools
     if(href.isNotEmpty)
     {
       final file= File(dirname+href);
+      if(!file.existsSync()) parsevalid = false;
       var inclusion = XmlDocument.parse(file.readAsStringSync());
       inclusion.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
       List<XmlElement> list = [];
       for (var p0 in inclusion.children) { if(p0 is XmlElement) list.add(p0);}
-      if(list.length > 1) print("Error!!! $href contains more than one element!!");
+      if(list.length > 1) {
+        print("Error!!! $href contains more than one element!!");
+        parsevalid = false;
+      }
       if(list.isNotEmpty) {
         XmlElement replacement =list[0];
         if(replacement.hasParent) replacement.detachParent(replacement.parent!);
@@ -124,6 +135,7 @@ class LogideeTools
       print(
           "found unknown node t:${node.nodeType} txt:${node.text} txt:${node
               .innerText}");
+      parsevalid = false;
     }
     
     
@@ -131,6 +143,7 @@ class LogideeTools
 
   void processElement(XmlElement node) {
     switch(node.name.toString()){
+      case "shortinfo":
       case "info":
         processInfo(node);
         break;
@@ -174,73 +187,78 @@ class LogideeTools
       \vspace{\stretch{2}}
       \end{titlepage}
    */
-  void parseFormation(XmlElement formation)
+  String parseFormation(XmlElement formation, {bool verbose : false})
   {
-
+    String errmsg = "";
     //remove empty stuff
     cleanList(formation.children);
 
     for (var node in formation.children) {
-    if(node is XmlElement && node.name.toString() == "info") {
-      //if(formation.children.length >2)
-        parseInfo(node);
-    }
-    else if(node is XmlElement && node.name.toString() == "theme") {
-      //if(formation.children.length >2)
-      parseTheme(node);
-    }
-    else {
-      if(node is XmlElement) {
-        print("parsing formation unknwon elemebnt ${node.name}");
-      } else {
-        print("parsing formation unknwon  ${node.runtimeType}");
+      if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
+        //if(formation.children.length >2)
+        parseInfo(node, verbose: verbose);
       }
+      else if(node is XmlElement && node.name.toString() == "theme") {
+        //if(formation.children.length >2)
+        parseTheme(node, verbose: verbose);
+      }
+      else {
+        if(node is XmlElement) errmsg += "parsing formation unknown element ${node.name}\n";
+        else errmsg = "parsing formation unknown  ${node.runtimeType}\n";
+      }
+      parsevalid = false;
     }
-    }
-    //var info = node.getElement("info");
+    return errmsg;
   }
-  void parseTheme(XmlElement theme)
+    //var info = node.getElement("info");
+  String parseTheme(XmlElement theme, {bool verbose : false})
   {
+    String errmsg = "";
     //remove empty stuff
     cleanList(theme.children);
 
     for (var node in theme.children) {
-      if(node is XmlElement && node.name.toString() == "info") {
+        if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
         parseInfo(node);
       } else if(node is XmlElement && node.name.toString() == "module") {
         parseModule(node);
       } else {
         if(node is XmlElement) {
-          print("parsing formation unknwon elemebnt ${node.name}");
+          errmsg += "parsing theme unknown element ${node.name}\n";
         } else {
-          print("parsing formation unknwon  ${node.runtimeType}");
+          errmsg += "parsing theme unknown  ${node.runtimeType}\n";
         }
+        parsevalid = false;
       }
     }
     //var info = node.getElement("info");
+    return errmsg;
   }
-  void parseModule(XmlElement module)
+  String parseModule(XmlElement module, {bool verbose : false})
   {
+    String errmsg = "";
     //remove empty stuff
     cleanList(module.children);
 
     for (var node in module.children) {
-      if(node is XmlElement && node.name.toString() == "info") {
+        if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
         parseInfo(node, level: 1);
       } else if(node is XmlElement && node.name.toString() == "page") {
         parsePage(node);
       } else {
         if(node is XmlElement) {
-          print("parsing formation unknwon elemebnt ${node.name}");
+          errmsg = "parsing module unknown element ${node.name}\n";
         } else {
-          print("parsing formation unknwon  ${node.runtimeType}");
+          errmsg = "parsing module unknown  ${node.runtimeType}\n";
         }
+        parsevalid = false;
       }
     }
     //var info = node.getElement("info");
+    return errmsg;
   }
 
-  void cleanList(List<XmlNode> nodes) {
+  void cleanList(List<XmlNode> nodes, {bool verbose : false}) {
     //remove empty stuff
     var toRemove = [];
     for (var node in nodes) {
@@ -253,7 +271,8 @@ class LogideeTools
        nodes.removeWhere((element) => toRemove.contains(element));
   }
 
-  void parseInfo(XmlElement? info, {int level  =0}) {
+  String parseInfo(XmlElement? info, {int level  =0, bool verbose : false}) {
+    String errmsg = "";
     String title = info?.getElement("title")?.text??"";
     var version = info?.getElement("version");
     String date =version?.getAttribute("number")??"";
@@ -306,7 +325,7 @@ class LogideeTools
                    if(item is XmlElement) {
                      desc += "\\item ${item.text}\n";
                    } else {
-                     print("$item is no an Exmelement??");
+                     errmsg += "$item is no an Element??\n";
                    }
                   }
                 desc += "\\end{itemize}\n";
@@ -316,7 +335,7 @@ class LogideeTools
         writescript("\\$type{$title}\n");
         if(desc.isNotEmpty){
           writescript("\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}\n\\begin{quotation}\n$desc\n\\end{quotation}\n\\clearpage\n");
-          //replace inexisting abstract with :
+          //replace in-existing abstract with :
         }
 
 
@@ -327,6 +346,7 @@ class LogideeTools
         writeslide("\\end{frame}\n");
       }
     documentBegun = true;
+    return errmsg;
   }
 
   void writeslide(String txt) {
@@ -338,11 +358,12 @@ class LogideeTools
     scriptsink.write(txt);
   }
 
-  void parsePage(XmlElement page) {
+  String parsePage(XmlElement page, {bool verbose : false}) {
+    String errmsg = "";
     //remove empty stuff
     cleanList(page.children);
 
-    bool startFrame = false;
+    int startFrame = 0;
     String title = "";
     for (var node in page.children) {
       if(node is XmlElement && node.name.toString() == "title") {
@@ -354,26 +375,32 @@ class LogideeTools
       } else if(node is XmlElement && node.name.toString() == "section") {
         writeslide("\\begin{frame}\n");
         writeslide("\\Large{$title}\n");
-        startFrame = true;
+        startFrame++;
         parseSection(node, level : 0);
       } else if(node is XmlElement && node.name.toString() == "slide") {
         parseSlide(node);
       } else {
         if(node is XmlElement) {
-          print("parsing page unknwon elemebnt ${node.name}");
+          errmsg = "parsing page unknown element ${node.name}";
         } else {
-          print("parsing page unknwon  ${node.runtimeType}");
+          errmsg = "parsing page unknown  ${node.runtimeType}";
         }
+        parsevalid = false;
       }
     }
-    if(startFrame) writeslide("\\end{frame}\n");
+    if(startFrame >0) {
+      writeslide("\\end{frame}\n");
+      startFrame--;
+    }
+    return errmsg;
   }
 
-  String parseTitle(XmlElement node) {
+  String parseTitle(XmlElement node, {bool verbose : false}) {
     return node.text;
   }
 
-  void parseSection(XmlElement section, {int level  = 0, bool silent = false}) {
+  String parseSection(XmlElement section, {int level  = 0, bool silent = false,bool verbose : false}) {
+    String errmsg = "";
     String divider = (level == 0)? "section":(level == 1)? "subsection":(level == 2)? "subsubsection":(level == 3)? "paragraph": "subparagraph";
     cleanList(section.children);
     for (var node in section.children) {
@@ -395,15 +422,18 @@ class LogideeTools
         parseSlide(node);
       } else {
         if(node is XmlElement) {
-          print("parsing section unknwon elemebnt ${node.name}");
+          errmsg += "parsing section unknown element ${node.name}\n";
         } else {
-          print("parsing section unknwon  ${node.runtimeType}");
+          errmsg += "parsing section unknown  ${node.runtimeType}\n";
         }
+        parsevalid = false;
       }
     }
+    return errmsg;
   }
 
-  void parseSlide(XmlElement slide) {
+  String parseSlide(XmlElement slide, {bool verbose : false}) {
+    String errmsg = "";
 
     writeslide("\\begin{frame}\n");
     cleanList(slide.children);
@@ -423,22 +453,29 @@ class LogideeTools
         writeslide("}\n");
       } else {
         if(node is XmlElement) {
-          print("parsing slide unknwon elemebnt ${node.name} $node");
+          errmsg += "parsing slide unknown element ${node.name} $node\n";
         } else {
-          print("parsing slide unknwon  ${node.runtimeType}");
+          errmsg += "parsing slide unknown  ${node.runtimeType}\n";
         }
+        parsevalid = false;
       }
     }
     writeslide("\\end{frame}\n");
+    return errmsg;
   }
 
-  void parsePara(XmlElement paragraph, {bool silent = false}) {
-    cleanList(paragraph.children);
+  String parsePara(XmlNode paragraph, {bool silent = false, bool nowrite: false, bool verbose:false}) {
+    String errmsg = "";
+    String result = "";
+    if(paragraph is XmlElement) cleanList(paragraph.children);
     var toReplace = {};
     for (var node in paragraph.children) {
+      print("parsepara child loop treating $node of ${node.runtimeType}");
       if(node is XmlText) {
-        parseText(node);
-      } else if(node is XmlElement && node.name.toString() == "url") {
+        parseText(node, nowrite: nowrite, verbose:verbose);
+      }
+      else if(node is XmlElement && node.name.toString() == "url")
+      {
         String href = node.getAttribute("href") ?? "";
         String name = node.getAttribute("name") ?? "";
         if(name.isEmpty) name = href;
@@ -448,13 +485,15 @@ class LogideeTools
           XmlNode txtNode = XmlText(urlref);
           toReplace[node] = txtNode;
           //To create a link to another place in your own document
-          //\htmlref{text to have highlighted}{Label_name}magg
+          //\htmlref{text to have highlighted}{Label_name}
         }
         else {
-          print("failed parsing paragraph url $href $name ");
+          errmsg += "failed parsing paragraph url $href $name \n";
+          parsevalid = false;
         }
       }
-      else if(node is XmlElement && node.name.toString() == "image") {
+      else if(node is XmlElement && node.name.toString() == "image")
+      {
         String src = node.getAttribute("src") ?? "";
         bool visible =  ((node.getAttribute("visible")??"true") == "true")? true: false;
         if(visible) {
@@ -463,37 +502,28 @@ class LogideeTools
           toReplace[node] = txtNode;
         }
         else {
-          print("rejected image $node");
+          errmsg += "rejected image $node";
+          parsevalid = false;
         }
       }
       else if(node is XmlElement && node.name.toString() == "list")
-        {
-         //print("found list $node") ;
-         String urlref ="\\begin{itemize}\n";
-         cleanList(node.children);
-         for (var p0 in node.children) { urlref += "\\item ${p0.text} ";}
-         urlref +="\\end{itemize}\n";
-         XmlNode txtNode = XmlText(urlref);
-         toReplace[node] = txtNode;
-        }
+      {
+        //print("found list $node") ;
+        String urlref ="\\begin{itemize}\n";
+        cleanList(node.children);
+        for (var p0 in node.children) { urlref += "\\item ${p0.text} ";}
+        urlref +="\\end{itemize}\n";
+        XmlNode txtNode = XmlText(urlref);
+        toReplace[node] = txtNode;
+      }
+      else if(node is XmlElement && node.name.toString() == "em")
+        errmsg += parseEm(node, nowrite: nowrite, verbose: verbose);
       else if(node is XmlElement && node.name.toString() == "cmd")
-      {
-        cleanList(node.children);
-        String urlref ="{\\tt ";
-        for (var p0 in node.children) { urlref += p0.text+"\n";}
-        urlref +="} ";
-        XmlNode txtNode = XmlText(urlref);
-        toReplace[node] = txtNode;
-      }
+        errmsg += parseCmd(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "menu")
-      {
-        cleanList(node.children);
-        String urlref ="{\\bfseries \\large  ";
-        for (var p0 in node.children) { urlref += p0.text+"\n";}
-        urlref +="} ";
-        XmlNode txtNode = XmlText(urlref);
-        toReplace[node] = txtNode;
-      }
+        errmsg += parseMenu(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
+      else if(node is XmlElement && node.name.toString() == "file")
+        errmsg += parseFile(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "code")
       {
         cleanList(node.children);
@@ -505,35 +535,98 @@ class LogideeTools
         toReplace[node] = txtNode;
       }
       else if(node is XmlElement) {
-        print("parsing paragraph unknwon elemebnt ${node.name}");
+        errmsg += "parsing paragraph unknown element ${node.name}\n";
       } else {
-        print("parsing paragraph unknwon  ${node.runtimeType}");
+        errmsg += "parsing paragraph unknown  ${node.runtimeType}\n";
       }
+      parsevalid = false;
     }
 
     for (var node in toReplace.keys) {
       node.replace(toReplace[node]);
       //print("swapped ${node} with ${toReplace[node]}");
     }
-    writescript("${paragraph.text}\n\n");
+    if(nowrite) errmsg += "${paragraph.text}";
+    else writescript("${paragraph.text}\n\n");
+    return errmsg;
   }
 
-  void parseText(XmlText txtnode)
+  String parseText(XmlText txtnode, {bool verbose : false, bool nowrite: false})
   {
+    print("parse text with ver: $verbose nowr: $nowrite for ${txtnode.text}");
+    String errmsg = "";
     if(txtnode.children.isEmpty) {
-      writescript("${txtnode.text}\n\n");
-    } else {
-      print("txt : ${txtnode.children.length} ${txtnode.text}");
+      if(nowrite) errmsg += "${txtnode.text} ";
+      else writescript("${txtnode.text}\n\n");
+    }
+    else
+    {
+      errmsg += "txt : ${txtnode.children.length} ${txtnode.text}";
     }
     for (var node in txtnode.children) {
       //if(node is XmlText) parseText(node);
       //else
         if(node is XmlElement) {
-          print("parsing txt unknwon elemebnt ${node.name}");
+          errmsg += "parsing txt unknown element ${node.name}\n";
         } else {
-          print("parsing txt unknwon  ${node.runtimeType}");
+          errmsg += "parsing txt unknown  ${node.runtimeType}\n";
         }
+        parsevalid = false;
     }
 
+    return errmsg;
   }
+
+  String parseEm(XmlElement emnode, {bool nowrite:false, bool verbose: false})
+  {
+    String result = "\\textbf{";
+    String errmsg = (nowrite)?result:"";
+
+    if(!nowrite)writescript("${result}");
+    if(emnode.children.isNotEmpty)
+    {
+      for(var subnode in emnode.children) errmsg += parsePara(subnode, nowrite:nowrite, verbose: verbose);
+    }
+    if(!nowrite)writescript("}");
+    else errmsg +="}";
+  return errmsg;
+  }
+
+  String parseMenu(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    cleanList(node.children);
+    String urlref ="{\\bfseries \\large  ";
+    for (var p0 in node.children) { urlref += p0.text+" ";}
+    urlref +="} ";
+    XmlNode txtNode = XmlText(urlref);
+    if(toReplace != null) toReplace[node] = txtNode;
+    else if(nowrite) return urlref;
+    return "";
+  }
+
+  String parseCmd(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    cleanList(node.children);
+    String urlref ="{\\tt ";
+    for (var p0 in node.children) { urlref += p0.text+" ";}
+    urlref +="} ";
+    XmlNode txtNode = XmlText(urlref);
+    if(toReplace != null) toReplace[node] = txtNode;
+    else if(nowrite) return urlref;
+    return "";
+  }
+
+  String parseFile(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+   {
+     cleanList(node.children);
+     String urlref ="{\\tt ";
+     for (var p0 in node.children) { urlref += p0.text+" ";}
+     urlref +="} ";
+     XmlNode txtNode = XmlText(urlref);
+     if(toReplace != null) toReplace[node] = txtNode;
+     else if(nowrite) return urlref;
+
+     return "";
+   }
+
 }
