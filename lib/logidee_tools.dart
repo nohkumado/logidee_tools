@@ -39,6 +39,7 @@ class LogideeTools
     writeslide('\\newcounter{paragraph}\n\\newcommand{\\paragraph}\n');//otherwise html stop compilation
     writeslide('\\usepackage{html}\n' );
     writeslide('\\usepackage{minted}\n' );
+    writescript('\\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures\n' );
     document = XmlDocument.parse(file.readAsStringSync());
 
     //for (var element in document.attributes) { print("root node att : $element");}
@@ -473,20 +474,7 @@ class LogideeTools
       print("parsepara child loop treating $node of ${node.runtimeType}");
       if(node is XmlText) parseText(node, nowrite: nowrite, verbose:verbose);
       else if(node is XmlElement && node.name.toString() == "url") errmsg += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
-      else if(node is XmlElement && node.name.toString() == "image")
-      {
-        String src = node.getAttribute("src") ?? "";
-        bool visible =  ((node.getAttribute("visible")??"true") == "true")? true: false;
-        if(visible) {
-          String urlref ="\\includegraphics[scale=1]{$src}";
-          XmlNode txtNode = XmlText(urlref);
-          toReplace[node] = txtNode;
-        }
-        else {
-          errmsg += "rejected image $node";
-          parsevalid = false;
-        }
-      }
+      else if(node is XmlElement && node.name.toString() == "image")errmsg += parseImage(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "list")
       {
         //print("found list $node") ;
@@ -639,4 +627,48 @@ class LogideeTools
     return errmsg;
   }
 
+
+  String parseImage(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    String errmsg = "";
+    String src = node.getAttribute("src") ?? "";
+    bool visible =  ((node.getAttribute("visible")??"true") == "true")? true: false;
+    String caption  ="";
+    bool captionVisible = true;
+    cleanList(node.children);
+
+    if(visible) {
+      String urlref ="\\includegraphics[scale=1]{$src}";
+      if(node.children.isNotEmpty)
+      {
+        XmlNode capNode  = node.firstChild!;
+        if(capNode is XmlElement)
+        {
+          print("chcecking name : ${capNode.name} ${capNode.name.runtimeType}"+(capNode.name == 'legend').toString());
+          if(capNode.name.toString() == 'legend')
+          {
+            captionVisible = ((capNode.getAttribute("visible")??"true") == "true")? true: false;
+            if(captionVisible)
+              urlref +="\n\\captionof{figure}{"+parsePara(capNode,nowrite: nowrite,verbose: verbose)+"}";
+          }
+          else errmsg+= "unknown odsw : ${capNode.runtimeType} '${capNode.name}' $capNode";
+        }
+        else
+          {
+            errmsg += "expected legend, dont know what to do with ${node.children.first.runtimeType} ${node.firstChild}";
+            parsevalid = false;
+          }
+      }
+      //\\captionof{figure}{Some here}
+      if(toReplace != null) {
+        XmlNode txtNode = XmlText(urlref);
+        toReplace[node] = txtNode;
+      } else if(nowrite) errmsg += urlref;
+    }
+    else {
+      errmsg += "rejected image $node";
+      parsevalid = false;
+    }
+    return errmsg;
+  }
 }

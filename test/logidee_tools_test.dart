@@ -52,6 +52,14 @@ void main()
       result = '\\begin{minted}{}\n\n            ...\n            void main (void) {\n            printf("Hello World.\\n");\n            }\n        \n\\end{minted}\n';
       expect(parser.parseCode(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('image');
+      expect(list.length,2);
+      List<String> results =[
+      "\\includegraphics[scale=1]{logo.eps}",
+        "\\includegraphics[scale=1]{schema.eps}\n\\captionof{figure}{Schéma d'interconnexion}"
+      ];
+      expect(parser.parseImage(list.first, nowrite: true, verbose: true),results[0]);
+      expect(parser.parseImage(list.last, nowrite: true, verbose: true),results[1]);
+      list = parser.document!.findAllElements('table');
       expect(list.length,1);
       result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
       print("got back list: ${list.length} and $list");
