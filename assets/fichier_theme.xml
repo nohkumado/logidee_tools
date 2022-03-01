@@ -1,0 +1,14 @@
+<theme xmlns:xi="http://www.w3.org/2001/XInclude">
+<shortinfo>
+<title>Titre du diaporama</title>
+<description><para>Une description</para></description>
+<version number="1.0">
+<author>Nom de l’auteur</author>
+<email>mon_email@mondomaine.tld</email>
+<comment>...</comment>
+<date>2001-08-09</date>
+</version>
+</shortinfo>
+<xi:include href="fichier_module.xml"/>
+<xi:include href="fichier_slideshow.xml"/>
+</theme>

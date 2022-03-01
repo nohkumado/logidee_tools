@@ -26,12 +26,15 @@ class LogideeTools
     slidesink=  slidefile.openWrite();
     scriptsink=scriptfile.openWrite();
 
-    slidesink.write('\\documentclass{beamer}\n' );
-    scriptsink.write('\\documentclass[a4paper,12pt]{book}\n' );
-    scriptsink.write('\\usepackage{graphicx}\n' );
-    scriptsink.write('\\usepackage{epstopdf}\n' );
-    scriptsink.write('\\usepackage{html}\n' );
-    slidesink.write('\\usepackage{html}\n' );
+    writeslide('\\documentclass{beamer}\n' );
+    writescript('\\documentclass[a4paper,12pt]{book}\n' );
+    writescript('\\usepackage{graphicx}\n' );
+    writescript('\\usepackage{epstopdf}\n' );
+    writescript('\\usepackage{html}\n' );
+    writescript('\\usepackage{minted}\n' );
+    writeslide('\\newcounter{paragraph}\n\\newcommand{\\paragraph}\n');//otherwise html stop compilation
+    writeslide('\\usepackage{html}\n' );
+    writeslide('\\usepackage{minted}\n' );
     final document = XmlDocument.parse(file.readAsStringSync());
 
     for (var element in document.attributes) { print("root node att : $element");}
@@ -47,7 +50,7 @@ class LogideeTools
           lang = (lang == "de")? "german": (lang=="fr")? "french":"";
           if(lang.isNotEmpty)
           {
-            slidesink.write('\\usepackage{babel}[$lang]\n' );
+            writeslide('\\usepackage{babel}[$lang]\n' );
             scriptsink.write('\\usepackage{babel}[$lang]\n' );
           }
           theme = node.getAttribute("theme") ?? "default";
@@ -69,12 +72,12 @@ class LogideeTools
       //processNode(node);
     }
 
-    slidesink.write("\\end{document}\n");
+    writeslide("\\end{document}\n");
     slidesink.close();
-    scriptsink.write("\\tableofcontents\n");
-    scriptsink.write("\\listoffigures        % Liste des figures\n");
-    scriptsink.write("\\listoftables        % Liste des tableaux\n");
-    scriptsink.write("\\end{document}\n");
+    writescript("\\tableofcontents\n");
+    writescript("\\listoffigures        % Liste des figures\n");
+    writescript("\\listoftables        % Liste des tableaux\n");
+    writescript("\\end{document}\n");
     scriptsink.close();
   }
 /// replace recursively the xi:include by the file given in the href
@@ -259,35 +262,34 @@ class LogideeTools
     String type = (level <= 0)? "part":(level == 1)? "chapter":"section";
 
     if(!documentBegun) {
-      if (title.isNotEmpty) scriptsink.write("\\title{$title}\n");
-      if (date.isNotEmpty) scriptsink.write("\\date{$date}\n");
-      if (author.isNotEmpty) scriptsink.write("\\author{$author}\n");
+      if (title.isNotEmpty) writescript("\\title{$title}\n");
+      if (date.isNotEmpty) writescript("\\date{$date}\n");
+      if (author.isNotEmpty) writescript("\\author{$author}\n");
 
-      scriptsink.write("\\begin{document}\n");
-      scriptsink.write("\\maketitle\n");
+      writescript("\\begin{document}\n");
+      writescript("\\maketitle\n");
 
 
-      slidesink.write(
-          "\\usetheme{$theme}\n"); // % Berlin, Darmstadt, Goettingen, Hannover, Singapore
-      slidesink.write("\\title{$title}\n");
-      slidesink.write("\\subtitle{$desc}\n");
-      slidesink.write("\\author{$author}\n");
-      slidesink.write("\\institute{Beamer Slides}\n");
-      slidesink.write("\\date{$date}\n");
+      writeslide("\\usetheme{$theme}\n"); // % Berlin, Darmstadt, Goettingen, Hannover, Singapore
+      writeslide("\\title{$title}\n");
+      writeslide("\\subtitle{$desc}\n");
+      writeslide("\\author{$author}\n");
+      writeslide("\\institute{Beamer Slides}\n");
+      writeslide("\\date{$date}\n");
       //% Image Logo\n");
       if(File("logo.png").existsSync()) {
-        slidesink.write(
+        writeslide(
           "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n");
       }
-      slidesink.write("\\begin{document}\n");
-      slidesink.write("\\begin{frame}\n");
+      writeslide("\\begin{document}\n");
+      writeslide("\\begin{frame}\n");
       //% Print the title page as the first slide\n");
-      slidesink.write("\\titlepage\n");
-      slidesink.write("\\end{frame}\n");
+      writeslide("\\titlepage\n");
+      writeslide("\\end{frame}\n");
       //% Presentation outline\n");
-      slidesink.write("\\begin{frame}{Outline}\n");
-      slidesink.write("\\tableofcontents\n");
-      slidesink.write("\\end{frame}\n");
+      writeslide("\\begin{frame}{Outline}\n");
+      writeslide("\\tableofcontents\n");
+      writeslide("\\end{frame}\n");
     }
     else
       {
@@ -311,22 +313,29 @@ class LogideeTools
 
               }
           }
-        scriptsink.write("\\$type{$title}\n");
+        writescript("\\$type{$title}\n");
         if(desc.isNotEmpty){
-          scriptsink.write("\\begin{abstract}\n\\begin{quote}\n$desc\n\\end{abstract}\n\\end{quote}\n");
-
-
-
+          writescript("\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}\n\\begin{quotation}\n$desc\n\\end{quotation}\n\\clearpage\n");
+          //replace inexisting abstract with :
         }
 
 
 
-        slidesink.write("\\begin{frame}\n");
-        slidesink.write("\\Large{$title}\n");
-        slidesink.write("$desc\n");
-        slidesink.write("\\end{frame}\n");
+        writeslide("\\begin{frame}\n");
+        writeslide("\\Large{$title}\n");
+        writeslide("$desc\n");
+        writeslide("\\end{frame}\n");
       }
     documentBegun = true;
+  }
+
+  void writeslide(String txt) {
+    if(txt.contains(r'_')) txt= txt.replaceAll(r'_', r'\_');
+    slidesink.write(txt);
+  }
+  void writescript(String txt) {
+    if(txt.contains(r'_')) txt= txt.replaceAll(r'_', r'\_');
+    scriptsink.write(txt);
   }
 
   void parsePage(XmlElement page) {
@@ -338,13 +347,13 @@ class LogideeTools
     for (var node in page.children) {
       if(node is XmlElement && node.name.toString() == "title") {
         title = parseTitle(node);
-        scriptsink.write("\\section{$title}\n");
+        writescript("\\section{$title}\n");
 
         //\includegraphics[width=1\linewidth]{image without extension}
-        //slidesink.write("${desc}\n");
+        //writeslide("${desc}\n");
       } else if(node is XmlElement && node.name.toString() == "section") {
-        slidesink.write("\\begin{frame}\n");
-        slidesink.write("\\Large{$title}\n");
+        writeslide("\\begin{frame}\n");
+        writeslide("\\Large{$title}\n");
         startFrame = true;
         parseSection(node, level : 0);
       } else if(node is XmlElement && node.name.toString() == "slide") {
@@ -357,7 +366,7 @@ class LogideeTools
         }
       }
     }
-    if(startFrame) slidesink.write("\\end{frame}\n");
+    if(startFrame) writeslide("\\end{frame}\n");
   }
 
   String parseTitle(XmlElement node) {
@@ -371,11 +380,11 @@ class LogideeTools
       if(node is XmlElement && node.name.toString() == "title") {
         String title = parseTitle(node);
         //print("need to parse section ${node.text}");
-        scriptsink.write("\\$divider{$title}\n");
+        writescript("\\$divider{$title}\n");
         if(silent) {
-          slidesink.write("\\item $title\n");
+          writeslide("\\item $title\n");
         } else {
-          slidesink.write("$title\n");
+          writeslide("$title\n");
         }
       }
       else if(node is XmlElement && node.name.toString() == "section") {
@@ -396,27 +405,31 @@ class LogideeTools
 
   void parseSlide(XmlElement slide) {
 
-    slidesink.write("\\begin{frame}\n");
+    writeslide("\\begin{frame}\n");
     cleanList(slide.children);
     //print("need to parse slide ${slide.text}");
     for (var node in slide.children) {
       if(node is XmlElement && node.name.toString() == "title") {
         String title = parseTitle(node);
-        slidesink.write("\\Large{$title}\n");
+        writeslide("\\Large{$title}\n");
       }
       else if(node is XmlElement && node.name.toString() == "section") {
         parseSection(node, silent : true);
       } else if(node is XmlElement && node.name.toString() == "para") {
         parsePara(node, silent : true);
+      } else if(node is XmlElement && node.name.toString() == "subtitle") {
+        writeslide("{\\bfseries ");
+        parsePara(node, silent : true);
+        writeslide("}\n");
       } else {
         if(node is XmlElement) {
-          print("parsing slide unknwon elemebnt ${node.name}");
+          print("parsing slide unknwon elemebnt ${node.name} $node");
         } else {
           print("parsing slide unknwon  ${node.runtimeType}");
         }
       }
     }
-    slidesink.write("\\end{frame}\n");
+    writeslide("\\end{frame}\n");
   }
 
   void parsePara(XmlElement paragraph, {bool silent = false}) {
@@ -475,7 +488,7 @@ class LogideeTools
       else if(node is XmlElement && node.name.toString() == "menu")
       {
         cleanList(node.children);
-        String urlref ="{\\bfseries\large  ";
+        String urlref ="{\\bfseries \\large  ";
         for (var p0 in node.children) { urlref += p0.text+"\n";}
         urlref +="} ";
         XmlNode txtNode = XmlText(urlref);
@@ -484,9 +497,10 @@ class LogideeTools
       else if(node is XmlElement && node.name.toString() == "code")
       {
         cleanList(node.children);
-        String urlref ="\\begin{code}\n";
+        String proglang = node.getAttribute("lang") ?? "";
+        String urlref ="\\begin{minted}{$proglang}\n";
         for (var p0 in node.children) { urlref += p0.text+" ";}
-        urlref +="\\end{code}\n";
+        urlref +="\\end{minted}\n";
         XmlNode txtNode = XmlText(urlref);
         toReplace[node] = txtNode;
       }
@@ -501,13 +515,13 @@ class LogideeTools
       node.replace(toReplace[node]);
       //print("swapped ${node} with ${toReplace[node]}");
     }
-    scriptsink.write("${paragraph.text}\n\n");
+    writescript("${paragraph.text}\n\n");
   }
 
   void parseText(XmlText txtnode)
   {
     if(txtnode.children.isEmpty) {
-      scriptsink.write("${txtnode.text}\n\n");
+      writescript("${txtnode.text}\n\n");
     } else {
       print("txt : ${txtnode.children.length} ${txtnode.text}");
     }
