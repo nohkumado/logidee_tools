@@ -17,7 +17,7 @@
         </image>
         <table>
             <row>
-                <col> col1 </col>
+                <col head="1" border="1"> col1 </col>
                 <col> col2 </col>
             </row>
             <row>

@@ -1,3 +1,4 @@
+import 'package:xml/src/xml/utils/node_list.dart';
 import 'package:xml/xml.dart';
 //import 'dart:html';
 import 'dart:io';
@@ -644,7 +645,6 @@ class LogideeTools
         XmlNode capNode  = node.firstChild!;
         if(capNode is XmlElement)
         {
-          print("chcecking name : ${capNode.name} ${capNode.name.runtimeType}"+(capNode.name == 'legend').toString());
           if(capNode.name.toString() == 'legend')
           {
             captionVisible = ((capNode.getAttribute("visible")??"true") == "true")? true: false;
@@ -670,5 +670,64 @@ class LogideeTools
       parsevalid = false;
     }
     return errmsg;
+  }
+///TODO border is default atm
+  String parseTable(XmlElement node, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    String errmsg = "";
+    cleanList(node.children);
+    bool border = ((node.getAttribute("border")??"1") == "1")? true: false;
+    int maxwidth = 0;
+    List<List<String>> data = extractTable(node.children);
+    data.forEach((line) { if(line.length > maxwidth) maxwidth = line.length;});
+
+    //print("got back table: $data");
+    String result = "\\begin{tabular}{";
+    for(int i = 0 ; i < maxwidth; i++)
+      {
+        result += "|c";
+      }
+    result += "|}\n";
+    result += "\\hline\n";
+    data.forEach((line)
+    {
+      for(int x = 0; x<line.length; x++) {
+        result += line[x] +((x<line.length-1)?"&":"");
+      };
+      result += " \\hline\n";
+    });
+    result += "\\end{tabular}";
+
+//{|l|p{4cm}|}
+    if(toReplace != null) {
+      XmlNode txtNode = XmlText(result);
+      toReplace[node] = txtNode;
+    } else if(nowrite) errmsg += result;
+    return errmsg;
+  }
+
+  List<List<String>> extractTable(XmlNodeList<XmlNode> rows)
+  {
+    List<List<String>> result = [];
+    int line = 0;
+   for(var oneRow in rows){
+       result.add([]);
+     if(oneRow is XmlElement && oneRow.name.toString() == "row")
+       {
+         cleanList(oneRow.children);
+         for(var oneCell in oneRow.children){
+           bool border = ((oneCell.getAttribute("border")??"0") == "1")? true: false;
+           bool head = ((oneCell.getAttribute("head")??"0") == "1")? true: false;
+           result[line].add(((head) ? "\\textbf{":"")+parsePara(oneCell, nowrite: true)+((head) ? "}":""));
+         }
+       }
+     else {
+       print("error need to look at ${oneRow.runtimeType} with $oneRow");
+       parsevalid = false;
+     }
+     line++;
+   }
+
+    return result;
   }
 }

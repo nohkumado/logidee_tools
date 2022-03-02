@@ -61,6 +61,10 @@ void main()
       expect(parser.parseImage(list.last, nowrite: true, verbose: true),results[1]);
       list = parser.document!.findAllElements('table');
       expect(list.length,1);
+      result = "\\begin{tabular}{|c|c|}\n\\hline\n\\textbf{ col1 }& col2  \\hline\n col3 & col4  \\hline\n\\end{tabular}";
+      expect(parser.parseTable(list.first, nowrite: true, verbose: true),result);
+      list = parser.document!.findAllElements('math');
+      expect(list.length,1);
       result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
       print("got back list: ${list.length} and $list");
       expect(parser.parseUrl(list.first, nowrite: true, verbose: true),result);
