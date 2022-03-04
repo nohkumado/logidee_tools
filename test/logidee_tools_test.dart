@@ -64,11 +64,28 @@ void main()
       result = "\\begin{tabular}{|c|c|}\n\\hline\n\\textbf{ col1 }& col2  \\hline\n col3 & col4  \\hline\n\\end{tabular}";
       expect(parser.parseTable(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('math');
-      expect(list.length,1);
-      result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
+      print("got back math: ${list.length} and $list");
+      expect(list.length,2);
+      result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}";
+      expect(parser.parseMath(list.first, nowrite: true, verbose: true),result);
+      result = "{\\tt [ Energie = Masse * Célérité au carré ]\n}";
+      expect(parser.parseMath(list.last, nowrite: true, verbose: true),result);
+      list = parser.document!.findAllElements('list');
       print("got back list: ${list.length} and $list");
-      expect(parser.parseUrl(list.first, nowrite: true, verbose: true),result);
-      //   <page>
+      expect(list.length,2);
+      result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}";
+      expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
+      //   <formation>
+      //   <theme>
+      //   <module>
+      //   <module>
+      //   <page> page, section, exercise, para et note disposent d'un attribut <note restriction="debian">Tout ce qui est dit là est   spécifique à Debian.      </note>
+      //exercise, para et note disposent d'un attribut icon
+      //   <slide>, section,exercice
+      //      -> section,para,note,exercice
+      //           -> para,note,exercice
+      //list
+      //->list,item
       expect(true,true);
     });
   });

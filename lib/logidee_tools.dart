@@ -472,7 +472,7 @@ class LogideeTools
     if(paragraph is XmlElement) cleanList(paragraph.children);
     var toReplace = {};
     for (var node in paragraph.children) {
-      print("parsepara child loop treating $node of ${node.runtimeType}");
+      //print("parsepara child loop treating $node of ${node.runtimeType}");
       if(node is XmlText) parseText(node, nowrite: nowrite, verbose:verbose);
       else if(node is XmlElement && node.name.toString() == "url") errmsg += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       else if(node is XmlElement && node.name.toString() == "image")errmsg += parseImage(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
@@ -515,7 +515,7 @@ class LogideeTools
 
   String parseText(XmlText txtnode, {bool verbose : false, bool nowrite: false})
   {
-    print("parse text with ver: $verbose nowr: $nowrite for ${txtnode.text}");
+    //print("parse text with ver: $verbose nowr: $nowrite for ${txtnode.text}");
     String errmsg = "";
     if(txtnode.children.isEmpty) {
       if(nowrite) errmsg += "${txtnode.text} ";
@@ -729,5 +729,58 @@ class LogideeTools
    }
 
     return result;
+  }
+
+  String parseMath(XmlElement mathnode, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    String errmsg = "";
+    String notation = mathnode.getAttribute("notation")??"html";
+    cleanList(mathnode.children);
+    String result = (notation == "tex")?"\\begin{eqnarray}\n":"{\\tt ";
+    mathnode.children.forEach((node) {
+      if(node is XmlCDATA)
+      {
+        if(notation == "html") {
+          print("error!! math tex notation should contain only CDATA !");
+          parsevalid = false;
+        }
+        result += node.text.trim()+"\n";
+      }
+      else if(node is XmlText)
+      {
+        if(notation == "tex") {
+          print("error!! math html notation should contain only Text !");
+          parsevalid = false;
+        }
+        result += node.text.trim()+"\n";
+      }
+      else
+      {
+        print("found  unexpected ${node.runtimeType} with $node");
+        node.attributes.forEach((element) {
+          print("math sub node att: $element");
+        });
+      }
+
+    });
+    result += (notation == "tex")?"\\end{eqnarray}\n":"}";
+//{|l|p{4cm}|}
+    if(toReplace != null) {
+      XmlNode txtNode = XmlText(result);
+      toReplace[mathnode] = txtNode;
+    } else if(nowrite) errmsg += result.trim();
+    return errmsg;
+  }
+
+  String parseList(XmlElement mathnode, {bool nowrite = false, bool verbose = false, Map? toReplace})
+  {
+    String errmsg = "";
+    String result = "";
+
+    if(toReplace != null) {
+      XmlNode txtNode = XmlText(result);
+      toReplace[mathnode] = txtNode;
+    } else if(nowrite) errmsg += result.trim();
+    return errmsg;
   }
 }
