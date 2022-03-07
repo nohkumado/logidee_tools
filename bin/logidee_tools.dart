@@ -13,7 +13,12 @@ void main(List<String> arguments) {
   args..addOption('file',
       abbr: 'f',
       help:
-      "the xml file to parse");
+      "the xml file to parse")
+    ..addOption('lang',
+        abbr: 'l',
+        help:
+        "override preferred language")
+  ;
 
   Map<String,dynamic> data = {};
   String usage = args.usage;
@@ -23,10 +28,10 @@ void main(List<String> arguments) {
   try {
     var argResults = args.parse(arguments);
     //print("applying args: lang:${argResults["lang"]} base:${argResults["base"]} out:${argResults["output"]} help:${argResults["help"]} strict:${argResults["strict"]}  rest: ${argResults.rest}");
-    argResults.options.forEach((key) {
+    for (var key in argResults.options) {
       var val = argResults[key];
-      data["$key"] = (val == null) ? "null" : val;
-    });
+      data[key] = (val == null) ? "null" : val;
+    }
     rest = argResults.rest;
     //postprocessing
     if (data.containsKey("file") && data["file"].isNotEmpty) {
@@ -48,8 +53,9 @@ String tildeExpansion(String path){
   if(path.startsWith('~'))
   {
     List<String> parts = path.split(separator);
-    if(parts[0] == '~') parts[0] = ((Platform.environment.containsKey('HOME'))?Platform.environment['HOME']:"")!;
-    else {
+    if(parts[0] == '~') {
+      parts[0] = ((Platform.environment.containsKey('HOME'))?Platform.environment['HOME']:"")!;
+    } else {
       String user = parts[0].replaceAll('~', '');
       try {
         parts[0] = getpwnam(user).homePathTo;

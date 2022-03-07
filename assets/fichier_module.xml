@@ -33,6 +33,59 @@
         </math>
     </page>
     <page>
-        ...
+        <para>Ceci est du texte normal, <em>du texte en évidence</em>,
+            une URL <url href="http://linux-france.org"/>, etc. </para>
+        <para>
+            Un réseau <glossary name="IP">Internet Protocol</glossary> est ...
+            Les technologies <glossary name="IP"/> ...
+        </para>
+    </page>
+    <page>
+        <title></title>
+        <slide background="image.eps">
+            <list>
+                <item> something <list>
+                        <item>item of sublist</item>
+                    </list>
+                </item>
+            </list>
+        </slide>
+
+        <section>
+            <title></title>
+            <section>
+                <title></title>
+                <para>
+                    Les entités pour les caractères spéciaux
+
+                    Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
+
+                    <list>
+                        <item>ipso factum</item>
+
+                      <item>&nbsp; : l'espace insécable ;</item>
+                      <item>&tir; : le tiret d'intervalle '?';</item>
+                      <item>&quot; : le caractère '”' ;</item>
+                      <item>&amp; : le caractère '&amp;' ;</item>
+                      <item>&lt; : le caractère pluspetitque ;</item>
+                      <item>&gt; : le caractère plusgrandque ;</item>
+                      <item>&OElig; : le caractère OE ligaturé (?) ;</item>
+                      <item>&oelig; : le caractère oe ligaturé (?) ;</item>
+                      <item>&reg; : le caractère '©' ;</item>
+                      <item>&euro; : le caractère pour l'euro (?).</item>
+                    </list>
+
+                </para>
+            </section>
+            ...
+        </section>
+        <exercise>
+            <question>
+                <para>
+                    combien font 2 plus 2 ?
+                </para>
+            </question>
+            <answer><para>4</para></answer>
+        </exercise>
     </page>
 </module>

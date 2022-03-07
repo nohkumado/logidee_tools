@@ -28,7 +28,7 @@ void main()
     {
       parser.parse(fname, outdir: outdir);
       var list = parser.document!.findAllElements('em');
-      expect(list.length,1);
+      expect(list.length,2);
       String result = "\\textbf{texte en évidence}";
       expect(parser.parseEm(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('menu');
@@ -44,7 +44,7 @@ void main()
       result = "{\\tt /etc/passwd } ";
       expect(parser.parseFile(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('url');
-      expect(list.length,1);
+      expect(list.length,2);
       result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
       expect(parser.parseUrl(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('code');
@@ -61,20 +61,22 @@ void main()
       expect(parser.parseImage(list.last, nowrite: true, verbose: true),results[1]);
       list = parser.document!.findAllElements('table');
       expect(list.length,1);
-      result = "\\begin{tabular}{|c|c|}\n\\hline\n\\textbf{ col1 }& col2  \\hline\n col3 & col4  \\hline\n\\end{tabular}";
+      result = "\\begin{tabular}{|c|c|}\n\\hline\n\\textbf{col1}&col2 \\hline\ncol3&col4 \\hline\n\\end{tabular}";
       expect(parser.parseTable(list.first, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('math');
-      print("got back math: ${list.length} and $list");
       expect(list.length,2);
       result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}";
       expect(parser.parseMath(list.first, nowrite: true, verbose: true),result);
       result = "{\\tt [ Energie = Masse * Célérité au carré ]\n}";
       expect(parser.parseMath(list.last, nowrite: true, verbose: true),result);
       list = parser.document!.findAllElements('list');
-      print("got back list: ${list.length} and $list");
-      expect(list.length,2);
-      result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}";
+      //print("got back list: ${list.length} and $list");
+      //expect(list.length,2);
+      result = "\\begin{itemize}\n\\item something\n\\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\\end{itemize}";
       expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
+
+
+
       //   <formation>
       //   <theme>
       //   <module>
@@ -86,7 +88,10 @@ void main()
       //           -> para,note,exercice
       //list
       //->list,item
-      expect(true,true);
+    });
+    test('xml structure test',()
+    {
+
     });
   });
 }
