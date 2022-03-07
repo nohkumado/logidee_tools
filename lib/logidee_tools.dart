@@ -15,10 +15,11 @@ class LogideeTools
 
   bool documentBegun = false;
   XmlDocument? document;
+  String errmsg = "";
 
-  bool parse(String fname, {String outdir = "", bool verbose = false})
+  bool loadXml(String fname, {String outdir = "", bool verbose = false})
   {
-    String errmsg = "";
+    errmsg = "";
     dirname = path.dirname(fname);
     String outname = ((outdir.isNotEmpty)? outdir: dirname)+path.separator+path.basenameWithoutExtension(fname);
     String slidename = outname+"_gen_slides.tex";
@@ -31,6 +32,19 @@ class LogideeTools
     slidesink=  slidefile.openWrite();
     scriptsink=scriptfile.openWrite();
 
+    document = XmlDocument.parse(file.readAsStringSync());
+
+    //for (var element in document.attributes) { print("root node att : $element");}
+    //print("parsed doc = $document");
+    document!.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
+
+    if(verbose) print(errmsg);
+    if(!parsevalid && verbose) print("Errors occurred, check the log");
+    return parsevalid;
+  }
+  bool parse({bool verbose = false})
+  {
+    errmsg = "";
     writeslide('\\documentclass{beamer}\n' );
     writescript('\\documentclass[a4paper,12pt]{book}\n' );
     writescript('\\usepackage{graphicx}\n' );
@@ -41,11 +55,6 @@ class LogideeTools
     writeslide('\\usepackage{html}\n' );
     writeslide('\\usepackage{minted}\n' );
     writescript('\\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures\n' );
-    document = XmlDocument.parse(file.readAsStringSync());
-
-    //for (var element in document.attributes) { print("root node att : $element");}
-    //print("parsed doc = $document");
-    document!.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
 
     bool ignore = true;
     for (var node in document!.children) {
@@ -198,11 +207,11 @@ class LogideeTools
     for (var node in formation.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
         //if(formation.children.length >2)
-        parseInfo(node, verbose: verbose);
+        errmsg += parseInfo(node, verbose: verbose);
       }
       else if(node is XmlElement && node.name.toString() == "theme") {
         //if(formation.children.length >2)
-        parseTheme(node, verbose: verbose);
+        errmsg += parseTheme(node, verbose: verbose);
       }
       else {
         if(node is XmlElement) {
@@ -224,9 +233,9 @@ class LogideeTools
 
     for (var node in theme.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
-        parseInfo(node);
+        errmsg += parseInfo(node);
       } else if(node is XmlElement && node.name.toString() == "module") {
-        parseModule(node);
+        errmsg += parseModule(node);
       } else {
         if(node is XmlElement) {
           errmsg += "parsing theme unknown element ${node.name}\n";
@@ -247,9 +256,9 @@ class LogideeTools
 
     for (var node in module.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
-        parseInfo(node, level: 1);
+        errmsg += parseInfo(node, level: 1);
       } else if(node is XmlElement && node.name.toString() == "page") {
-        parsePage(node);
+        errmsg += parsePage(node);
       } else {
         if(node is XmlElement) {
           errmsg = "parsing module unknown element ${node.name}\n";
@@ -381,14 +390,14 @@ class LogideeTools
         writeslide("\\begin{frame}\n");
         writeslide("\\Large{$title}\n");
         startFrame++;
-        parseSection(node, level : 0);
+        errmsg += parseSection(node, level : 0);
       } else if(node is XmlElement && node.name.toString() == "slide") {
-        parseSlide(node);
+        errmsg += parseSlide(node);
       } else {
         if(node is XmlElement) {
-          errmsg = "parsing page unknown element ${node.name}";
+          errmsg = "parsing page unknown element ${node.name}: $node\n";
         } else {
-          errmsg = "parsing page unknown  ${node.runtimeType}";
+          errmsg = "parsing page unknown  ${node.runtimeType}: $node\n";
         }
         parsevalid = false;
       }
@@ -420,11 +429,11 @@ class LogideeTools
         }
       }
       else if(node is XmlElement && node.name.toString() == "section") {
-        parseSection(node, level : level+1, silent : silent);
+        errmsg += parseSection(node, level : level+1, silent : silent);
       } else if(node is XmlElement && node.name.toString() == "para") {
-        parsePara(node, silent : silent);
+        errmsg += parsePara(node, silent : silent);
       } else if(node is XmlElement && node.name.toString() == "slide") {
-        parseSlide(node);
+        errmsg += parseSlide(node);
       } else {
         if(node is XmlElement) {
           errmsg += "parsing section unknown element ${node.name}\n";
@@ -449,12 +458,12 @@ class LogideeTools
         writeslide("\\Large{$title}\n");
       }
       else if(node is XmlElement && node.name.toString() == "section") {
-        parseSection(node, silent : true);
+        errmsg += parseSection(node, silent : true);
       } else if(node is XmlElement && node.name.toString() == "para") {
-        parsePara(node, silent : true);
+        errmsg += parsePara(node, silent : true);
       } else if(node is XmlElement && node.name.toString() == "subtitle") {
         writeslide("{\\bfseries ");
-        parsePara(node, silent : true);
+        errmsg += parsePara(node, silent : true);
         writeslide("}\n");
       } else {
         if(node is XmlElement) {
@@ -471,7 +480,7 @@ class LogideeTools
 
   String parsePara(XmlNode paragraph, {bool silent = false, bool nowrite = false, bool verbose =false}) {
     String errmsg = "";
-    String result = "";
+    //String result = "";
     if(paragraph is XmlElement) cleanList(paragraph.children);
     var toReplace = {};
     for (var node in paragraph.children) {
@@ -497,7 +506,14 @@ class LogideeTools
         errmsg += parseFile(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       } else if(node is XmlElement && node.name.toString() == "code") {
         errmsg += parseCode(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
-      } else if(node is XmlElement) {
+      }
+      else if(node is XmlElement && node.name.toString() == "table") {
+        errmsg += parseTable(node, nowrite: nowrite, verbose: verbose);
+      }
+      else if(node is XmlElement && node.name.toString() == "math") {
+        errmsg += parseMath(node, nowrite: nowrite, verbose: verbose);
+      }
+      else if(node is XmlElement) {
         errmsg += "parsing paragraph unknown element ${node.name}\n";
       } else {
         errmsg += "parsing paragraph unknown  ${node.runtimeType}\n";
@@ -524,7 +540,7 @@ class LogideeTools
 
   String parseText(XmlText txtnode, {bool verbose  = false, bool nowrite = false})
   {
-      //print("parse text with ver: $verbose nowr: $nowrite for ${txtnode.text}");
+      //print("parse text with ver: $verbose now: $nowrite for ${txtnode.text}");
     String errmsg = "";
     if(txtnode.children.isEmpty) {
       if(nowrite) {
@@ -665,7 +681,7 @@ class LogideeTools
     String errmsg = "";
     String src = node.getAttribute("src") ?? "";
     bool visible =  ((node.getAttribute("visible")??"true") == "true")? true: false;
-    String caption  ="";
+    //String caption  ="";
     bool captionVisible = true;
     cleanList(node.children);
 
@@ -684,12 +700,12 @@ class LogideeTools
             }
           }
           else {
-            errmsg+= "unknown odsw : ${capNode.runtimeType} '${capNode.name}' $capNode";
+            errmsg+= "unknown figure : ${capNode.runtimeType} '${capNode.name}' $capNode\n";
           }
         }
         else
         {
-          errmsg += "expected legend, dont know what to do with ${node.children.first.runtimeType} ${node.firstChild}";
+          errmsg += "expected legend, don't know what to do with ${node.children.first.runtimeType} ${node.firstChild}";
           parsevalid = false;
         }
       }
@@ -712,7 +728,7 @@ class LogideeTools
   {
     String errmsg = "";
     cleanList(node.children);
-    bool border = ((node.getAttribute("border")??"1") == "1")? true: false;
+    bool border = ((node.getAttribute("border")??"1") == "1")? true: false; //TODO do something with border
     int maxwidth = 0;
     List<List<String>> data = extractTable(node.children);
     for (var line in data) { if(line.length > maxwidth) maxwidth = line.length;}
@@ -753,7 +769,7 @@ class LogideeTools
       {
         cleanList(oneRow.children);
         for(var oneCell in oneRow.children){
-          bool border = ((oneCell.getAttribute("border")??"0") == "1")? true: false;
+          bool border = ((oneCell.getAttribute("border")??"0") == "1")? true: false;//do something ith border
           bool head = ((oneCell.getAttribute("head")??"0") == "1")? true: false;
           result[line].add(((head) ? "\\textbf{":"")+parsePara(oneCell, nowrite: true)+((head) ? "}":""));
         }
@@ -863,5 +879,25 @@ class LogideeTools
       }
     }
     return result;
+  }
+
+  String parseGlossary(XmlElement emnode, {bool nowrite =false, bool verbose = false})
+  {
+    String result = "\\index{";
+    String errmsg = (nowrite)?result:"";
+
+    if(!nowrite)writescript(result);
+    if(emnode.children.isNotEmpty)
+    {
+      for(var subnode in emnode.children) {
+        errmsg += parsePara(subnode, nowrite:nowrite, verbose: verbose);
+      }
+    }
+    if(!nowrite) {
+      writescript("}");
+    } else {
+      errmsg +="}";
+    }
+    return errmsg;
   }
 }

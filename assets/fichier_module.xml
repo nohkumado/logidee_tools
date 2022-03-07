@@ -1,5 +1,7 @@
 <module>
     <page>
+        <section>
+        <para>
         <em>texte en évidence</em>
         <menu>Fichier</menu>
         <cmd>ls -al</cmd>
@@ -31,14 +33,19 @@
         <math notation="code">
             [ Energie = Masse * Célérité au carré ]
         </math>
+        </para>
+        </section>
     </page>
     <page>
+        <section>
+
         <para>Ceci est du texte normal, <em>du texte en évidence</em>,
             une URL <url href="http://linux-france.org"/>, etc. </para>
         <para>
             Un réseau <glossary name="IP">Internet Protocol</glossary> est ...
             Les technologies <glossary name="IP"/> ...
         </para>
+        </section>
     </page>
     <page>
         <title></title>

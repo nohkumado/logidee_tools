@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:logidee_tools/logidee_tools.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
@@ -11,7 +10,7 @@ void main()
   late String outdir;
   setUp(()
   {
-    Directory current  = Directory.current;
+    //Directory current  = Directory.current;
     parser = LogideeTools();
     fname = "./assets/formation.xml";
     outdir = "/tmp";
@@ -20,13 +19,14 @@ void main()
     test('dtd validation',()
     {
       fname = "assets/formation_wrong.xml";
-      expect(parser.parse(fname, outdir: outdir),false);
+      expect(parser.loadXml(fname, outdir: outdir),false);
     });
   });
   group('xml parsing function',(){
     test('xml parsing',()
     {
-      parser.parse(fname, outdir: outdir);
+      parser.loadXml(fname, outdir: outdir);
+      //parser.parse(fname, outdir: outdir);
       var list = parser.document!.findAllElements('em');
       expect(list.length,2);
       String result = "\\textbf{texte en évidence}";
@@ -74,6 +74,11 @@ void main()
       //expect(list.length,2);
       result = "\\begin{itemize}\n\\item something\n\\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\\end{itemize}";
       expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
+      list = parser.document!.findAllElements('glossary');
+      //print("got back list: ${list.length} and $list");
+      expect(list.length,2);
+      result = "\\index{Internet Protocol}";
+      expect(parser.parseGlossary(list.first, nowrite: true, verbose: true),result);
 
 
 
@@ -86,11 +91,18 @@ void main()
       //   <slide>, section,exercice
       //      -> section,para,note,exercice
       //           -> para,note,exercice
-      //list
-      //->list,item
     });
     test('xml structure test',()
     {
+      bool valid = parser.loadXml(fname, outdir: outdir);
+      //bool valid = parser.parse(fname, outdir: outdir, verbose:  true);
+      if(!valid) print("Parsing had errors: ${parser.errmsg}");
+      expect(valid,true);
+      var list = parser.document!.findAllElements('formation');
+      //print("got back list: ${list.length} and $list");
+      expect(list.length,1);
+      //String result = "\\begin{itemize}\n\\item something\n\\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\\end{itemize}";
+      //expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
 
     });
   });
