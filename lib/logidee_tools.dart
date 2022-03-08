@@ -37,24 +37,40 @@ class LogideeTools
     //for (var element in document.attributes) { print("root node att : $element");}
     //print("parsed doc = $document");
     document!.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
+    if(document!.children.isNotEmpty)cleanList(document!.children, recursive: true);
 
     if(verbose) print(errmsg);
     if(!parsevalid && verbose) print("Errors occurred, check the log");
     return parsevalid;
   }
-  bool parse({bool verbose = false})
+  bool parse({bool verbose = false, bool nowrite: false})
   {
     errmsg = "";
-    writeslide('\\documentclass{beamer}\n' );
-    writescript('\\documentclass[a4paper,12pt]{book}\n' );
-    writescript('\\usepackage{graphicx}\n' );
-    writescript('\\usepackage{epstopdf}\n' );
-    writescript('\\usepackage{html}\n' );
-    writescript('\\usepackage{minted}\n' );
-    writeslide('\\newcounter{paragraph}\n\\newcommand{\\paragraph}\n');//otherwise html stop compilation
-    writeslide('\\usepackage{html}\n' );
-    writeslide('\\usepackage{minted}\n' );
-    writescript('\\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures\n' );
+    String scriptHeader ='''\\documentclass[a4paper,12pt]{book}
+    \\usepackage{graphicx}
+    \\usepackage{epstopdf}
+    \\usepackage{html}
+    \\usepackage{minted}
+    \\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
+    ''' ;
+
+
+
+    String slideHeader ='''\\documentclass{beamer}
+    \\newcounter{paragraph}\n\\newcommand{\\paragraph} %otherwise html stop compilation
+    \\usepackage{html}
+    \\usepackage{minted}
+    ''';
+
+    if(!nowrite)
+    {
+      writeslide(slideHeader );
+      writescript(scriptHeader );
+    }
+    else
+    {
+      errmsg += scriptHeader;
+    }
 
     bool ignore = true;
     for (var node in document!.children) {
@@ -65,8 +81,14 @@ class LogideeTools
           lang = (lang == "de")? "german": (lang=="fr")? "french":"";
           if(lang.isNotEmpty)
           {
-            writeslide('\\usepackage{babel}[$lang]\n' );
-            scriptsink.write('\\usepackage{babel}[$lang]\n' );
+            if(!nowrite) {
+              writeslide('\\usepackage{babel}[$lang]\n');
+              scriptsink.write('\\usepackage{babel}[$lang]\n');
+            }
+            else
+            {
+              errmsg += '\\usepackage{babel}[$lang]\n';
+            }
           }
           theme = node.getAttribute("theme") ?? "default";
         }
@@ -78,7 +100,7 @@ class LogideeTools
       }
       else {
         if(node is XmlElement && node.name.toString() == "formation") {
-          errmsg += parseFormation(node, verbose: verbose);
+          errmsg += parseFormation(node, verbose: verbose, nowrite:nowrite);
         } else if(node is XmlText && node.toString().trim().isEmpty) {}
         else {
           errmsg += "tag formation expected, don't know how to handle ${node.runtimeType} $node\n";
@@ -87,12 +109,20 @@ class LogideeTools
       }
     }
 
-    writeslide("\\end{document}\n");
+    String footer = '''
+    \\tableofcontents
+    \\listoffigures        % Liste des figures
+    \\listoftables        % Liste des tableaux
+    \\end{document}
+    ''';
+    if(!nowrite)
+      {
+        writeslide("\\end{document}\n");
+        writescript(footer);
+      }
+    else errmsg += footer;
+
     slidesink.close();
-    writescript("\\tableofcontents\n");
-    writescript("\\listoffigures        % Liste des figures\n");
-    writescript("\\listoftables        % Liste des tableaux\n");
-    writescript("\\end{document}\n");
     scriptsink.close();
     if(verbose) print(errmsg);
     if(!parsevalid && verbose) print("Errors occurred, check the log");
@@ -198,11 +228,10 @@ class LogideeTools
       \vspace{\stretch{2}}
       \end{titlepage}
    */
-  String parseFormation(XmlElement formation, {bool verbose  = false})
+  String parseFormation(XmlElement formation, {bool verbose  = false, bool nowrite = false})
   {
     String errmsg = "";
     //remove empty stuff
-    cleanList(formation.children);
 
     for (var node in formation.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
@@ -211,7 +240,7 @@ class LogideeTools
       }
       else if(node is XmlElement && node.name.toString() == "theme") {
         //if(formation.children.length >2)
-        errmsg += parseTheme(node, verbose: verbose);
+        errmsg += parseTheme(node, verbose: verbose, nowrite:nowrite);
       }
       else {
         if(node is XmlElement) {
@@ -225,7 +254,7 @@ class LogideeTools
     return errmsg;
   }
   //var info = node.getElement("info");
-  String parseTheme(XmlElement theme, {bool verbose  = false})
+  String parseTheme(XmlElement theme, {bool verbose  = false, bool nowrite = false})
   {
     String errmsg = "";
     //remove empty stuff
@@ -233,10 +262,12 @@ class LogideeTools
 
     for (var node in theme.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
-        errmsg += parseInfo(node);
+        errmsg += parseInfo(node, verbose: verbose, nowrite: nowrite);
       } else if(node is XmlElement && node.name.toString() == "module") {
-        errmsg += parseModule(node);
-      } else {
+        errmsg += parseModule(node, verbose: verbose, nowrite: nowrite);
+      } else if(node is XmlElement && node.name.toString() == "slideshow") {
+        errmsg += parseSlideShow(node, verbose: verbose, nowrite: nowrite);
+      }else {
         if(node is XmlElement) {
           errmsg += "parsing theme unknown element ${node.name}\n";
         } else {
@@ -248,7 +279,7 @@ class LogideeTools
     //var info = node.getElement("info");
     return errmsg;
   }
-  String parseModule(XmlElement module, {bool verbose  = false})
+  String parseModule(XmlElement module, {bool verbose  = false, bool nowrite = false})
   {
     String errmsg = "";
     //remove empty stuff
@@ -272,7 +303,7 @@ class LogideeTools
     return errmsg;
   }
 
-  void cleanList(List<XmlNode> nodes, {bool verbose  = false}) {
+  void cleanList(List<XmlNode> nodes, {bool verbose  = false, recursive = false}) {
     //remove empty stuff
     var toRemove = [];
     for (var node in nodes) {
@@ -282,10 +313,22 @@ class LogideeTools
         toRemove.add(node);
       }
     }
-    nodes.removeWhere((element) => toRemove.contains(element));
+    try {
+      nodes.removeWhere((element) => toRemove.contains(element));
+    }
+    catch(e)
+    {
+    }
+
+    if(recursive)
+      {
+        for (var node in nodes) {
+          cleanList(node.children, verbose: verbose, recursive: recursive);
+      }
+  }
   }
 
-  String parseInfo(XmlElement? info, {int level  =0, bool verbose  = false}) {
+  String parseInfo(XmlElement? info, {int level  =0, bool verbose  = false, bool nowrite = false}) {
     String errmsg = "";
     String title = info?.getElement("title")?.text??"";
     var version = info?.getElement("version");
@@ -294,35 +337,38 @@ class LogideeTools
     String desc = info?.getElement("description")?.text??"";
     String type = (level <= 0)? "part":(level == 1)? "chapter":"section";
 
+    String script = "", slides="";
+
+
     if(!documentBegun) {
-      if (title.isNotEmpty) writescript("\\title{$title}\n");
-      if (date.isNotEmpty) writescript("\\date{$date}\n");
-      if (author.isNotEmpty) writescript("\\author{$author}\n");
+      if (title.isNotEmpty) script += "\\title{$title}\n";
+      if (date.isNotEmpty) script +="\\date{$date}\n";
+      if (author.isNotEmpty) script +="\\author{$author}\n";
 
-      writescript("\\begin{document}\n");
-      writescript("\\maketitle\n");
+      script += "\\begin{document}\n";
+      script += "\\maketitle\n";
 
 
-      writeslide("\\usetheme{$theme}\n"); // % Berlin, Darmstadt, Goettingen, Hannover, Singapore
-      writeslide("\\title{$title}\n");
-      writeslide("\\subtitle{$desc}\n");
-      writeslide("\\author{$author}\n");
-      writeslide("\\institute{Beamer Slides}\n");
-      writeslide("\\date{$date}\n");
+      slides += "\\usetheme{$theme}\n"; // % Berlin, Darmstadt, Goettingen, Hannover, Singapore
+      slides += "\\title{$title}\n";
+      slides += "\\subtitle{$desc}\n";
+      slides += "\\author{$author}\n";
+      slides += "\\institute{Beamer Slides}\n";
+      slides += "\\date{$date}\n";
       //% Image Logo\n");
       if(File("logo.png").existsSync()) {
-        writeslide(
-            "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n");
+        slides +=
+            "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n";
       }
-      writeslide("\\begin{document}\n");
-      writeslide("\\begin{frame}\n");
+      slides += "\\begin{document}\n";
+      slides += "\\begin{frame}\n";
       //% Print the title page as the first slide\n");
-      writeslide("\\titlepage\n");
-      writeslide("\\end{frame}\n");
+      slides += "\\titlepage\n";
+      slides += "\\end{frame}\n";
       //% Presentation outline\n");
-      writeslide("\\begin{frame}{Outline}\n");
-      writeslide("\\tableofcontents\n");
-      writeslide("\\end{frame}\n");
+      slides += "\\begin{frame}{Outline}\n";
+      slides += "\\tableofcontents\n";
+      slides += "\\end{frame}\n";
     }
     else
     {
@@ -346,19 +392,28 @@ class LogideeTools
 
         }
       }
-      writescript("\\$type{$title}\n");
+      script += "\\$type{$title}\n";
       if(desc.isNotEmpty){
-        writescript("\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}\n\\begin{quotation}\n$desc\n\\end{quotation}\n\\clearpage\n");
+        script += "\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}\n\\begin{quotation}\n$desc\n\\end{quotation}\n\\clearpage\n";
         //replace in-existing abstract with :
       }
 
 
 
-      writeslide("\\begin{frame}\n");
-      writeslide("\\Large{$title}\n");
-      writeslide("$desc\n");
-      writeslide("\\end{frame}\n");
+      slides += "\\begin{frame}\n";
+      slides += "\\Large{$title}\n";
+      slides += "$desc\n";
+      slides += "\\end{frame}\n";
     }
+    if(nowrite)
+      {
+        errmsg += script;
+      }
+    else
+      {
+        writescript(script);
+        writeslide(slides);
+      }
     documentBegun = true;
     return errmsg;
   }
@@ -372,7 +427,7 @@ class LogideeTools
     scriptsink.write(txt);
   }
 
-  String parsePage(XmlElement page, {bool verbose  = false}) {
+  String parsePage(XmlElement page, {bool verbose  = false, bool nowrite = false}) {
     String errmsg = "";
     //remove empty stuff
     cleanList(page.children);
@@ -413,7 +468,7 @@ class LogideeTools
     return node.text;
   }
 
-  String parseSection(XmlElement section, {int level  = 0, bool silent = false,bool verbose  = false}) {
+  String parseSection(XmlElement section, {int level  = 0, bool silent = false,bool verbose  = false, bool nowrite = false}) {
     String errmsg = "";
     String divider = (level == 0)? "section":(level == 1)? "subsection":(level == 2)? "subsubsection":(level == 3)? "paragraph": "subparagraph";
     cleanList(section.children);
@@ -446,7 +501,7 @@ class LogideeTools
     return errmsg;
   }
 
-  String parseSlide(XmlElement slide, {bool verbose  = false}) {
+  String parseSlide(XmlElement slide, {bool verbose  = false,bool nowrite  = false}) {
     String errmsg = "";
 
     writeslide("\\begin{frame}\n");
@@ -898,6 +953,39 @@ class LogideeTools
     } else {
       errmsg +="}";
     }
+    return errmsg;
+  }
+
+  String parseSlideShow(XmlElement slide, {bool verbose  = false,bool nowrite  = false}) {
+    String errmsg = "parseSlideShow not implemented!!\n";
+    parsevalid = false;
+
+    //writeslide("\\begin{frame}\n");
+    //cleanList(slide.children);
+    ////print("need to parse slide ${slide.text}");
+    //for (var node in slide.children) {
+    //  if(node is XmlElement && node.name.toString() == "title") {
+    //    String title = parseTitle(node);
+    //    writeslide("\\Large{$title}\n");
+    //  }
+    //  else if(node is XmlElement && node.name.toString() == "section") {
+    //    errmsg += parseSection(node, silent : true);
+    //  } else if(node is XmlElement && node.name.toString() == "para") {
+    //    errmsg += parsePara(node, silent : true);
+    //  } else if(node is XmlElement && node.name.toString() == "subtitle") {
+    //    writeslide("{\\bfseries ");
+    //    errmsg += parsePara(node, silent : true);
+    //    writeslide("}\n");
+    //  } else {
+    //    if(node is XmlElement) {
+    //      errmsg += "parsing slide unknown element ${node.name} $node\n";
+    //    } else {
+    //      errmsg += "parsing slide unknown  ${node.runtimeType}\n";
+    //    }
+    //    parsevalid = false;
+    //  }
+    //}
+    //writeslide("\\end{frame}\n");
     return errmsg;
   }
 }

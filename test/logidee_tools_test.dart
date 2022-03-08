@@ -99,10 +99,50 @@ void main()
       if(!valid) print("Parsing had errors: ${parser.errmsg}");
       expect(valid,true);
       var list = parser.document!.findAllElements('formation');
+      bool subvalid = true;
       //print("got back list: ${list.length} and $list");
       expect(list.length,1);
-      //String result = "\\begin{itemize}\n\\item something\n\\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\\end{itemize}";
-      //expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
+      XmlElement formation = list.first;
+      late XmlElement node;
+      for (var p0 in formation.children) {
+        //(p0 is XmlElement)? print("formation child: ${p0.name.toString()}"):print("formation unknown: $p0 of ${p0.runtimeType}");
+        String value = (p0 is XmlElement)?p0.name.toString():"node";
+        List<String> check = ["info","shortinfo","theme"];
+        subvalid &= check.any((listElement) => listElement.contains(value));
+     if(p0 is XmlElement && p0.name.toString() == "theme") node = p0;}
+        expect(subvalid,true);
+      subvalid = true;
+      late XmlElement module, slideshow;
+      for (var p0 in node.children) {
+        //(p0 is XmlElement)? print("theme child: ${p0.name.toString()}"):print("theme unknown: $p0 of ${p0.runtimeType}");
+        String value = (p0 is XmlElement)?p0.name.toString():"node";
+        List<String> check = ["info","shortinfo","module", "slideshow"];
+        subvalid &= check.any((listElement) => listElement.contains(value));
+        if(p0 is XmlElement && p0.name.toString() == "module") module= p0;
+        else if(p0 is XmlElement && p0.name.toString() == "slideshow") slideshow= p0;
+      }
+      expect(subvalid,true);
+      subvalid = true;
+      for (var p0 in module.children) {
+        (p0 is XmlElement)? print("module child: ${p0.name.toString()}"):print("module unknown: $p0 of ${p0.runtimeType}");
+        String value = (p0 is XmlElement)?p0.name.toString():"node";
+        List<String> check = ["info","shortinfo","page"];
+        subvalid &= check.any((listElement) => listElement.contains(value));
+        //if(p0 is XmlElement && p0.name.toString() == "module") module= p0;
+      }
+      expect(subvalid,true);
+
+      subvalid = true;
+      for (var p0 in slideshow.children) {
+        (p0 is XmlElement)? print("slideshow child: ${p0.name.toString()}"):print("slideshow unknown: $p0 of ${p0.runtimeType}");
+        String value = (p0 is XmlElement)?p0.name.toString():"node";
+        List<String> check = ["info","shortinfo","slide"];
+        subvalid &= check.any((listElement) => listElement.contains(value));
+        //if(p0 is XmlElement && p0.name.toString() == "module") module= p0;
+      }
+      expect(subvalid,true);
+      //print("got back list: ${node.children.length} and $node");
+      //expect(node.children.length,1);
 
     });
   });

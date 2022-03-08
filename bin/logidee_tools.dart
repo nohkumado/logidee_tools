@@ -46,7 +46,8 @@ void main(List<String> arguments) {
     String fname = data['file'];
     fname = tildeExpansion(fname);
     fname = path.canonicalize(fname);
-    parser.parse(fname);
+    parser.loadXml(fname);
+    parser.parse();
   }
 }
 String tildeExpansion(String path){
