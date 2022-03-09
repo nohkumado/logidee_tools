@@ -1,4 +1,5 @@
 import 'package:logidee_tools/logidee_tools.dart';
+import 'package:logidee_tools/visitor_check.dart';
 import 'package:test/test.dart';
 import 'package:xml/xml.dart';
 
@@ -94,6 +95,7 @@ void main()
     });
     test('xml structure test',()
     {
+      VisitorCheck vis = VisitorCheck();
       bool valid = parser.loadXml(fname, outdir: outdir);
       //bool valid = parser.parse(fname, outdir: outdir, verbose:  true);
       if(!valid) print("Parsing had errors: ${parser.errmsg}");
@@ -124,7 +126,7 @@ void main()
       expect(subvalid,true);
       subvalid = true;
       for (var p0 in module.children) {
-        (p0 is XmlElement)? print("module child: ${p0.name.toString()}"):print("module unknown: $p0 of ${p0.runtimeType}");
+        //(p0 is XmlElement)? print("module child: ${p0.name.toString()}"):print("module unknown: $p0 of ${p0.runtimeType}");
         String value = (p0 is XmlElement)?p0.name.toString():"node";
         List<String> check = ["info","shortinfo","page"];
         subvalid &= check.any((listElement) => listElement.contains(value));
@@ -134,15 +136,18 @@ void main()
 
       subvalid = true;
       for (var p0 in slideshow.children) {
-        (p0 is XmlElement)? print("slideshow child: ${p0.name.toString()}"):print("slideshow unknown: $p0 of ${p0.runtimeType}");
+        (p0 is XmlElement)? print("slideshow child: ${p0.name}"):print("slideshow unknown: $p0 of ${p0.runtimeType}");
         String value = (p0 is XmlElement)?p0.name.toString():"node";
         List<String> check = ["info","shortinfo","slide"];
+        if(!check.any((listElement) => listElement.contains(value))) print("slideshow $p0 ${value} not in ${check} failed");
         subvalid &= check.any((listElement) => listElement.contains(value));
         //if(p0 is XmlElement && p0.name.toString() == "module") module= p0;
       }
       expect(subvalid,true);
       //print("got back list: ${node.children.length} and $node");
       //expect(node.children.length,1);
+      vis.acceptFormation(formation);
+      expect(vis.valid,true);
 
     });
   });

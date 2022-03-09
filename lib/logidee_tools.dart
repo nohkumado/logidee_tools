@@ -1,8 +1,12 @@
+import 'package:logidee_tools/visitor.dart';
+import 'package:logidee_tools/visitor_check.dart';
 import 'package:xml/src/xml/utils/node_list.dart';
 import 'package:xml/xml.dart';
 //import 'dart:html';
 import 'dart:io';
 import 'package:path/path.dart' as path;
+
+import 'logidee_checker.dart';
 
 class LogideeTools
 {
@@ -38,6 +42,12 @@ class LogideeTools
     //print("parsed doc = $document");
     document!.findAllElements('xi:include').forEach((toInc) =>processInclude(toInc));
     if(document!.children.isNotEmpty)cleanList(document!.children, recursive: true);
+    if(document != null)
+      {
+        visitor visit =  VisitorCheck();
+        LogideeChecker checker = new LogideeChecker(document!,visit);
+      }
+    else print("failed to load document....");
 
     if(verbose) print(errmsg);
     if(!parsevalid && verbose) print("Errors occurred, check the log");
@@ -287,9 +297,9 @@ class LogideeTools
 
     for (var node in module.children) {
       if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
-        errmsg += parseInfo(node, level: 1);
+        errmsg += parseInfo(node, level: 1, verbose: verbose, nowrite: nowrite);
       } else if(node is XmlElement && node.name.toString() == "page") {
-        errmsg += parsePage(node);
+        errmsg += parsePage(node, verbose: verbose, nowrite: nowrite);
       } else {
         if(node is XmlElement) {
           errmsg = "parsing module unknown element ${node.name}\n";
@@ -956,36 +966,24 @@ class LogideeTools
     return errmsg;
   }
 
-  String parseSlideShow(XmlElement slide, {bool verbose  = false,bool nowrite  = false}) {
-    String errmsg = "parseSlideShow not implemented!!\n";
-    parsevalid = false;
-
-    //writeslide("\\begin{frame}\n");
-    //cleanList(slide.children);
-    ////print("need to parse slide ${slide.text}");
-    //for (var node in slide.children) {
-    //  if(node is XmlElement && node.name.toString() == "title") {
-    //    String title = parseTitle(node);
-    //    writeslide("\\Large{$title}\n");
-    //  }
-    //  else if(node is XmlElement && node.name.toString() == "section") {
-    //    errmsg += parseSection(node, silent : true);
-    //  } else if(node is XmlElement && node.name.toString() == "para") {
-    //    errmsg += parsePara(node, silent : true);
-    //  } else if(node is XmlElement && node.name.toString() == "subtitle") {
-    //    writeslide("{\\bfseries ");
-    //    errmsg += parsePara(node, silent : true);
-    //    writeslide("}\n");
-    //  } else {
-    //    if(node is XmlElement) {
-    //      errmsg += "parsing slide unknown element ${node.name} $node\n";
-    //    } else {
-    //      errmsg += "parsing slide unknown  ${node.runtimeType}\n";
-    //    }
-    //    parsevalid = false;
-    //  }
-    //}
-    //writeslide("\\end{frame}\n");
-    return errmsg;
-  }
+  String parseSlideShow(XmlElement slide, {bool verbose  = false,bool nowrite  = false})
+    {
+      String errmsg = "";
+      for (var node in slide.children) {
+        if(node is XmlElement && node.name.toString() == "info" ||node is XmlElement && node.name.toString() == "shortinfo") {
+          errmsg += parseInfo(node, level: 1);
+        } else if(node is XmlElement && node.name.toString() == "slide") {
+          errmsg += parseSlide(node, verbose: verbose, nowrite: nowrite);
+        } else {
+          if(node is XmlElement) {
+            errmsg = "parsing slideshow unknown element ${node.name}\n";
+          } else {
+            errmsg = "parsing slideshow unknown  ${node.runtimeType}\n";
+          }
+          parsevalid = false;
+        }
+      }
+      //var info = node.getElement("info");
+      return errmsg;
+    }
 }
