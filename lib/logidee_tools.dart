@@ -44,7 +44,7 @@ class LogideeTools
     if(document!.children.isNotEmpty)cleanList(document!.children, recursive: true);
     if(document != null)
       {
-        visitor visit =  VisitorCheck();
+        Visitor visit =  VisitorCheck();
         LogideeChecker checker = new LogideeChecker(document!,visit);
       }
     else print("failed to load document....");

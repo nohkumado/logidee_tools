@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" lang="fr" theme="Berlin"?>
 <!DOCTYPE formation PUBLIC "-//Logidee//DTD logidee-tools V1.2//EN" "dtd/module.dtd">
+<!--suppress ALL -->
 <formation xmlns:xi="http://www.w3.org/2001/XInclude">
 <module>
 <page>

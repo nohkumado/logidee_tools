@@ -2,7 +2,7 @@ import 'package:xml/src/xml/nodes/declaration.dart';
 import 'package:xml/src/xml/nodes/element.dart';
 import 'package:xml/src/xml/nodes/node.dart';
 
-class visitor
+class Visitor
 {
   String encoding = "UTF-8";
   String lang = "fr";
@@ -17,24 +17,25 @@ class visitor
     theme = desc.getAttribute("lang")??"";
   }
 
-   acceptFormation(XmlElement formation,{bool verbose: false})
-   {
-     for (var p0 in formation.children) {
-       //(p0 is XmlElement)? print("formation child: ${p0.name.toString()}"):print("formation unknown: $p0 of ${p0.runtimeType}");
-       String value = (p0 is XmlElement)?p0.name.toString():"node";
-       if(p0 is XmlElement)
-       {
-         if(value == "info") acceptInfo(p0,verbose:verbose);
-         else if(value == "shortinfo") acceptInfo(p0,verbose:verbose);
-         else if(value == "theme") acceptTheme(p0,verbose:verbose);
-       }
-       else
-         {
-           valid = false;
-           print("formation unknown stuff: ${p0.runtimeType} $p0");
-         }
-     }
-   }
+  acceptFormation(XmlElement formation,{bool verbose: false})
+  {
+    print("accept formation visitor : ${this.runtimeType}");
+    for (var p0 in formation.children) {
+      //(p0 is XmlElement)? print("formation child: ${p0.name.toString()}"):print("formation unknown: $p0 of ${p0.runtimeType}");
+      String value = (p0 is XmlElement)?p0.name.toString():"node";
+      if(p0 is XmlElement)
+      {
+        if(value == "info") acceptInfo(p0,verbose:verbose);
+        else if(value == "shortinfo") acceptInfo(p0,verbose:verbose);
+        else if(value == "theme") acceptTheme(p0,verbose:verbose);
+      }
+      else
+      {
+        valid = false;
+        print("formation unknown stuff: ${p0.runtimeType} $p0");
+      }
+    }
+  }
 
   void acceptInfo(XmlElement node, {bool verbose: false})
   {
@@ -49,7 +50,7 @@ class visitor
         else if(value == "dependency") acceptDependency(p0,verbose:verbose);
         else if(value == "suggestion") acceptSuggestion(p0,verbose:verbose);
         else if(value == "version") acceptVersion(p0,verbose:verbose);
-        else if(value == "proofreades") acceptProofreaders(p0,verbose:verbose);
+        else if(value == "proofreaders") acceptProofreaders(p0,verbose:verbose);
         else if(value == "ratio") acceptRatio(p0,verbose:verbose);
         else print("info unknown stuff: ${p0.runtimeType} $p0");
       }
@@ -62,9 +63,25 @@ class visitor
 
   }
 
-  void acceptTheme(XmlElement node, {bool verbose: false})
+  void acceptTheme(XmlElement node, {bool verbose = false})
   {
-
+    print("accept theme visitor");
+    for (var p0 in node.children) {
+      //(p0 is XmlElement)? print("formation child: ${p0.name.toString()}"):print("formation unknown: $p0 of ${p0.runtimeType}");
+      String value = (p0 is XmlElement)?p0.name.toString():"node";
+      if(p0 is XmlElement)
+      {
+        if(value == "info") acceptInfo(p0,verbose:verbose);
+        else if(value == "shortinfo") acceptInfo(p0,verbose:verbose);
+        else if(value == "module") acceptTheme(p0,verbose:verbose);
+        else if(value == "slideshow") acceptSlideShow(p0,verbose:verbose);
+      }
+      else
+      {
+        valid = false;
+        print("formation unknown stuff: ${p0.runtimeType} $p0");
+      }
+    }
   }
 
   void acceptTitle(XmlElement node, {bool verbose: false}) {}
@@ -107,83 +124,83 @@ class visitor
 
   void acceptDependency(XmlElement node, {bool verbose: false})
   {
-  for (var node in node.children) {
-  //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
-  String value = (node is XmlElement)?node.name.toString():"node";
-  if(node is XmlElement)
-  {
-  if(value == "ref") acceptRef(node,verbose:verbose);
-  else print("Dependency unknown stuff: ${node.runtimeType} $node");
-  }
-  else
-  {
-  valid = false;
-  print("Dependency unknown stuff: ${node.runtimeType} $node");
-  }
-  }
+    for (var node in node.children) {
+      //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
+      String value = (node is XmlElement)?node.name.toString():"node";
+      if(node is XmlElement)
+      {
+        if(value == "ref") acceptRef(node,verbose:verbose);
+        else print("Dependency unknown stuff: ${node.runtimeType} $node");
+      }
+      else
+      {
+        valid = false;
+        print("Dependency unknown stuff: ${node.runtimeType} $node");
+      }
+    }
   }
 
   void acceptSuggestion(XmlElement node, {bool verbose: false})
   {
-  for (var node in node.children) {
-  //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
-  String value = (node is XmlElement)?node.name.toString():"node";
-  if(node is XmlElement)
-  {
-  if(value == "ref") acceptRef(node,verbose:verbose);
-  else print("Suggestion unknown stuff: ${node.runtimeType} $node");
-  }
-  else
-  {
-  valid = false;
-  print("Suggestion unknown stuff: ${node.runtimeType} $node");
-  }
-  }
+    for (var node in node.children) {
+      //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
+      String value = (node is XmlElement)?node.name.toString():"node";
+      if(node is XmlElement)
+      {
+        if(value == "ref") acceptRef(node,verbose:verbose);
+        else print("Suggestion unknown stuff: ${node.runtimeType} $node");
+      }
+      else
+      {
+        valid = false;
+        print("Suggestion unknown stuff: ${node.runtimeType} $node");
+      }
+    }
   }
 
   void acceptVersion(XmlElement node, {bool verbose: false})
   {
     String number = node.getAttribute("number")??"";
     if(number.isEmpty)
+    {
+      valid = false;
+      print("tag version needs a number");
+    }
+    for (var node in node.children) {
+      //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
+      String value = (node is XmlElement)?node.name.toString():"node";
+      if(node is XmlElement)
+      {
+        if(value == "author") acceptAuthor(node,verbose:verbose);
+        else if(value == "email") acceptEmail(node,verbose:verbose);
+        else if(value == "comment") acceptComment(node,verbose:verbose);
+        else if(value == "date") acceptDate(node,verbose:verbose);
+        else print("Version unknown stuff: ${node.runtimeType} $node");
+      }
+      else
       {
         valid = false;
-    print("tag version needs a number");
+        print("Version unknown stuff: ${node.runtimeType} $node");
       }
-  for (var node in node.children) {
-  //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
-  String value = (node is XmlElement)?node.name.toString():"node";
-  if(node is XmlElement)
-  {
-  if(value == "author") acceptAuthor(node,verbose:verbose);
-  else if(value == "email") acceptEmail(node,verbose:verbose);
-  else if(value == "comment") acceptComment(node,verbose:verbose);
-  else if(value == "date") acceptDate(node,verbose:verbose);
-  else print("Version unknown stuff: ${node.runtimeType} $node");
+    }
   }
-  else
-  {
-  valid = false;
-  print("Version unknown stuff: ${node.runtimeType} $node");
-  }
-  }
-}
 
-void acceptProofreaders(XmlElement node, {bool verbose: false})
+  void acceptProofreaders(XmlElement node, {bool verbose: false})
   {
-  for (var node in node.children) {
-  //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
-  String value = (node is XmlElement)?node.name.toString():"node";
-  if(node is XmlElement)
-  {
-  if(value == "item") acceptItem(node,verbose:verbose);
-  else print("Proofreades unknown stuff: ${node.runtimeType} $node");
-  }
-  else
-  {
-  valid = false;
-  print("Proofreades unknown stuff: ${node.runtimeType} $node");
-  }
-  }
+    for (var node in node.children) {
+      //(node is XmlElement)? print("formation child: ${node.name.toString()}"):print("formation unknown: $node of ${node.runtimeType}");
+      String value = (node is XmlElement)?node.name.toString():"node";
+      if(node is XmlElement)
+      {
+        if(value == "item") acceptItem(node,verbose:verbose);
+        else print("Proofreaders unknown stuff: ${node.runtimeType} $node");
+      }
+      else
+      {
+        valid = false;
+        print("Proofreaders unknown stuff: ${node.runtimeType} $node");
+      }
+    }
   }
 
   void acceptRatio(XmlElement node, {bool verbose: false}) {}
@@ -201,5 +218,8 @@ void acceptProofreaders(XmlElement node, {bool verbose: false})
   void acceptComment(XmlElement node, {bool verbose: false}) {}
 
   void acceptDate(XmlElement node, {bool verbose: false}) {}
+
+  void acceptSlideShow(XmlElement p0, {bool verbose: false}) {}
+  void acceptModule(XmlElement module, {bool verbose: false}) {}
 
 }

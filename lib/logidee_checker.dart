@@ -5,7 +5,7 @@ import 'package:xml/xml.dart';
 
 class LogideeChecker {
   bool valid = true;
-  LogideeChecker(XmlDocument document, visitor visit,{bool verbose: false})
+  LogideeChecker(XmlDocument document, Visitor visit,{bool verbose: false})
   {
     for (var child in document.children) {
       if(child is XmlDeclaration) {
@@ -18,7 +18,7 @@ class LogideeChecker {
         if(child.name.toString() == "formation")
           FormationChecker(child,visit);
         else {
-          print("found unknwon element ${child.name}");
+          print("found unknown element ${child.name}");
           valid = false;
         }
       }
@@ -29,20 +29,20 @@ class LogideeChecker {
 }
 
 class FormationChecker {
-  FormationChecker(XmlElement desc, visitor visit)
+  FormationChecker(XmlElement desc, Visitor visit)
   {
     visit.acceptFormation(desc);
   }
 }
 
 class DeclarationChecker {
-  DeclarationChecker(XmlDeclaration desc, visitor visit)
+  DeclarationChecker(XmlDeclaration desc, Visitor visit)
   {
     visit.accept(desc);
   }
 }
 class DoctypeChecker {
-  DoctypeChecker(XmlDoctype desc, visitor visit)
+  DoctypeChecker(XmlDoctype desc, Visitor visit)
   {
     print("called checker on ${desc.runtimeType}");
     for (var element in desc.attributes) {
