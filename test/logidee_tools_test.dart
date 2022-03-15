@@ -106,7 +106,7 @@ void main()
       expect(list.length,1);
       XmlElement formation = list.first;
       late XmlElement node;
-      vis.acceptFormation(formation);
+      vis.acceptFormation(formation, verbose:  true);
       for (var p0 in formation.children) {
      if(p0 is XmlElement && p0.name.toString() == "theme") node = p0;}
         expect(vis.valid,true);
