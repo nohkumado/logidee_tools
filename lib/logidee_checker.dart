@@ -44,7 +44,6 @@ class DeclarationChecker {
 class DoctypeChecker {
   DoctypeChecker(XmlDoctype desc, Visitor visit)
   {
-    print("called checker on ${desc.runtimeType}");
     for (var element in desc.attributes) {
       print("doctype att: $element");
     }

@@ -107,6 +107,7 @@ void main()
       XmlElement formation = list.first;
       late XmlElement node;
       vis.acceptFormation(formation, verbose:  true);
+      if(!vis.valid)print("retour vis:\n${vis.errmsg}");
       for (var p0 in formation.children) {
      if(p0 is XmlElement && p0.name.toString() == "theme") node = p0;}
         expect(vis.valid,true);
@@ -126,7 +127,6 @@ void main()
 
       subvalid = true;
       for (var p0 in slideshow.children) {
-        (p0 is XmlElement)? print("slideshow child: ${p0.name}"):print("slideshow unknown: $p0 of ${p0.runtimeType}");
         String value = (p0 is XmlElement)?p0.name.toString():"node";
         List<String> check = ["info","shortinfo","slide"];
         if(!check.any((listElement) => listElement.contains(value))) print("slideshow $p0 ${value} not in ${check} failed");

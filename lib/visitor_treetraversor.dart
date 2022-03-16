@@ -7,7 +7,6 @@ class VisitorTreeTraversor extends Visitor
   @override
   acceptFormation(XmlElement formation,{bool verbose = false})
   {
-    if(verbose)errmsg += "accept formation visitor : ${this.runtimeType}";
     for (var p0 in formation.children) {
       //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
@@ -20,7 +19,7 @@ class VisitorTreeTraversor extends Visitor
       else
       {
         valid = false;
-        errmsg += "formation unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "formation unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -29,7 +28,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptInfo(XmlElement node, {bool verbose = false})
   {
     for (var p0 in node.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -46,12 +44,12 @@ class VisitorTreeTraversor extends Visitor
         else if(value == "level") acceptLevel(p0,verbose:verbose);
         else if(value == "state") acceptState(p0,verbose:verbose);
         else if(value == "proofreaders") acceptProofreaders(p0,verbose:verbose);
-        else errmsg +="info unknown stuff: ${p0.runtimeType} $p0";
+        else errmsg +="info unknown stuff: ${p0.runtimeType} $p0\n";
       }
       else
       {
         valid = false;
-        errmsg += "info unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "info unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
 
@@ -60,9 +58,7 @@ class VisitorTreeTraversor extends Visitor
   @override
   void acceptTheme(XmlElement node, {bool verbose = false})
   {
-    errmsg += "accept theme visitor";
     for (var p0 in node.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -74,7 +70,7 @@ class VisitorTreeTraversor extends Visitor
       else
       {
         valid = false;
-        errmsg += "formation unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "Theme unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -86,7 +82,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptDescription(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -105,7 +100,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptObjectives(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -124,7 +118,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptDependency(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -143,7 +136,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptSuggestion(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -165,10 +157,9 @@ class VisitorTreeTraversor extends Visitor
     if(number.isEmpty)
     {
       valid = false;
-      errmsg += "tag version needs a number";
+      errmsg += "Version tag version needs a number";
     }
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -190,7 +181,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptProofreaders(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
@@ -258,9 +248,8 @@ class VisitorTreeTraversor extends Visitor
 
   @override
   void acceptItem(XmlElement node, {bool verbose = false}) {
-    if(verbose) errmsg += "accept item visitor";
     for (var p0 in node.children) {
-      String value = (p0 is XmlElement)?p0.name.toString():"node";
+      String value = (p0 is XmlElement) ? p0.name.toString() : (p0 is XmlText) ? "txt" :"node";
       if(p0 is XmlElement)
       {
         if(value == "txt") acceptPara(p0,verbose:verbose,tag: "Item-para");
@@ -269,13 +258,14 @@ class VisitorTreeTraversor extends Visitor
         else
         {
           valid = false;
-          errmsg += "List unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "Item unknown element: ${p0.runtimeType} $p0\n";
         }
       }
+      else if(p0 is XmlText) acceptText(p0,verbose:verbose);
       else
       {
         valid = false;
-        errmsg += "List unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "Item unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -298,9 +288,7 @@ class VisitorTreeTraversor extends Visitor
   @override
   void acceptSlideShow(XmlElement show, {bool verbose = false})
   {
-    if(verbose)errmsg += "accept slideshow visitor";
     for (var p0 in show.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -311,16 +299,14 @@ class VisitorTreeTraversor extends Visitor
       else
       {
         valid = false;
-        errmsg += "SlideShow unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "SlideShow unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
   @override
   void acceptModule(XmlElement module, {bool verbose = false})
   {
-    if(verbose)errmsg += "accept module visitor";
     for (var p0 in module.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -330,50 +316,44 @@ class VisitorTreeTraversor extends Visitor
         else
         {
           valid = false;
-          errmsg += "module unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "module unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
 
   @override
   void acceptPage(XmlElement module, {bool verbose = false}) {
-    //String restriction = module.getAttribute("restriction")??""; //page section exercises para not
-    if(verbose)errmsg += "accept page visitor";
     for (var p0 in module.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
         if(value == "slide") acceptSlide(p0,verbose:verbose);
         else if(value == "title") acceptTitle(p0,verbose:verbose);
         else if(value == "section") acceptSection(p0,verbose:verbose);
-        else if(value == "exercice") acceptExercice(p0,verbose:verbose);
+        else if(value == "exercise") acceptExercice(p0,verbose:verbose);
         else
         {
           valid = false;
-          errmsg += "page unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "page unknown element: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "page unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "page unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
 
   @override
   void acceptSlide(XmlElement module, {bool verbose = false}) {
-    if(verbose)errmsg += "accept slide visitor";
-    //String bground = module.getAttribute("background")??"";
     for (var p0 in module.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -383,17 +363,17 @@ class VisitorTreeTraversor extends Visitor
         else if(value == "list") acceptList(p0,verbose:verbose);
         else if(value == "para") acceptPara(p0,verbose:verbose);
         else if(value == "note") acceptNote(p0,verbose:verbose);
-        else if(value == "exercice") acceptExercice(p0,verbose:verbose);
+        else if(value == "exercise") acceptExercice(p0,verbose:verbose);
         else
         {
           valid = false;
-          errmsg += "Section unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "page unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -418,7 +398,6 @@ class VisitorTreeTraversor extends Visitor
   void acceptPrerequisite(XmlElement node, {bool verbose = false})
   {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement && value == "para")
       {
@@ -427,7 +406,7 @@ class VisitorTreeTraversor extends Visitor
       else
       {
         valid = false;
-        errmsg += "Description unknown stuff: ${node.runtimeType} $node";
+        errmsg += "Prereuisiste unknown stuff: ${node.runtimeType} $node";
       }
     }
   }
@@ -457,7 +436,6 @@ class VisitorTreeTraversor extends Visitor
       errmsg += "image: src is empty";
     }
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement && value == "legend")
       {
@@ -479,7 +457,6 @@ class VisitorTreeTraversor extends Visitor
   @override
   void acceptTable(XmlElement node, {bool verbose = false}) {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement && value == "row")
       {
@@ -495,7 +472,6 @@ class VisitorTreeTraversor extends Visitor
 
   @override
   void acceptUrl(XmlElement node, {bool verbose = false}) {
-    //String name = node.getAttribute("name")??"";
     String href = node.getAttribute("href")??"";
     if(href.isEmpty) {
       valid = false;
@@ -511,16 +487,18 @@ class VisitorTreeTraversor extends Visitor
   @override
   void acceptCol(XmlElement node, {bool verbose = false}) {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
-      //String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement)
       {
         acceptPara(node,verbose:verbose);
       }
+      else if(node is XmlText)
+      {
+        acceptText(node,verbose:verbose);
+      }
       else
       {
         valid = false;
-        errmsg += "Table Col unknown stuff: ${node.runtimeType} $node";
+        errmsg += "Table Col unknown stuff: ${node.runtimeType} $node\n";
       }
     }
   }
@@ -528,7 +506,6 @@ class VisitorTreeTraversor extends Visitor
   @override
   void acceptRow(XmlElement node, {bool verbose = false}) {
     for (var node in node.children) {
-      //(node is XmlElement)? errmsg += "formation child: ${node.name.toString()}"):errmsg += "formation unknown: $node of ${node.runtimeType}");
       String value = (node is XmlElement)?node.name.toString():"node";
       if(node is XmlElement && value == "col")
       {
@@ -544,9 +521,7 @@ class VisitorTreeTraversor extends Visitor
 
   @override
   void acceptExercice(XmlElement module, {bool verbose = false}) {
-    errmsg += "accept exercice visitor";
     for (var p0 in module.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
@@ -555,20 +530,19 @@ class VisitorTreeTraversor extends Visitor
         else
         {
           valid = false;
-          errmsg += "exercice unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "exercice unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
 
   @override
   void acceptList(XmlElement node, {bool verbose = false}) {
-    if(verbose) errmsg += "accept list visitor";
     for (var p0 in node.children) {
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
@@ -577,13 +551,13 @@ class VisitorTreeTraversor extends Visitor
         else
         {
           valid = false;
-          errmsg += "List unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "List unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -597,32 +571,31 @@ class VisitorTreeTraversor extends Visitor
 
   @override
   void acceptSection(XmlElement module, {bool verbose = false, int level=0}) {
-    errmsg += "accept section visitor";
     for (var p0 in module.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement)?p0.name.toString():"node";
       if(p0 is XmlElement)
       {
-        if(value == "section") {
+        if(value == "title")acceptTitle(p0, verbose: verbose);
+        else if(value == "section") {
           if(level== 0) acceptSection(p0,verbose:verbose, level: level+1);
           else
             {
               valid = false;
-              errmsg += "Section too deep indentation: ${p0.runtimeType} $p0";
+              errmsg += "Section too deep indentation: ${p0.runtimeType} $p0\n";
             }
         } else if(value == "para") acceptPara(p0,verbose:verbose);
         else if(value == "note") acceptNote(p0,verbose:verbose);
-        else if(value == "exercice") acceptExercice(p0,verbose:verbose);
+        else if(value == "exercise") acceptExercice(p0,verbose:verbose);
         else
         {
           valid = false;
-          errmsg += "Section unknown stuff: ${p0.runtimeType} $p0";
+          errmsg += "Section unknown element: ${p0.runtimeType} $p0\n";
         }
       }
       else
       {
         valid = false;
-        errmsg += "page unknown stuff: ${p0.runtimeType} $p0";
+        errmsg += "Section unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
   }
@@ -644,12 +617,50 @@ class VisitorTreeTraversor extends Visitor
 
   @override
   void acceptAnswer(XmlElement node, {bool verbose = false}) {
+    for (var p0 in node.children) {
+      String value = (p0 is XmlElement) ? p0.name.toString() : (p0 is XmlText) ? "txt" :"node";
+      if(p0 is XmlElement)
+      {
+        if(value == "para") {
+          acceptPara(p0,verbose:verbose);
+        }
+        else
+        {
+          valid = false;
+          errmsg += "answer unknown element: ${p0.runtimeType} $p0\n";
+        }
+      }else if(p0 is XmlText) acceptText(p0,verbose:verbose);
+      else
+      {
+        valid = false;
+        errmsg += "answer unknown stuff: ${p0.runtimeType} $p0\n";
+      }
+    }
     // TODO: implement acceptAnswer
   }
 
   @override
   void acceptQuestion(XmlElement node, {bool verbose = false}) {
-    // TODO: implement acceptQuestion
+    for (var p0 in node.children) {
+      String value = (p0 is XmlElement) ? p0.name.toString() : (p0 is XmlText) ? "txt" :"node";
+      if(p0 is XmlElement)
+      {
+        if(value == "para") {
+          acceptPara(p0,verbose:verbose);
+        }
+      else
+        {
+          valid = false;
+          errmsg += "question unknown element: ${p0.runtimeType} $p0\n";
+        }
+      }
+      else if(p0 is XmlText) acceptText(p0,verbose:verbose);
+      else
+      {
+        valid = false;
+        errmsg += "question unknown stuff: ${p0.runtimeType} $p0\n";
+      }
+    }
   }
 
   @override

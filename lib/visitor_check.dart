@@ -10,14 +10,14 @@ class VisitorCheck extends VisitorTreeTraversor
   {
     List<String> check = ["info","shortinfo","theme"];
     valid &= structureCheck(formation,check, verbose:verbose, tag: "Formation");
-      super.acceptFormation(formation, verbose: verbose);
+    super.acceptFormation(formation, verbose: verbose);
   }
   @override
   void acceptInfo(XmlElement info, {bool verbose = false})
   {
     List<String> check = ["title","ref","description", "objectives","ratio", "duration", "prerequisite", "dependency","suggestion","version","level","state","proofreaders"];
     valid &= structureCheck(info,check, verbose:verbose, tag: "Info");
-      super.acceptFormation(info, verbose: verbose);
+    super.acceptFormation(info, verbose: verbose);
   }
 
   @override
@@ -33,19 +33,19 @@ class VisitorCheck extends VisitorTreeTraversor
   {
     List<String> check = ["info","shortinfo","page"];
     valid &= structureCheck(module,check, verbose:verbose, tag: "Module");
-      super.acceptModule(module, verbose: verbose);
+    super.acceptModule(module, verbose: verbose);
   }
   bool structureCheck(XmlElement module,List<String> check, {bool verbose = false, tag="unkown node"}) {
     bool ret = true;
     for (var p0 in module.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : (p0 is XmlText) ? "txt" :"node";
+      if(value == "txt" && p0.toString().trim().isEmpty) continue;
       ret &= check.any((key) => key == value);
       if (!ret) {
+        if(value == "txt") print("####### Found problem text: '${p0.toString().trim()}' ${p0.parent}");
         String msg = "$tag problem with ";
-        msg += (p0
-            .toString()
-            .length > 80) ? p0.toString().substring(0, 80) + " ..." : p0
-            .toString();
+        msg += "$value = '";
+        msg += (p0.toString().length > 80) ? ""+p0.toString().substring(0, 80).trim() + "' ..." : p0 .toString()+"'";
         msg += "\nallowed tags: $check\nfound tags: [";
         module.children.forEach((p0) {
           if (p0 is XmlElement) msg += "${p0.name},";
@@ -112,7 +112,7 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptPara(XmlElement node, {bool verbose = false, String tag= "Para"}) {
-    valid &= checkAttributes(node,{"icon": {"option": true}});
+    valid &= checkAttributes(node,{"icon": {"option": true},"restriction": {"option": true}});
     List<String> check = ["txt","url", "image", "list", "em", "cmd", "menu", "file", "code", "table", "math", "glossary"];
     valid &= structureCheck(node,check, verbose:verbose, tag: tag);
     super.acceptPara(node, verbose: verbose);
@@ -141,7 +141,7 @@ class VisitorCheck extends VisitorTreeTraversor
   void acceptSlideShow(XmlElement show, {bool verbose = false}) {
     List<String> check = ["info","shortinfo","slide"];
     valid &= structureCheck(show,check, verbose:verbose, tag: "SlideShow");
-      super.acceptSlideShow(show, verbose: verbose);
+    super.acceptSlideShow(show, verbose: verbose);
   }
 
   @override
@@ -202,6 +202,7 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptExercice(XmlElement module, {bool verbose = false}) {
+    valid &= checkAttributes(module,{"restriction": {"option": true}});
     super.acceptExercice(module, verbose: verbose);
     // TODO: implement acceptExercice
   }
@@ -259,44 +260,51 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptNote(XmlElement note, {bool verbose = false}) {
+    valid &= checkAttributes(note,{"restriction": {"option": true}});
     super.acceptNote(note, verbose: verbose);
     // TODO: implement acceptNote
   }
 
   @override
   void acceptPage(XmlElement page, {bool verbose = false}) {
-    List<String> check = ["slide", "title", "section", "exercice"];
+    valid &= checkAttributes(page,{"restriction": {"option": true}});
+    List<String> check = ["slide", "title", "section", "exercise"];
     valid &= structureCheck(page,check, verbose:verbose, tag: "Page");
     super.acceptPage(page, verbose: verbose);
-    // TODO: implement acceptPage
   }
 
   @override
   void acceptPrerequisite(XmlElement node, {bool verbose = false}) {
+    List<String> check = ["para"];
+    valid &= structureCheck(node,check, verbose:verbose, tag: "Prerequisite");
     super.acceptPrerequisite(node, verbose: verbose);
-    // TODO: implement acceptPrerequisite
   }
 
   @override
   void acceptQuestion(XmlElement node, {bool verbose = false}) {
+    List<String> check = ["para"];
+    valid &= structureCheck(node,check, verbose:verbose, tag: "Question");
     super.acceptQuestion(node, verbose: verbose);
-    // TODO: implement acceptQuestion
   }
 
   @override
   void acceptRow(XmlElement node, {bool verbose = false}) {
+    List<String> check = ["col"];
+    valid &= structureCheck(node,check, verbose:verbose, tag: "Question");
     super.acceptRow(node, verbose: verbose);
-    // TODO: implement acceptRow
   }
 
   @override
   void acceptSection(XmlElement section, {bool verbose = false, int level = 0}) {
+    valid &= checkAttributes(section,{"restriction": {"option": true}});
+    List<String> check = ["title","section", "para", "note", "exercice"];
+    valid &= structureCheck(section,check, verbose:verbose, tag: "Section");
     super.acceptSection(section, verbose: verbose);
-    // TODO: implement acceptSection
   }
 
   @override
   void acceptSlide(XmlElement slide, {bool verbose = false}) {
+    valid &= checkAttributes(slide,{"background": {"option": true}});
     List<String> check = ["section", "title", "subtitle", "list", "para", "note", "exercice"];
     valid &= structureCheck(slide,check, verbose:verbose, tag: "SlideShow");
     super.acceptSlide(slide, verbose: verbose);
@@ -316,8 +324,9 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptTable(XmlElement node, {bool verbose = false}) {
+    List<String> check = ["row"];
+    valid &= structureCheck(node,check, verbose:verbose, tag: "Table");
     super.acceptTable(node, verbose: verbose);
-    // TODO: implement acceptTable
   }
 
   @override
@@ -328,18 +337,27 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptUrl(XmlElement node, {bool verbose = false}) {
+    valid &= checkAttributes(node,{"href": {"option": false},"name": {"option": true}});
     super.acceptUrl(node, verbose: verbose);
     // TODO: implement acceptUrl
   }
 
   bool checkAttributes(XmlElement node, Map<String, Map<String, bool>> map) {
     bool ret = true;
-    node.attributes.forEach((p0) {
-      print("checking for attribute $p0");
-    });
+    List<String> obligatory = [];
     map.forEach((key, value) {
-
+      if(value["option"] == "false") obligatory.add(key);
     });
+    node.attributes.forEach((p0) {
+      if(!map.containsKey(p0.name.toString()))
+        {
+          ret = false;
+          errmsg += "${node.name} attribute problems: ${p0.name} is not a valid attribute\n";
+        }
+      if(obligatory.contains(p0.name.toString())) obligatory.remove(p0.name.toString());
+    });
+    ret &= obligatory.isEmpty;
+    if(!ret) errmsg += "${node.name} attribute problems: missing required attributes : ${obligatory}\n";
 
     return ret;
   }
