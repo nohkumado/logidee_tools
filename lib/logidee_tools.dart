@@ -2,7 +2,6 @@ import 'package:logidee_tools/visitor.dart';
 import 'package:logidee_tools/visitor_check.dart';
 import 'package:xml/src/xml/utils/node_list.dart';
 import 'package:xml/xml.dart';
-//import 'dart:html';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 

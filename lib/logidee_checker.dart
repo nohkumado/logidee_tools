@@ -1,11 +1,9 @@
 import 'package:logidee_tools/visitor.dart';
-import 'package:xml/src/xml/nodes/document.dart';
-import 'package:xml/src/xml/nodes/node.dart';
 import 'package:xml/xml.dart';
 
 class LogideeChecker {
   bool valid = true;
-  LogideeChecker(XmlDocument document, Visitor visit,{bool verbose: false})
+  LogideeChecker(XmlDocument document, Visitor visit,{bool verbose = false})
   {
     for (var child in document.children) {
       if(child is XmlDeclaration) {
@@ -15,9 +13,9 @@ class LogideeChecker {
           DoctypeChecker(child,visit);
       }
       else if(child is XmlElement) {
-        if(child.name.toString() == "formation")
+        if(child.name.toString() == "formation") {
           FormationChecker(child,visit);
-        else {
+        } else {
           print("found unknown element ${child.name}");
           valid = false;
         }
