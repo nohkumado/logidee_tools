@@ -10,8 +10,8 @@ environment:
 dependencies:
   args: ^2.3.0
   path: ^1.8.1
-  posix: ^3.0.0
-  xml: ^5.3.1
+  posix: ^5.0.0
+  xml: ^6.4.2
 #   path: ^1.8.0
 
 dev_dependencies:

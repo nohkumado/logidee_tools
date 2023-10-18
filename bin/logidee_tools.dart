@@ -4,20 +4,29 @@ import 'package:path/path.dart' as path;
 
 import 'package:logidee_tools/logidee_tools.dart';
 import 'package:args/args.dart';
+    import '../lib/installation.dart';
 
 final separator = '/';
+///main entry point
 void main(List<String> arguments) {
   ArgParser args = ArgParser();
   LogideeTools parser = LogideeTools();
 
   args..addOption('file',
       abbr: 'f',
-      help:
-      "the xml file to parse")
+      help: "the xml file to parse")
     ..addOption('lang',
         abbr: 'l',
-        help:
-        "override preferred language")
+        help: "override preferred language")
+       ..addOption('create',
+      abbr: 'c',
+      help: "create a project")
+       ..addOption('module',
+      abbr: 'm',
+      help: "create a module in a project")
+       ..addFlag('install',
+      abbr: 'i',
+      help: "install sameple project files")
   ;
 
   Map<String,dynamic> data = {};
@@ -37,7 +46,7 @@ void main(List<String> arguments) {
     if (data.containsKey("file") && data["file"].isNotEmpty) {
     }
   } catch (e) {
-    //print("unknown arguments, please stick to:\n"+parser.usage);
+    print("unknown arguments, please stick to:");
     data["error"] = true;
     print(usage);
     exit(0);
@@ -49,7 +58,25 @@ void main(List<String> arguments) {
     parser.loadXml(fname);
     parser.parse();
   }
+  else if(data.containsKey("create"))
+  {
+    print("should create ${data["create"]}");
+  }
+  else if(data.containsKey("install") && data.containsKey("install"))
+  {
+    Installer installer = Installer();
+    String defaultPath = tildeExpansion("~/.config/logidee/");
+    print("should create ${defaultPath} install dir");
+
+  }
+  else 
+  {
+    print("You should at least provide an action to perform:");
+    print(usage);
+    exit(0);
+  }
 }
+///allow for tile expansion if needed, standard dart is unable to perform it on its own
 String tildeExpansion(String path){
   if(path.startsWith('~'))
   {
