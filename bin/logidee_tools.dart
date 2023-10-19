@@ -4,7 +4,7 @@ import 'package:path/path.dart' as path;
 
 import 'package:logidee_tools/logidee_tools.dart';
 import 'package:args/args.dart';
-    import '../lib/installation.dart';
+import '../lib/installation.dart';
 
 final separator = '/';
 ///main entry point
@@ -26,7 +26,10 @@ void main(List<String> arguments) {
       help: "create a module in a project")
        ..addFlag('install',
       abbr: 'i',
-      help: "install sameple project files")
+      help: "install sample project files")
+       ..addFlag('reinstall',
+      abbr: 'r',
+      help: "force reinstall sample project files")
   ;
 
   Map<String,dynamic> data = {};
@@ -51,6 +54,9 @@ void main(List<String> arguments) {
     print(usage);
     exit(0);
   }
+  
+bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
+
   if (data.containsKey("file")) {
     String fname = data['file'];
     fname = tildeExpansion(fname);
@@ -60,12 +66,16 @@ void main(List<String> arguments) {
   }
   else if(data.containsKey("create"))
   {
-    print("should create ${data["create"]}");
+    String defaultPath = tildeExpansion("~/.config/logidee/");
+    Installer installer = Installer(configdir: defaultPath, lang: data["lang"] ?? "en");
+    print("should create ${data["create"]} from $defaultPath");
+    installer.createFormation(projectName: data["create"] , rewrite: rewrite);
   }
   else if(data.containsKey("install") && data.containsKey("install"))
   {
-    Installer installer = Installer();
     String defaultPath = tildeExpansion("~/.config/logidee/");
+    Installer installer = Installer(configdir: defaultPath, lang: data["lang"] ?? "en");
+    installer.createConfig(rewrite:rewrite );
     print("should create ${defaultPath} install dir");
 
   }

@@ -4,7 +4,6 @@ import 'package:xml/src/xml/utils/node_list.dart';
 import 'package:xml/xml.dart';
 import 'dart:io';
 import 'package:path/path.dart' as path;
-
 import 'logidee_checker.dart';
 
 class LogideeTools
