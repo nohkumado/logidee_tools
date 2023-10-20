@@ -68,7 +68,7 @@ bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
   {
     String defaultPath = tildeExpansion("~/.config/logidee/");
     Installer installer = Installer(configdir: defaultPath, lang: data["lang"] ?? "en");
-    print("should create ${data["create"]} from $defaultPath");
+    //print("should create ${data["create"]} from $defaultPath");
     installer.createFormation(projectName: data["create"] , rewrite: rewrite);
   }
   else if(data.containsKey("install") && data.containsKey("install"))
