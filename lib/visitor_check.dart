@@ -98,7 +98,7 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   void acceptItem(XmlElement node, {bool verbose = false}) {
-    List<String> check = ["txt","list","para"];
+    List<String> check = ["txt","list","para","cmd","url"];
     valid &= structureCheck(node,check, verbose:verbose, tag: "Item");
     super.acceptItem(node, verbose: verbose);
   }

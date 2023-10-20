@@ -63,6 +63,7 @@ bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
     fname = path.canonicalize(fname);
     parser.loadXml(fname);
     parser.parse();
+    print("check formation.tex and run it with pdflatex formation");
   }
   else if(data.containsKey("create"))
   {
