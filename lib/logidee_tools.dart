@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:logidee_tools/visitor.dart';
 import 'package:logidee_tools/visitor_check.dart';
+import 'package:logidee_tools/visitor_texgen.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/src/xml/utils/node_list.dart';
 import 'package:xml/xml.dart';
@@ -69,6 +70,15 @@ class LogideeTools {
     parsevalid = checker.valid;
     if (verbose) print(errmsg);
     if (!parsevalid && verbose) print("Errors occurred, check the log");
+    if(parsevalid)
+      {
+        VisitorTexgen txtVis = VisitorTexgen();
+        XmlElement? root = document?.getElement("formation");
+        //print("PREPARATION OF visitor: $root");
+        if(root != null) FormationChecker(root,txtVis);
+        print("visitor produced : ${txtVis.content}");
+
+      }
     return parsevalid;
   }
 
@@ -321,6 +331,10 @@ class LogideeTools {
         errmsg += parseInfo(node, level: 1, verbose: verbose, nowrite: nowrite);
       } else if (node is XmlElement && node.name.toString() == "page") {
         errmsg += parsePage(node, verbose: verbose, nowrite: nowrite);
+      }
+      else if (node is XmlElement && node.name.toString() == "slide") {
+        String content = parseSlide(node, verbose: verbose, nowrite: true);
+        writescript(content);
       } else {
         if (node is XmlElement) {
           errmsg = "parsing module unknown element ${node.name}\n";
@@ -452,7 +466,7 @@ class LogideeTools {
   void writescript(String txt, {bool onlyfilled = false}) {
     if (txt.contains(r'_')) txt = txt.replaceAll(r'_', r'\_');
     if (txt == 'null') print("some fucker added null....");
-    print("writing to file '$txt'");
+    //print("writing to file '$txt'");
     if (onlyfilled && txt.trim().isNotEmpty)
       scriptsink.write(txt);
     else if (!onlyfilled) scriptsink.write(txt);
@@ -548,22 +562,28 @@ class LogideeTools {
   String parseSlide(XmlElement slide,
       {bool verbose = false, bool nowrite = false}) {
     String errmsg = "";
+    String content = "";
 
-    writeslide("\\begin{frame}\n");
+    content = "\\begin{frame}\n";
+    writeslide(content);
     cleanList(slide.children);
     //print("need to parse slide ${slide.text}");
     for (var node in slide.children) {
       if (node is XmlElement && node.name.toString() == "title") {
         String title = parseTitle(node);
+        if(nowrite)content += "\\Large{$title}\n";
         writeslide("\\Large{$title}\n");
       } else if (node is XmlElement && node.name.toString() == "section") {
-        errmsg += parseSection(node, silent: true);
+        if(nowrite) content += parseSection(node, nowrite: nowrite, silent: true);
+        errmsg += parseSection(node, nowrite: nowrite, silent: true);
       } else if (node is XmlElement && node.name.toString() == "para") {
-        errmsg += parsePara(node, silent: true);
+        if(nowrite) content +=  parsePara(node, nowrite: nowrite, silent: true);
+        errmsg += parsePara(node, nowrite: nowrite, silent: true);
       } else if (node is XmlElement && node.name.toString() == "subtitle") {
-        writeslide("{\\bfseries ");
-        errmsg += parsePara(node, silent: true);
-        writeslide("}\n");
+        if(nowrite) content +=  "{\\bfseries ${parsePara(node, nowrite: nowrite, silent: true)}}\n";
+          writeslide("{\\bfseries ");
+          errmsg += parsePara(node, silent: true);
+          writeslide("}\n");
       } else {
         if (node is XmlElement) {
           errmsg += "parsing slide unknown element ${node.name} $node\n";
@@ -573,7 +593,9 @@ class LogideeTools {
         parsevalid = false;
       }
     }
+    if(nowrite) content +=  "\\end{frame}\n";
     writeslide("\\end{frame}\n");
+    if(nowrite)  return content;
     return errmsg;
   }
 
@@ -597,8 +619,6 @@ class LogideeTools {
         content += parseImage(node,
             nowrite: nowrite, verbose: verbose, toReplace: toReplace);
       } else if (node is XmlElement && node.name.toString() == "list") {
-        print("parsing found list ${node}");
-        //print("parsepara calling parseList $node of ${node.runtimeType}");
         content += parseList(node,
             nowrite: nowrite,
             verbose: verbose,
@@ -669,7 +689,6 @@ class LogideeTools {
       if (nowrite) {
         txtMsg += "${txt} ";
       } else {
-        print("writing out '${txt}'");
         writescript("${txt}\n\n");
       }
     } else {
@@ -750,8 +769,9 @@ class LogideeTools {
     }
     if (!nowrite) {
       writescript("$cmdTxt");
+      return("");
     }
-    return "";
+    return cmdTxt;
   }
 
   String parseFile(XmlElement node,
@@ -789,7 +809,6 @@ class LogideeTools {
       msg += urlref;
 
       if (!nowrite) {
-        print("written to file ${urlref.trim()}");
         writescript("${urlref.trim()}");
       }
     } else {
@@ -987,18 +1006,20 @@ class LogideeTools {
       {bool nowrite = false, bool verbose = false, Map? toReplace}) {
     String errmsg = "";
     if ("${listnode.name}" != "list") {
-      print("Error !! parseList called with ${listnode.name} for $listnode");
+      errmsg = "Error !! parseList called with ${listnode.name} for $listnode";
+      print(errmsg);
       return errmsg;
     }
     cleanList(listnode.children);
     String result = (listnode.children.isNotEmpty) ? "\\begin{itemize}\n" : "";
+
     for (var item in listnode.children) {
       //print("child of list : ${item.runtimeType} = $item");
       if (item is XmlElement && item.name.toString() == "item") {
-        result += parseItem(item, nowrite: nowrite, verbose: verbose, toReplace: toReplace);
+        result += parseItem(item, nowrite: true, verbose: verbose, toReplace: toReplace);
       } else {
-        print(
-            "Error(list) ${listnode.name} expected XMlElement item, got node ${item.runtimeType} = $item");
+        errmsg =  "Error(list) ${listnode.name} expected XMlElement item, got node ${item.runtimeType} = $item";
+        print(errmsg);
         parsevalid = false;
       }
     }
@@ -1007,12 +1028,12 @@ class LogideeTools {
     if (toReplace != null) {
       XmlNode txtNode = XmlText(result);
       toReplace[listnode] = txtNode;
-    } else if (nowrite) {
-      errmsg += result.trim();
     }
     if (!nowrite) {
       writescript("${result.trim()}");
     }
+    else
+      errmsg += result.trim();
     return errmsg;
   }
 
@@ -1026,13 +1047,20 @@ class LogideeTools {
     String result = "\\item ";
     cleanList(item.children);
     for (var node in item.children) {
-      if (node is XmlElement && node.name.toString() == "list") {
-        result += "\n" +
-            parseList(node,
-                    nowrite: nowrite, verbose: verbose, toReplace: toReplace)
-                .trim();
-      } else {
-        result += parsePara(node, nowrite: true, verbose: verbose).trim();
+     if (node is XmlElement && node.name.toString() == "list") {
+       result += "\n" +
+           parseList(node,
+                   nowrite: true, verbose: verbose, toReplace: toReplace)
+               .trim();
+     }
+     else if (node is XmlElement && node.name.toString() == "cmd") {
+       result += parseCmd(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace) .trim()+"\n";
+     }
+     else if (node is XmlElement && node.name.toString() == "url") {
+       result += parseUrl(node, nowrite: nowrite, verbose: verbose, toReplace: toReplace??{}) .trim()+"\n";
+     }
+     else {
+        result += parsePara(node, nowrite: true, verbose: verbose).trim()+"\n";
       }
     }
     return result;
