@@ -51,7 +51,7 @@ class VisitorCheck extends VisitorTreeTraversor
           if (p0 is XmlElement) msg += "${p0.name},";
         });
         msg += "]";
-        print(msg);
+        if(verbose) print(msg);
       }
     }
     return ret;

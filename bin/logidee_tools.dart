@@ -61,8 +61,11 @@ bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
     String fname = data['file'];
     fname = tildeExpansion(fname);
     fname = path.canonicalize(fname);
+    print("treating $fname");
     parser.loadXml(fname);
+    print("loaded the xml $fname");
     parser.parse();
+    print("parsed $fname");
     print("check formation.tex and run it with pdflatex formation");
   }
   else if(data.containsKey("create"))

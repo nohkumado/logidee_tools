@@ -21,3 +21,8 @@ still shipping the dtd though, in case one day this functionality appears
 dart compile exe bin/logidee_tools.dart -o ~/bin/logidee
 ```
 
+### Unit testing and function reference
+
+in the test library are unit tests that allow to check if the compiler works correctly
+used for testing but also for your convenience, sample formations with all available functionality  are in the
+assets directory
