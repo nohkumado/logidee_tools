@@ -6,6 +6,7 @@ import 'package:xml/xml.dart';
 class VisitorTexgen extends VisitorTreeTraversor {
   String content = "";
   Queue<String> stack = Queue();
+  List<String> separators = const ["\\part", "\\chapter", "\\section","\\subsection","\\paragraph"];
 
   String abstract = "";
 
@@ -55,11 +56,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptComment(XmlElement node, {bool verbose = false}) {
     int level = stack.length;
-    if(level == 1) {
+    if (level == 1) {
       super.acceptComment(node, verbose: verbose);
     }
-    else if(level == 2 && stack.last == "theme") {
-    }
+    else if (level == 2 && stack.last == "theme") {}
     else {
       print("accept Comment[$level], should treat stuff?? $stack");
       super.acceptComment(node, verbose: verbose);
@@ -81,8 +81,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptDependency(XmlElement dependency, {bool verbose = false}) {
-    print("accept dependency, should treat stuff??");
-    super.acceptDependency(dependency, verbose: verbose);
+    //print("accept dependency, should treat stuff??");
+    //super.acceptDependency(dependency, verbose: verbose);
   }
 
   @override
@@ -96,8 +96,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
         print("AYEEEHH??? stack got back $removed instead of description??");
     } else if (level == 2) {
       //TODO ignored theme desc for now
+    } else if (level == 3) {
+      content += "\\section*{}\n";
+      super.acceptDescription(desc, verbose: verbose);
     } else {
-      print("accept description[$level], should treat stuff??i $desc and $stack");
+      print(
+          "accept description[$level], should treat stuff??i $desc and $stack");
       super.acceptDescription(desc, verbose: verbose);
     }
   }
@@ -130,7 +134,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptFile(XmlElement node, {bool verbose = false}) {
     content +=
-        "{\\tt ${node.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}";
+    "{\\tt ${node.children.map((child) => child.toString().trim()).where((
+        child) => child.isNotEmpty).join(" ")}}";
     super.acceptFile(node, verbose: verbose);
   }
 
@@ -153,7 +158,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   void acceptImage(XmlElement node, {bool verbose = false}) {
     String src = node.getAttribute("src") ?? "";
     bool visible =
-        ((node.getAttribute("visible") ?? "true") == "true") ? true : false;
+    ((node.getAttribute("visible") ?? "true") == "true") ? true : false;
     bool captionVisible = true;
 
     if (visible) {
@@ -163,9 +168,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
         if (capNode is XmlElement) {
           if (capNode.name.toString() == 'legend') {
             captionVisible =
-                ((capNode.getAttribute("visible") ?? "true") == "true")
-                    ? true
-                    : false;
+            ((capNode.getAttribute("visible") ?? "true") == "true")
+                ? true
+                : false;
             if (captionVisible) {
               content += "\n\\captionof{figure}{";
               acceptPara(capNode, verbose: verbose);
@@ -173,12 +178,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
             }
           } else
             content +=
-                "unknown figure : ${capNode.runtimeType} '${capNode.name}' $capNode\n";
+            "unknown figure : ${capNode.runtimeType} '${capNode
+                .name}' $capNode\n";
         }
       }
     } else
       content +=
-          "expected legend, don't know what to do with ${node.children.first.runtimeType} ${node.firstChild}";
+      "expected legend, don't know what to do with ${node.children.first
+          .runtimeType} ${node.firstChild}";
     super.acceptImage(node, verbose: verbose);
   }
 
@@ -230,6 +237,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
     } else if (level == 2) {
       print("TODO make a part page with the additional info $level");
       super.acceptInfo(info, verbose: verbose);
+    } else if (level == 3) {
+      super.acceptInfo(info, verbose: verbose);
     } else {
       print("don't know wjhat to do with info lvl $level");
       super.acceptInfo(info, verbose: verbose);
@@ -239,13 +248,15 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptItem(XmlElement node, {bool verbose = false}) {
     int level = stack.length;
-    if(level == 2 && stack.last == "objectives") {
+    if (level == 2 && stack.last == "objectives") {
       super.acceptItem(node, verbose: verbose);
     }
-    else if(level == 2 && stack.last == "theme") {}
+    else if (level == 2 && stack.last == "theme") {}
     else {
-      print("accept Item[$level], should treat stuff?? $stack $node");
+      //print("accept Item[$level], should treat stuff?? $stack $node");
+      content += "\\item ";
       super.acceptItem(node, verbose: verbose);
+      content += "\n";
     }
   }
 
@@ -258,15 +269,15 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptLevel(XmlElement node, {bool verbose = false}) {
     int level = stack.length;
-    if(level == 1) {
+    if (level == 1) {
       super.acceptLevel(node, verbose: verbose);
     }
-    else if(level == 2 && stack.last == "theme") {
+    else if (level == 2 && stack.last == "theme") {}
+    else if (level == 3) {}
+    else {
+      print("accept Level[$level], should treat stuff?? $stack");
+      super.acceptLevel(node, verbose: verbose);
     }
-    else
-      {print("accept Level[$level], should treat stuff?? $stack");
-    super.acceptLevel(node, verbose: verbose);
-      }
   }
 
   @override
@@ -304,7 +315,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptObjectives(XmlElement object, {bool verbose = false}) {
-
     int level = stack.length;
     if (level == 1) {
       stack.add(object.name.toString());
@@ -314,16 +324,26 @@ class VisitorTexgen extends VisitorTreeTraversor {
         print("AYEEEHH??? stack got back $removed instead of objectives??");
     } else if (level == 2) {
       //ignored for now
-    } else{
-      print("accept Objective[$level], should treat stuff?? $object and $stack");
+    } else if (level == 3) {
+      content += "\\subsection*{}\n\\begin{itemize}\n";
+      super.acceptObjectives(object, verbose: verbose);
+      content += "\\end{itemize}\n";
+    } else {
+      print(
+          "accept Objective[$level], should treat stuff?? $object and $stack");
       super.acceptObjectives(object, verbose: verbose);
     }
   }
 
   @override
   void acceptPage(XmlElement module, {bool verbose = false}) {
-    print("accept Paage, should treat stuff??");
+    //print("accept Page, should treat stuff??");
+    stack.add("page");
+    print("stack now $stack ${stack.length}");
     super.acceptPage(module, verbose: verbose);
+    String removed = stack.removeLast();
+    if (removed != "page")
+      print("AYEEEHH??? stack got back $removed instead of page??");
   }
 
   @override
@@ -335,14 +355,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptPrerequisite(XmlElement node, {bool verbose = false}) {
-    print("accept Prerequisites, should treat stuff??");
-    super.acceptPrerequisite(node, verbose: verbose);
+    //print("accept Prerequisites, should treat stuff??");
+    //super.acceptPrerequisite(node, verbose: verbose);
   }
 
   @override
   void acceptProofreaders(XmlElement node, {bool verbose = false}) {
-    print("accept proofreader, should treat stuff??");
-    super.acceptProofreaders(node, verbose: verbose);
+    //print("accept proofreader, should treat stuff??");
+    //super.acceptProofreaders(node, verbose: verbose);
   }
 
   @override
@@ -368,9 +388,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
   }
 
   @override
-  void acceptSection(XmlElement module, {bool verbose = false, int level = 0}) {
-    print("accept sextion, should treat stuff??");
-    super.acceptSection(module, verbose: verbose);
+  void acceptSection(XmlElement section, {bool verbose = false, int level = 0}) {
+    level = stack.length;
+    stack.add("section");
+    print("accept section[$level], should treat stuff??i $stack $section");
+    super.acceptSection(section, verbose: verbose);
+    String removed = stack.removeLast();
+    if (removed != "section")
+      print("AYEEEHH??? stack got back $removed instead of section??");
   }
 
   @override
@@ -388,11 +413,11 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptState(XmlElement node, {bool verbose = false}) {
     int level = stack.length;
-    if(level == 1) {
+    if (level == 1) {
       super.acceptState(node, verbose: verbose);
     }
-    else if(level == 2 && stack.last == "theme") {
-    }
+    else if (level == 2 && stack.last == "theme") {}
+    else if (level == 3 && stack.last == "module") {}
     else {
       print("accept State[$level], should treat stuff?? $stack");
       super.acceptState(node, verbose: verbose);
@@ -407,8 +432,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptSuggestion(XmlElement suggestion, {bool verbose = false}) {
-    print("accept suggestion, should treat stuff??");
-    super.acceptSuggestion(suggestion, verbose: verbose);
+    //print("accept suggestion, should treat stuff??");
+    //super.acceptSuggestion(suggestion, verbose: verbose);
   }
 
   @override
@@ -452,15 +477,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
         super.acceptTitle(title, verbose: verbose);
       }
       content += "}\n";
-    } else if (level == 2) {
-      content += "\\part{";
-      if(title.children.isNotEmpty) {
+    } else {
+      content += "${separators[level-2]}{";
+      if (title.children.isNotEmpty) {
         super.acceptTitle(title, verbose: verbose);
       }
       content += "}\n";
-    } else {
-      print("accept title[$level], should treat stuff??");
-      super.acceptTitle(title, verbose: verbose);
     }
   }
 
@@ -479,6 +501,11 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptVersion(XmlElement version, {bool verbose = false}) {
-    super.acceptVersion(version, verbose: verbose);
+   // int level = stack.length;
+   // if(level == 1 || level == 2 || level == 3) {}
+   // else {
+   //   print("accept Version[$level], should treat stuff?? $object and $stack");
+   //   super.acceptVersion(version, verbose: verbose);
+   // }
   }
 }
