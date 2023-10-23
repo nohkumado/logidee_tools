@@ -229,14 +229,33 @@ class VisitorTexgen extends VisitorTreeTraversor {
   \\clearpage
   """;
       content += '''\\documentclass[a4paper,12pt]{book}
-  \\usepackage{babel}[$lang]
-  \\usepackage{graphicx}
-  \\usepackage{epstopdf}
-  \\usepackage{html}
-  \\usepackage{minted}
-  \\usepackage[font=small,labelfont=bf]{caption} 
+\\usepackage{babel}[$lang]
+\\usepackage[most]{tcolorbox}
+\\usepackage{tikz}
+\\usepackage{fontawesome}
+\\usepackage[font=small,labelfont=bf]{caption} 
+\\usepackage{graphicx}
+\\usepackage{epstopdf}
+\\usepackage{hyperref}
+\\usepackage{minted}
+
+\\definecolor{myblue}{RGB}{20, 70, 180}
+\\newtcolorbox{mybox}[3][Note]{
+    colback=myblue!5!white,
+    colframe=myblue,
+    fonttitle=\\bfseries,
+    title=#2,
+    sharp corners,
+    rounded corners=southeast, 
+    attach boxed title to top left={xshift=5mm, yshift=-\\tcboxedtitleheight/2, yshifttext=-1mm},
+    boxed title style={size=small, colback=myblue, sharp corners=north, boxrule=0.5mm},
+    overlay={
+         \\IfFileExists{#3}{
+            \\node[anchor=north east, inner sep=0pt] at (frame.north east) {\\includegraphics[height=0.5cm]{#3}};
+        }{}
+    },
+}
     ''';
-      content += '\\usepackage{babel}[$lang]\n';
       super.acceptInfo(info, verbose: verbose);
 
       content += "\\begin{document}\n";
@@ -330,8 +349,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptNote(XmlElement module, {bool verbose = false}) {
+    String restriction = module.getAttribute("restriction")??"";
+    String icon = module.getAttribute("restriction")??"";
+    bool trainer = ((module.getAttribute("trainer") ?? "0") == "1");
+
     print("accept Note, should treat stuff??");
+    content += "\\begin{mybox}{Note}${(icon.isNotEmpty)?"{$icon}":""}\n";
     super.acceptNote(module, verbose: verbose);
+    content += "\\end{mybox}\n";
   }
 
   @override
@@ -412,7 +437,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
         content=  content.replaceAll("<COLDEF>", replacement);
       }
     super.acceptRow(node, verbose: verbose);
-    content = content.replaceFirst(RegExp(r'&$'), '')+" \\hline\n";
+    content = content.replaceFirst(RegExp(r'&$'), '')+" \\\\ \\hline\n";
   }
 
   @override
@@ -524,7 +549,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     String name = node.getAttribute("name") ?? "";
     if (name.isEmpty) name = href;
     if (href.isNotEmpty) {
-      content += "\\htmladdnormallink{$name}{$href}";
+      content += "\\href{$name}{$href}";
       //To create a link to another place in your own document
       //\htmlref{text to have highlighted}{Label_name}
     }

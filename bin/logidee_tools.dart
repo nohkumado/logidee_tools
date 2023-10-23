@@ -64,8 +64,8 @@ bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
     print("treating $fname");
     parser.loadXml(fname);
     print("loaded the xml $fname");
-    parser.parse();
-    print("parsed $fname");
+    //parser.parse();
+    //print("parsed $fname");
     print("check formation.tex and run it with pdflatex formation");
   }
   else if(data.containsKey("create"))

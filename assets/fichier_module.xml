@@ -35,7 +35,10 @@
         </math>
         </para>
         <para>
+          Un réseau <glossary name="IP">Internet Protocol</glossary> est ...
+Les technologies <glossary name="IP"/> ...
                 <note>un encadré pour evidencier des trucs</note>
+                <note restriction="debian">un encadré pour evidencier des trucs concernant que debian</note>
 </para>
 <exercise>
 

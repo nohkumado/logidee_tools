@@ -14,7 +14,7 @@ class LogideeTools {
   String lang = "";
   String theme = "";
   late IOSink slidesink;
-  late IOSink scriptsink;
+  //late IOSink scriptsink;
   bool parsevalid = true;
 
   bool documentBegun = false;
@@ -35,7 +35,7 @@ class LogideeTools {
     final slidefile = File(slidename);
     final scriptfile = File(scriptname);
     slidesink = slidefile.openWrite();
-    scriptsink = scriptfile.openWrite();
+    //scriptsink = scriptfile.openWrite();
 
     try {
       document = XmlDocument.parse(file.readAsStringSync());
@@ -76,8 +76,9 @@ class LogideeTools {
         XmlElement? root = document?.getElement("formation");
         //print("PREPARATION OF visitor: $root");
         if(root != null) FormationChecker(root,txtVis);
-        print("visitor produced : ${txtVis.content}");
-
+        //print("visitor produced : ${txtVis.content}");
+        scriptfile.writeAsStringSync(txtVis.content);
+      //  scriptsink.w
       }
     return parsevalid;
   }
@@ -91,7 +92,7 @@ class LogideeTools {
     String scriptHeader = '''\\documentclass[a4paper,12pt]{book}
     \\usepackage{graphicx}
     \\usepackage{epstopdf}
-    \\usepackage{html}
+    \\usepackage{hyperref}
     \\usepackage{minted}
     \\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
     ''';
@@ -122,7 +123,7 @@ class LogideeTools {
           if (lang.isNotEmpty) {
             if (!nowrite) {
               writeslide('\\usepackage{babel}[$lang]\n');
-              scriptsink.write('\\usepackage{babel}[$lang]\n');
+              //scriptsink.write('\\usepackage{babel}[$lang]\n');
             } else {
               errmsg += '\\usepackage{babel}[$lang]\n';
             }
@@ -160,7 +161,7 @@ class LogideeTools {
     }
 
     slidesink.close();
-    scriptsink.close();
+    //scriptsink.close();
     if (verbose) print(errmsg);
     if (!parsevalid && verbose) print("Errors occurred, check the log");
     return parsevalid;
@@ -466,10 +467,10 @@ class LogideeTools {
   void writescript(String txt, {bool onlyfilled = false}) {
     if (txt.contains(r'_')) txt = txt.replaceAll(r'_', r'\_');
     if (txt == 'null') print("some fucker added null....");
-    //print("writing to file '$txt'");
-    if (onlyfilled && txt.trim().isNotEmpty)
-      scriptsink.write(txt);
-    else if (!onlyfilled) scriptsink.write(txt);
+    print("WARNING writscript ATM inactivated writing to file '$txt'");
+    //if (onlyfilled && txt.trim().isNotEmpty)
+    //  scriptsink.write(txt);
+    //else if (!onlyfilled) scriptsink.write(txt);
   }
 
   String parsePage(XmlElement page,
