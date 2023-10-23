@@ -34,6 +34,22 @@
             [ Energie = Masse * Célérité au carré ]
         </math>
         </para>
+        <para>
+                <note>un encadré pour evidencier des trucs</note>
+</para>
+<exercise>
+
+  <question>
+  Écrivez un script qui imprime la table de multiplication de 1 à 10
+  </question>
+
+  <answer>
+  <image src="images/exo-tablemult.pl.1.eps" visible="true"/>
+··
+  </answer>
+
+</exercise>
+
         </section>
     </page>
     <page>

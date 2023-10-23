@@ -13,6 +13,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   List<String> desc = [];
   List<String> object = [];
 
+
   @override
   void acceptAnswer(XmlElement node, {bool verbose = false}) {
     print("accept amswer, should treat stuff??");
@@ -33,6 +34,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
       print("accept author[$level], should treat stuff?? $object and $stack");
       super.acceptAuthor(node, verbose: verbose);
     }
+  }
+
+  @override
+  void acceptCDATA(XmlCDATA cnode, {required bool verbose})
+  {
+    //print("CDATA : '${cnode.value}' ${cnode.innerText} ");
+    content += cnode.value.trim()+"\n";
+    super.acceptCDATA(cnode, verbose: verbose);
   }
 
   @override
@@ -149,6 +158,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     String removed = stack.removeLast();
     if (removed != "formation")
       print("AYEEEHH??? stack got back $removed instead of formation??");
+    content += "\\end{document}\n";
   }
 
   @override
@@ -160,12 +170,13 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptImage(XmlElement node, {bool verbose = false}) {
     String src = node.getAttribute("src") ?? "";
+    String scale = node.getAttribute("scale") ?? "1";
     bool visible =
     ((node.getAttribute("visible") ?? "true") == "true") ? true : false;
     bool captionVisible = true;
 
     if (visible) {
-      content += "\\includegraphics[scale=1]{$src}";
+      content += "\\includegraphics[scale=$scale]{$src}";
       if (node.children.isNotEmpty) {
         XmlNode capNode = node.firstChild!;
         if (capNode is XmlElement) {
@@ -191,7 +202,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
           .runtimeType} ${node.firstChild}";
     super.acceptImage(node, verbose: verbose);
   }
-
+  //TODO probable need an acceptLegend for image!
   @override
   void acceptInfo(XmlElement info, {bool verbose = false}) {
     int level = stack.length;
@@ -218,12 +229,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
   \\clearpage
   """;
       content += '''\\documentclass[a4paper,12pt]{book}
-    \\usepackage{graphicx}
-    \\usepackage{epstopdf}
-    \\usepackage{html}
-    \\usepackage{minted}
-    \\usepackage[font=small,labelfont=bf]{caption} 
+  \\usepackage{babel}[$lang]
+  \\usepackage{graphicx}
+  \\usepackage{epstopdf}
+  \\usepackage{html}
+  \\usepackage{minted}
+  \\usepackage[font=small,labelfont=bf]{caption} 
     ''';
+      content += '\\usepackage{babel}[$lang]\n';
       super.acceptInfo(info, verbose: verbose);
 
       content += "\\begin{document}\n";
@@ -291,9 +304,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
   }
 
   @override
-  void acceptMath(XmlElement node, {bool verbose = false}) {
-    print("accept Mathe, should treat stuff??");
-    super.acceptMath(node, verbose: verbose);
+  void acceptMath(XmlElement mathnode, {bool verbose = false}) {
+    String notation = mathnode.getAttribute("notation") ?? "html";
+    content += (notation == "tex") ? "\\begin{eqnarray}\n" : "{\\tt ";
+    super.acceptMath(mathnode, verbose: verbose);
+
+    content += (notation == "tex") ? "\\end{eqnarray}\n" : "}";
   }
 
   @override
@@ -389,9 +405,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptRow(XmlElement node, {bool verbose = false}) {
+    bool border = ((node.getAttribute("border") ?? "1") == "1");
     if(content.contains("<COLDEF>"))
       {
-        String replacement = "|c"*node.children.length;
+        String replacement = "${(border)?"|":" "}c"*node.children.length;
         content=  content.replaceAll("<COLDEF>", replacement);
       }
     super.acceptRow(node, verbose: verbose);
@@ -452,7 +469,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     bool border = ((node.getAttribute("border") ?? "1") == "1")
         ? true
         : false; //TODO do something with border
-    content += "\\begin{tabular}{<COLDEF>|}\n\\hline\n";
+    content += "\\begin{tabular}{<COLDEF>|}\n${(border)?"\\hline":""}\n";
     super.acceptTable(node, verbose: verbose);
     content += "\\end{tabular}";
   }

@@ -2,9 +2,11 @@ import 'package:logidee_tools/visitor.dart';
 import 'package:xml/xml.dart';
 
 class VisitorTreeTraversor extends Visitor {
+
   @override
   acceptFormation(XmlElement formation, {bool verbose = false}) {
-    if(formation.name.toString() != "formation") throw UnsupportedError("wrong node adressed expected formation got ${formation.name}...");
+    if (formation.name.toString() != "formation") throw UnsupportedError(
+        "wrong node adressed expected formation got ${formation.name}...");
     for (var p0 in formation.children) {
       //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
@@ -25,7 +27,8 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   void acceptInfo(XmlElement info, {bool verbose = false}) {
-    if(info.name.toString() != "info") throw UnsupportedError("wrong node adressed expected info got ${info.name}...");
+    if (info.name.toString() != "info") throw UnsupportedError(
+        "wrong node adressed expected info got ${info.name}...");
     for (var p0 in info.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -67,7 +70,8 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   void acceptTheme(XmlElement theme, {bool verbose = false}) {
-    if(theme.name.toString() != "theme") throw UnsupportedError("wrong node adressed expected theme got ${theme.name}...");
+    if (theme.name.toString() != "theme") throw UnsupportedError(
+        "wrong node adressed expected theme got ${theme.name}...");
     for (var p0 in theme.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -88,12 +92,15 @@ class VisitorTreeTraversor extends Visitor {
   }
 
   @override
-  void acceptTitle(XmlElement title, {bool verbose = false, bool add= true}) {
-    if(title.name.toString() != "title") throw UnsupportedError("wrong node adressed expected title got ${title.name}...");
+  void acceptTitle(XmlElement title, {bool verbose = false, bool add = true}) {
+    if (title.name.toString() != "title") throw UnsupportedError(
+        "wrong node adressed expected title got ${title.name}...");
     for (var node in title.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
-      if(node is XmlText) acceptText(node as XmlText, verbose: verbose);
-      else print("found in title spourious stuff $node");
+      if (node is XmlText)
+        acceptText(node as XmlText, verbose: verbose);
+      else
+        print("found in title spourious stuff $node");
     }
   }
 
@@ -280,8 +287,8 @@ class VisitorTreeTraversor extends Visitor {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
           : (p0 is XmlText)
-              ? "txt"
-              : "node";
+          ? "txt"
+          : "node";
       if (p0 is XmlElement) {
         if (value == "txt") {
           acceptPara(p0, verbose: verbose, tag: "Item-para");
@@ -311,10 +318,13 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   void acceptAuthor(XmlElement node, {bool verbose = false}) {
-    if(node.name.toString() != "author") throw UnsupportedError("wrong node adressed expected author got ${node.name}...");
+    if (node.name.toString() != "author") throw UnsupportedError(
+        "wrong node adressed expected author got ${node.name}...");
     for (var node in node.children) {
-      if(node is XmlText) acceptText(node as XmlText, verbose: verbose);
-      else print("found in author spourious stuff $node");
+      if (node is XmlText)
+        acceptText(node as XmlText, verbose: verbose);
+      else
+        print("found in author spourious stuff $node");
     }
   }
 
@@ -326,10 +336,13 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   void acceptDate(XmlElement node, {bool verbose = false}) {
-    if(node.name.toString() != "date") throw UnsupportedError("wrong node adressed expected date got ${node.name}...");
+    if (node.name.toString() != "date") throw UnsupportedError(
+        "wrong node adressed expected date got ${node.name}...");
     for (var node in node.children) {
-      if(node is XmlText) acceptText(node as XmlText, verbose: verbose);
-      else print("found in date spourious stuff $node");
+      if (node is XmlText)
+        acceptText(node as XmlText, verbose: verbose);
+      else
+        print("found in date spourious stuff $node");
     }
   }
 
@@ -459,24 +472,31 @@ class VisitorTreeTraversor extends Visitor {
   @override
   void acceptCmd(XmlElement node, {bool verbose = false}) {
     for (var p0 in node.children) {
-      if(p0 is XmlText) acceptText(p0,verbose: verbose);
-      else print("AAARGGH you put strange stuff into cmd?? $node");
+      if (p0 is XmlText)
+        acceptText(p0, verbose: verbose);
+      else
+        print("AAARGGH you put strange stuff into cmd?? $node");
     }
-
-
   }
 
   @override
   void acceptCode(XmlElement node, {bool verbose = false}) {
-    for (var txtnode in node.children)  if(txtnode is XmlText)acceptText(txtnode,verbose: verbose);
-    else { print("AAAARGGGHHH non txt node in Code: $txtnode");};
-
+    for (var txtnode in node.children)
+      if (txtnode is XmlText)
+        acceptText(txtnode, verbose: verbose);
+      else {
+        print("AAAARGGGHHH non txt node in Code: $txtnode");
+      };
   }
 
   @override
   void acceptEm(XmlElement node, {bool verbose = false}) {
-    for (var txtnode in node.children)  if(txtnode is XmlText)acceptText(txtnode,verbose: verbose);
-    else { print("AAAARGGGHHH non txt node in EM: $txtnode");};
+    for (var txtnode in node.children)
+      if (txtnode is XmlText)
+        acceptText(txtnode, verbose: verbose);
+      else {
+        print("AAAARGGGHHH non txt node in EM: $txtnode");
+      };
   }
 
   @override
@@ -504,8 +524,10 @@ class VisitorTreeTraversor extends Visitor {
   @override
   void acceptMenu(XmlElement node, {bool verbose = false}) {
     for (var p0 in node.children) {
-      if(p0 is XmlText) acceptText(p0,verbose: verbose);
-      else print("AAARGGH you put strange stuff into cmd?? $node");
+      if (p0 is XmlText)
+        acceptText(p0, verbose: verbose);
+      else
+        print("AAARGGH you put strange stuff into cmd?? $node");
     }
   }
 
@@ -645,13 +667,22 @@ class VisitorTreeTraversor extends Visitor {
   }
 
   @override
-  void acceptText(XmlText node, {bool verbose = false, bool add=true}) {
+  void acceptText(XmlText node, {bool verbose = false, bool add = true}) {
     // TODO: implement acceptText
   }
 
   @override
   void acceptMath(XmlElement node, {bool verbose = false}) {
-    // TODO: implement acceptMath
+    String notation = node.getAttribute("notation") ?? "html";
+    for (var txtnode in node.children)
+      if (txtnode is XmlText && notation == "html")
+        acceptText(txtnode, verbose: verbose);
+      else if (txtnode is XmlCDATA && notation == "tex")
+        acceptCDATA(txtnode, verbose: verbose);
+      else {
+        print("AAAARGGGHHH non $notation vs  in Math: $txtnode ${txtnode
+            .runtimeType}");
+      };
   }
 
   @override
@@ -660,8 +691,8 @@ class VisitorTreeTraversor extends Visitor {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
           : (p0 is XmlText)
-              ? "txt"
-              : "node";
+          ? "txt"
+          : "node";
       if (p0 is XmlElement) {
         if (value == "para") {
           acceptPara(p0, verbose: verbose);
@@ -685,8 +716,8 @@ class VisitorTreeTraversor extends Visitor {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
           : (p0 is XmlText)
-              ? "txt"
-              : "node";
+          ? "txt"
+          : "node";
       if (p0 is XmlElement) {
         if (value == "para") {
           acceptPara(p0, verbose: verbose);
@@ -706,5 +737,11 @@ class VisitorTreeTraversor extends Visitor {
   @override
   void acceptGlossary(XmlElement node, {bool verbose = false}) {
     // TODO: implement acceptGlossary
+  }
+
+  void acceptCDATA(XmlCDATA cnode, {required bool verbose}) {
+    for (var p0 in cnode.children) {
+      print("CDATA childre: '${p0.value}' ${p0.innerText} ");
+    }
   }
 }
