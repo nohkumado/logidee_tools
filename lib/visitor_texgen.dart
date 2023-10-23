@@ -86,7 +86,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptFile(XmlElement node, {bool verbose = false}) {
-    print("accept file, should treat stuff??");
+    content += "{\\tt ${node.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}";
     super.acceptFile(node,verbose: verbose);
   }
 
@@ -104,7 +104,32 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptImage(XmlElement node, {bool verbose = false}) {
-    print("accept Image, should treat stuff??");
+    String src = node.getAttribute("src") ?? "";
+    bool visible = ((node.getAttribute("visible") ?? "true") == "true") ? true : false;
+    bool captionVisible = true;
+
+    if (visible) {
+      content  += "\\includegraphics[scale=1]{$src}";
+      if (node.children.isNotEmpty) {
+        XmlNode capNode = node.firstChild!;
+        if (capNode is XmlElement) {
+          if (capNode.name.toString() == 'legend') {
+            captionVisible =
+            ((capNode.getAttribute("visible") ?? "true") == "true")
+                ? true
+                : false;
+            if (captionVisible) {
+              content += "\n\\captionof{figure}{";
+              acceptPara(capNode, verbose: verbose);
+              content += "}";
+            }
+          } else
+            content += "unknown figure : ${capNode.runtimeType} '${capNode
+                .name}' $capNode\n";
+        }
+      }
+        } else
+          content += "expected legend, don't know what to do with ${node.children.first.runtimeType} ${node.firstChild}";
     super.acceptImage(node,verbose: verbose);
   }
 
@@ -261,7 +286,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptText(XmlText node, {bool verbose = false}) {
-    String txt = ((node.value != null && node.value.isNotEmpty)
+    String txt = ((node.value.isNotEmpty)
         ? node.value
         : node.innerText)
         .trim();
