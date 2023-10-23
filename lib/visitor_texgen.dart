@@ -25,8 +25,11 @@ class VisitorTexgen extends VisitorTreeTraversor {
       content += "\\author{";
       super.acceptAuthor(node, verbose: verbose);
       content += "}\n";
-    } else {
-      print("accept author, should treat stuff??");
+    } else if (level == 2) {
+      //ignored for now
+    }
+    else {
+      print("accept author[$level], should treat stuff?? $object and $stack");
       super.acceptAuthor(node, verbose: verbose);
     }
   }
@@ -51,8 +54,16 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptComment(XmlElement node, {bool verbose = false}) {
-    print("accept comment, should treat stuff??");
-    super.acceptComment(node, verbose: verbose);
+    int level = stack.length;
+    if(level == 1) {
+      super.acceptComment(node, verbose: verbose);
+    }
+    else if(level == 2 && stack.last == "theme") {
+    }
+    else {
+      print("accept Comment[$level], should treat stuff?? $stack");
+      super.acceptComment(node, verbose: verbose);
+    }
   }
 
   @override
@@ -83,15 +94,16 @@ class VisitorTexgen extends VisitorTreeTraversor {
       String removed = stack.removeLast();
       if (removed != "description")
         print("AYEEEHH??? stack got back $removed instead of description??");
+    } else if (level == 2) {
+      //TODO ignored theme desc for now
     } else {
-      print("accept description, should treat stuff??");
+      print("accept description[$level], should treat stuff??i $desc and $stack");
       super.acceptDescription(desc, verbose: verbose);
     }
   }
 
   @override
   void acceptDuration(XmlElement node, {bool verbose = false}) {
-    print("accept duration, should treat stuff??");
     super.acceptDuration(node, verbose: verbose);
   }
 
@@ -188,7 +200,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
     if (level == 1) {
       abstract =
-          """\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
+      """\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
   \\begin{quotation};
   <DESC>
   <OBJ>
@@ -208,20 +220,33 @@ class VisitorTexgen extends VisitorTreeTraversor {
       content += "\\maketitle\n";
       abstract = abstract.replaceAll("<DESC>", desc.join("\n"));
       // Convert the list into a TeX-formatted string
-      String formattedObjectives = object.map((item) => "\\item $item").join("\n");
+      String formattedObjectives = object.map((item) => "\\item $item").join(
+          "\n");
       // Construct the final string with TeX formatting
       String itemized = "\\begin{itemize}\n$formattedObjectives\n\\end{itemize}";
 
       abstract = abstract.replaceAll("<OBJ>", itemized);
       content += abstract;
-    } else
+    } else if (level == 2) {
+      print("TODO make a part page with the additional info $level");
+      super.acceptInfo(info, verbose: verbose);
+    } else {
       print("don't know wjhat to do with info lvl $level");
+      super.acceptInfo(info, verbose: verbose);
+    }
   }
 
   @override
   void acceptItem(XmlElement node, {bool verbose = false}) {
-    print("accept Item, should treat stuff??");
-    super.acceptItem(node, verbose: verbose);
+    int level = stack.length;
+    if(level == 2 && stack.last == "objectives") {
+      super.acceptItem(node, verbose: verbose);
+    }
+    else if(level == 2 && stack.last == "theme") {}
+    else {
+      print("accept Item[$level], should treat stuff?? $stack $node");
+      super.acceptItem(node, verbose: verbose);
+    }
   }
 
   @override
@@ -232,8 +257,16 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptLevel(XmlElement node, {bool verbose = false}) {
-    print("accept Level, should treat stuff??");
+    int level = stack.length;
+    if(level == 1) {
+      super.acceptLevel(node, verbose: verbose);
+    }
+    else if(level == 2 && stack.last == "theme") {
+    }
+    else
+      {print("accept Level[$level], should treat stuff?? $stack");
     super.acceptLevel(node, verbose: verbose);
+      }
   }
 
   @override
@@ -279,8 +312,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
       String removed = stack.removeLast();
       if (removed != "objectives")
         print("AYEEEHH??? stack got back $removed instead of objectives??");
-    } else {
-      print("accept Objective, should treat stuff??");
+    } else if (level == 2) {
+      //ignored for now
+    } else{
+      print("accept Objective[$level], should treat stuff?? $object and $stack");
       super.acceptObjectives(object, verbose: verbose);
     }
   }
@@ -318,7 +353,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptRatio(XmlElement node, {bool verbose = false}) {
-    print("accept ratio, should treat stuff??");
     super.acceptRatio(node, verbose: verbose);
   }
 
@@ -353,8 +387,16 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptState(XmlElement node, {bool verbose = false}) {
-    print("accept state, should treat stuff??");
-    super.acceptState(node, verbose: verbose);
+    int level = stack.length;
+    if(level == 1) {
+      super.acceptState(node, verbose: verbose);
+    }
+    else if(level == 2 && stack.last == "theme") {
+    }
+    else {
+      print("accept State[$level], should treat stuff?? $stack");
+      super.acceptState(node, verbose: verbose);
+    }
   }
 
   @override
@@ -403,9 +445,16 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   void acceptTitle(XmlElement title, {bool verbose = false, bool add = true}) {
     int level = stack.length;
+    //print("accespt title $level with $stack $title");
     if (level == 1) {
       content += "\\title{";
       if (title.children.isNotEmpty) {
+        super.acceptTitle(title, verbose: verbose);
+      }
+      content += "}\n";
+    } else if (level == 2) {
+      content += "\\part{";
+      if(title.children.isNotEmpty) {
         super.acceptTitle(title, verbose: verbose);
       }
       content += "}\n";
@@ -430,7 +479,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptVersion(XmlElement version, {bool verbose = false}) {
-    print("accept version, should treat stuff??");
     super.acceptVersion(version, verbose: verbose);
   }
 }
