@@ -467,7 +467,11 @@ class VisitorTreeTraversor extends Visitor {
   }
 
   @override
-  void acceptCode(XmlElement node, {bool verbose = false}) {}
+  void acceptCode(XmlElement node, {bool verbose = false}) {
+    for (var txtnode in node.children)  if(txtnode is XmlText)acceptText(txtnode,verbose: verbose);
+    else { print("AAAARGGGHHH non txt node in Code: $txtnode");};
+
+  }
 
   @override
   void acceptEm(XmlElement node, {bool verbose = false}) {

@@ -44,8 +44,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptCode(XmlElement node, {bool verbose = false}) {
-    print("accept code, should treat stuff??");
+    String proglang = node.getAttribute("lang") ?? "";
+    content  += "\\begin{minted}{$proglang}\n";
     super.acceptCode(node, verbose: verbose);
+    content  += "\\end{minted}\n";
   }
 
   @override
