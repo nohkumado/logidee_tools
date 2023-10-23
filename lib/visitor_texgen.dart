@@ -49,8 +49,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptCol(XmlElement node, {bool verbose = false}) {
-    print("accept col, should treat stuff??");
     super.acceptCol(node, verbose: verbose);
+    content += "&";
   }
 
   @override
@@ -339,7 +339,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   void acceptPage(XmlElement module, {bool verbose = false}) {
     //print("accept Page, should treat stuff??");
     stack.add("page");
-    print("stack now $stack ${stack.length}");
+    //print("stack now $stack ${stack.length}");
     super.acceptPage(module, verbose: verbose);
     String removed = stack.removeLast();
     if (removed != "page")
@@ -351,6 +351,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       {bool verbose = false, String tag = "Para"}) {
     //print("accept Para, should treat stuff??");
     super.acceptPara(node, verbose: verbose);
+    content += "\n";
   }
 
   @override
@@ -383,15 +384,20 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptRow(XmlElement node, {bool verbose = false}) {
-    print("accept row, should treat stuff??");
+    if(content.contains("<COLDEF>"))
+      {
+        String replacement = "|c"*node.children.length;
+        content=  content.replaceAll("<COLDEF>", replacement);
+      }
     super.acceptRow(node, verbose: verbose);
+    content = content.replaceFirst(RegExp(r'&$'), '')+" \\hline\n";
   }
 
   @override
   void acceptSection(XmlElement section, {bool verbose = false, int level = 0}) {
     level = stack.length;
     stack.add("section");
-    print("accept section[$level], should treat stuff??i $stack $section");
+    //print("accept section[$level], should treat stuff??i $stack $section");
     super.acceptSection(section, verbose: verbose);
     String removed = stack.removeLast();
     if (removed != "section")
@@ -438,8 +444,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptTable(XmlElement node, {bool verbose = false}) {
-    print("accept table, should treat stuff??");
+    bool border = ((node.getAttribute("border") ?? "1") == "1")
+        ? true
+        : false; //TODO do something with border
+    content += "\\begin{tabular}{<COLDEF>|}\n\\hline\n";
     super.acceptTable(node, verbose: verbose);
+    content += "\\end{tabular}";
   }
 
   @override
