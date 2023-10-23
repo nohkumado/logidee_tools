@@ -17,7 +17,7 @@ class VisitorCheck extends VisitorTreeTraversor
   {
     List<String> check = ["title","ref","description", "objectives","ratio", "duration", "prerequisite", "dependency","suggestion","version","level","state","proofreaders"];
     valid &= structureCheck(info,check, verbose:verbose, tag: "Info");
-    super.acceptFormation(info, verbose: verbose);
+    super.acceptInfo(info, verbose: verbose);
   }
 
   @override
@@ -152,7 +152,7 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  void acceptTitle(XmlElement node, {bool verbose = false}) {
+  void acceptTitle(XmlElement node, {bool verbose = false, bool add = true}) {
     // TODO: implement acceptTitle
     super.acceptTitle(node, verbose: verbose);
   }
@@ -330,7 +330,7 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  void acceptText(XmlText node, {bool verbose = false}) {
+  void acceptText(XmlText node, {bool verbose = false, bool add = true}) {
     super.acceptText(node, verbose: verbose);
     // TODO: implement acceptText
   }
