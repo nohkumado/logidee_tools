@@ -283,8 +283,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptList(XmlElement node, {bool verbose = false}) {
-    print("accept List, should treat stuff??");
+    content += "\\begin{itemize}\n";
     super.acceptList(node, verbose: verbose);
+    content += "\\end{itemize}\n";
   }
 
   @override
