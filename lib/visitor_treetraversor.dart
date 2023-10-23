@@ -457,7 +457,14 @@ class VisitorTreeTraversor extends Visitor {
   }
 
   @override
-  void acceptCmd(XmlElement node, {bool verbose = false}) {}
+  void acceptCmd(XmlElement node, {bool verbose = false}) {
+    for (var p0 in node.children) {
+      if(p0 is XmlText) acceptText(p0,verbose: verbose);
+      else print("AAARGGH you put strange stuff into cmd?? $node");
+    }
+
+
+  }
 
   @override
   void acceptCode(XmlElement node, {bool verbose = false}) {}
@@ -492,7 +499,10 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   void acceptMenu(XmlElement node, {bool verbose = false}) {
-    // TODO: implement acceptMenu
+    for (var p0 in node.children) {
+      if(p0 is XmlText) acceptText(p0,verbose: verbose);
+      else print("AAARGGH you put strange stuff into cmd?? $node");
+    }
   }
 
   @override

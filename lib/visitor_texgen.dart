@@ -37,8 +37,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptCmd(XmlElement node, {bool verbose = false}) {
-    print("accept cmd, should treat stuff??");
+    content += "{\\tt ";
     super.acceptCmd(node, verbose: verbose);
+    content += "} ";
   }
 
   @override
@@ -294,8 +295,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptMenu(XmlElement node, {bool verbose = false}) {
-    print("accept Menu, should treat stuff??");
+    content += "{\\bfseries \\large ";
     super.acceptMenu(node, verbose: verbose);
+    content += "} ";
   }
 
   @override
