@@ -271,8 +271,18 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   void acceptObjectives(XmlElement object, {bool verbose = false}) {
-    print("accept Objective, should treat stuff??");
-    super.acceptObjectives(object, verbose: verbose);
+
+    int level = stack.length;
+    if (level == 1) {
+      stack.add(object.name.toString());
+      super.acceptObjectives(object, verbose: verbose);
+      String removed = stack.removeLast();
+      if (removed != "objectives")
+        print("AYEEEHH??? stack got back $removed instead of objectives??");
+    } else {
+      print("accept Objective, should treat stuff??");
+      super.acceptObjectives(object, verbose: verbose);
+    }
   }
 
   @override
@@ -374,7 +384,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
     if (stack.last == "description") {
       desc.add(txt);
     } else if (stack.last == "objectives") {
-      desc.add(txt);
       object.add(txt);
     } else {
       content += "$txt ";
