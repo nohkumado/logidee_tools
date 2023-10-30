@@ -70,16 +70,34 @@ class LogideeTools {
     parsevalid = checker.valid;
     if (verbose) print(errmsg);
     if (!parsevalid && verbose) print("Errors occurred, check the log");
+    return parsevalid;
+  }
+  bool buildTexScript(String fname, {String outdir = "", bool verbose = false}) {
+    if (document == null) {
+      print("invocation of buildTexScript  impossible, document is null...");
+      return false;
+    }
+    errmsg = "";
+    dirname = path.dirname(fname);
+    String outname = ((outdir.isNotEmpty) ? outdir : dirname) +
+        path.separator +
+        path.basenameWithoutExtension(fname);
+    String scriptname = outname + "_gen.tex";
+    if (verbose) print("ouputname = $scriptname");
+    if (dirname.isNotEmpty) dirname += path.separator;
+    final file = File(fname);
+    final scriptfile = File(scriptname);
+    //scriptsink = scriptfile.openWrite();
     if(parsevalid)
-      {
-        VisitorTexgen txtVis = VisitorTexgen();
-        XmlElement? root = document?.getElement("formation");
-        //print("PREPARATION OF visitor: $root");
-        if(root != null) FormationChecker(root,txtVis);
-        //print("visitor produced : ${txtVis.content}");
-        scriptfile.writeAsStringSync(txtVis.content);
-      //  scriptsink.w
-      }
+    {
+      VisitorTexgen txtVis = VisitorTexgen();
+      XmlElement? root = document?.getElement("formation");
+      //print("PREPARATION OF visitor: $root");
+      if(root != null) FormationChecker(root,txtVis);
+      //print("visitor produced : ${txtVis.content}");
+      scriptfile.writeAsStringSync(txtVis.content.toString());
+      print("written script file $scriptname");
+    }
     return parsevalid;
   }
 

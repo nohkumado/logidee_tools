@@ -4,60 +4,65 @@ import 'package:xml/xml.dart';
 class VisitorTreeTraversor extends Visitor {
 
   @override
-  acceptFormation(XmlElement formation, {bool verbose = false}) {
-    if (formation.name.toString() != "formation") throw UnsupportedError(
+  Visitor acceptFormation(XmlElement formation, {bool verbose = false, StringBuffer? buffer}) {
+    if (formation.name.toString() != "formation") {
+      throw UnsupportedError(
         "wrong node adressed expected formation got ${formation.name}...");
+    }
     for (var p0 in formation.children) {
       //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "shortinfo") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "theme") {
-          acceptTheme(p0, verbose: verbose);
+          acceptTheme(p0, verbose: verbose, buffer: buffer);
         }
       } else {
         valid = false;
         errmsg += "formation unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptInfo(XmlElement info, {bool verbose = false}) {
-    if (info.name.toString() != "info") throw UnsupportedError(
+  Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer}) {
+    if (!(info.name.toString() == "info" || info.name.toString() == "shortinfo")) {
+      throw UnsupportedError(
         "wrong node adressed expected info got ${info.name}...");
+    }
     for (var p0 in info.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "title") {
-          acceptTitle(p0, verbose: verbose);
+          acceptTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "ref") {
-          acceptRef(p0, verbose: verbose);
+          acceptRef(p0, verbose: verbose, buffer: buffer);
         } else if (value == "description") {
-          acceptDescription(p0, verbose: verbose);
+          acceptDescription(p0, verbose: verbose, buffer: buffer);
         } else if (value == "objectives") {
-          acceptObjectives(p0, verbose: verbose);
+          acceptObjectives(p0, verbose: verbose, buffer: buffer);
         } else if (value == "ratio") {
-          acceptRatio(p0, verbose: verbose);
+          acceptRatio(p0, verbose: verbose, buffer: buffer);
         } else if (value == "duration") {
-          acceptDuration(p0, verbose: verbose);
+          acceptDuration(p0, verbose: verbose, buffer: buffer);
         } else if (value == "prerequisite") {
-          acceptPrerequisite(p0, verbose: verbose);
+          acceptPrerequisite(p0, verbose: verbose, buffer: buffer);
         } else if (value == "dependency") {
-          acceptDependency(p0, verbose: verbose);
+          acceptDependency(p0, verbose: verbose, buffer: buffer);
         } else if (value == "suggestion") {
-          acceptSuggestion(p0, verbose: verbose);
+          acceptSuggestion(p0, verbose: verbose, buffer: buffer);
         } else if (value == "version") {
-          acceptVersion(p0, verbose: verbose);
+          acceptVersion(p0, verbose: verbose, buffer: buffer);
         } else if (value == "level") {
-          acceptLevel(p0, verbose: verbose);
+          acceptLevel(p0, verbose: verbose, buffer: buffer);
         } else if (value == "state") {
-          acceptState(p0, verbose: verbose);
+          acceptState(p0, verbose: verbose, buffer: buffer);
         } else if (value == "proofreaders") {
-          acceptProofreaders(p0, verbose: verbose);
+          acceptProofreaders(p0, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "info unknown stuff: ${p0.runtimeType} $p0\n";
         }
@@ -66,51 +71,58 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "info unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptTheme(XmlElement theme, {bool verbose = false}) {
-    if (theme.name.toString() != "theme") throw UnsupportedError(
+  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer}) {
+    if (theme.name.toString() != "theme") {
+      throw UnsupportedError(
         "wrong node adressed expected theme got ${theme.name}...");
+    }
     for (var p0 in theme.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "shortinfo") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "module") {
-          acceptModule(p0, verbose: verbose);
+          acceptModule(p0, verbose: verbose, buffer: buffer);
         } else if (value == "slideshow") {
-          acceptSlideShow(p0, verbose: verbose);
+          acceptSlideShow(p0, verbose: verbose, buffer: buffer);
         }
       } else {
         valid = false;
         errmsg += "Theme unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptTitle(XmlElement title, {bool verbose = false, bool add = true}) {
-    if (title.name.toString() != "title") throw UnsupportedError(
+  Visitor acceptTitle(XmlElement title, {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    if (title.name.toString() != "title") {
+      throw UnsupportedError(
         "wrong node adressed expected title got ${title.name}...");
-    for (var node in title.children) {
-      String value = (node is XmlElement) ? node.name.toString() : "node";
-      if (node is XmlText)
-        acceptText(node as XmlText, verbose: verbose);
-      else
-        print("found in title spourious stuff $node");
     }
+    for (var node in title.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer: buffer);
+      } else {
+        print("found in title spourious stuff $node");
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptDescription(XmlElement desc, {bool verbose = false}) {
+  Visitor acceptDescription(XmlElement desc, {bool verbose = false, StringBuffer? buffer}) {
     for (var node in desc.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "para") {
-          acceptPara(node, verbose: verbose);
+          acceptPara(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Description unknown stuff: ${node.runtimeType} $node";
         }
@@ -119,15 +131,16 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Description unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptObjectives(XmlElement object, {bool verbose = false}) {
+  Visitor acceptObjectives(XmlElement object, {bool verbose = false, StringBuffer? buffer}) {
     for (var node in object.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "item") {
-          acceptItem(node, verbose: verbose);
+          acceptItem(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Objectives unknown stuff: ${node.runtimeType} $node";
         }
@@ -136,15 +149,16 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Objectives unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptDependency(XmlElement dependency, {bool verbose = false}) {
+  Visitor acceptDependency(XmlElement dependency, {bool verbose = false, StringBuffer? buffer}) {
     for (var node in dependency.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "ref") {
-          acceptRef(node, verbose: verbose);
+          acceptRef(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Dependency unknown stuff: ${node.runtimeType} $node";
         }
@@ -153,15 +167,16 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Dependency unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptSuggestion(XmlElement suggestion, {bool verbose = false}) {
+  Visitor acceptSuggestion(XmlElement suggestion, {bool verbose = false, StringBuffer? buffer}) {
     for (var node in suggestion.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "ref") {
-          acceptRef(node, verbose: verbose);
+          acceptRef(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Suggestion unknown stuff: ${node.runtimeType} $node";
         }
@@ -170,10 +185,11 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Suggestion unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptVersion(XmlElement version, {bool verbose = false}) {
+  Visitor acceptVersion(XmlElement version, {bool verbose = false, StringBuffer? buffer}) {
     String number = version.getAttribute("number") ?? "";
     if (number.isEmpty) {
       valid = false;
@@ -183,13 +199,13 @@ class VisitorTreeTraversor extends Visitor {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "author") {
-          acceptAuthor(node, verbose: verbose);
+          acceptAuthor(node, verbose: verbose, buffer: buffer);
         } else if (value == "email") {
-          acceptEmail(node, verbose: verbose);
+          acceptEmail(node, verbose: verbose, buffer: buffer);
         } else if (value == "comment") {
-          acceptComment(node, verbose: verbose);
+          acceptComment(node, verbose: verbose, buffer: buffer);
         } else if (value == "date") {
-          acceptDate(node, verbose: verbose);
+          acceptDate(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Version unknown stuff: ${node.runtimeType} $node";
         }
@@ -198,15 +214,16 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Version unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptProofreaders(XmlElement node, {bool verbose = false}) {
-    for (var node in node.children) {
+  Visitor acceptProofreaders(XmlElement proofRead, {bool verbose = false, StringBuffer? buffer}) {
+    for (var node in proofRead.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
         if (value == "item") {
-          acceptItem(node, verbose: verbose);
+          acceptItem(node, verbose: verbose, buffer: buffer);
         } else {
           errmsg += "Proofreaders unknown stuff: ${node.runtimeType} $node";
         }
@@ -215,61 +232,64 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Proofreaders unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptRatio(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptRatio(XmlElement ratioNode, {bool verbose = false, StringBuffer? buffer}) {
+    return this;
+  }
 
   //String icon = module.getAttribute("icon")??""; //para note exercise image link of type
   @override
-  void acceptPara(XmlElement node,
-      {bool verbose = false, String tag = "Para"}) {
-    for (var subnode in node.children) {
+  Visitor acceptPara(XmlElement paraNode,
+      {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+    for (var subnode in paraNode.children) {
       //print("acceptPara child loop treating $node of ${node.runtimeType}");
       if (subnode is XmlText) {
-        acceptText(subnode, verbose: verbose);
+        acceptText(subnode, verbose: verbose,buffer: buffer);
       } else if (subnode is XmlElement) {
         if (subnode.name.toString() == "url") {
           acceptUrl(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "image") {
           acceptImage(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "list") {
           //print("acceptPara calling acceptList $node of ${node.runtimeType}");
-          acceptList(subnode, verbose: verbose);
+          acceptList(subnode, verbose: verbose,buffer: buffer);
         } else if (subnode.name.toString() == "em") {
-          acceptEm(subnode, verbose: verbose);
+          acceptEm(subnode, verbose: verbose,buffer: buffer);
         } else if (subnode.name.toString() == "cmd") {
           acceptCmd(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "menu") {
           acceptMenu(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "file") {
           acceptFile(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "code") {
           acceptCode(
             subnode,
-            verbose: verbose,
+            verbose: verbose,buffer: buffer
           );
         } else if (subnode.name.toString() == "table") {
-          acceptTable(subnode, verbose: verbose);
+          acceptTable(subnode, verbose: verbose,buffer: buffer);
         } else if (subnode.name.toString() == "math") {
-          acceptMath(subnode, verbose: verbose);
+          acceptMath(subnode, verbose: verbose,buffer: buffer);
         } else if (subnode.name.toString() == "glossary") {
-          acceptGlossary(subnode, verbose: verbose);
+          acceptGlossary(subnode, verbose: verbose,buffer: buffer);
         } else {
           errmsg += "parsing paragraph unknown element ${subnode.name}\n";
           valid = false;
@@ -279,103 +299,140 @@ class VisitorTreeTraversor extends Visitor {
         valid = false;
       }
     }
+return this;
   }
 
   @override
-  void acceptItem(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
+  Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in itemNode.children) {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
           : (p0 is XmlText)
           ? "txt"
           : "node";
-      if (p0 is XmlElement) {
-        if (value == "txt") {
-          acceptPara(p0, verbose: verbose, tag: "Item-para");
-        } else if (value == "para") {
-          acceptPara(p0, verbose: verbose);
-        } else if (value == "list") {
-          acceptList(p0, verbose: verbose);
+      if (p0 is XmlText) {
+        acceptText(p0, verbose: verbose,buffer: buffer);
+      } else if (p0 is XmlElement) {
+          if (value == "txt" || value == "para") {
+          acceptPara(p0, verbose: verbose, tag: "Item-para",buffer: buffer);
+        }  else if (value == "list") {
+          acceptList(p0, verbose: verbose,buffer: buffer);
         } else if (value == "cmd") {
-          acceptCmd(p0, verbose: verbose);
+          acceptCmd(p0, verbose: verbose,buffer: buffer);
         } else if (value == "url") {
-          acceptUrl(p0, verbose: verbose);
+          acceptUrl(p0, verbose: verbose,buffer: buffer);
         } else {
           valid = false;
           errmsg += "Item unknown element: ${p0.runtimeType} $p0\n";
         }
-      } else if (p0 is XmlText) {
-        acceptText(p0, verbose: verbose);
+
       } else {
         valid = false;
         errmsg += "Item unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptRef(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptRef(XmlElement refNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (refNode.name.toString() != "ref") {
+      throw UnsupportedError(
+          "wrong node adressed expected ref ${refNode.name}...");
+    }
+    for (var node in refNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer: buffer);
+      } else {
+        print("found in ref spourious stuff $node");
+      }
+    }
+    return this;
+  }
 
   @override
-  void acceptAuthor(XmlElement node, {bool verbose = false}) {
-    if (node.name.toString() != "author") throw UnsupportedError(
-        "wrong node adressed expected author got ${node.name}...");
-    for (var node in node.children) {
-      if (node is XmlText)
-        acceptText(node as XmlText, verbose: verbose);
-      else
+  Visitor acceptAuthor(XmlElement authorNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (authorNode.name.toString() != "author") {
+      throw UnsupportedError(
+        "wrong node adressed expected author got ${authorNode.name}...");
+    }
+    for (var node in authorNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer: buffer);
+      } else {
         print("found in author spourious stuff $node");
+      }
     }
+    return this;
   }
 
   @override
-  void acceptEmail(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptEmail(XmlElement mailNode, {bool verbose = false, StringBuffer? buffer})
+  {
+    if (mailNode.name.toString() != "email") {
+      throw UnsupportedError(
+          "wrong node adressed expected email got ${mailNode.name}...");
+    }
+    for (var node in mailNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose,buffer: buffer);
+      } else {
+        print("found in email spourious stuff $node");
+      }
+    }
+    return this;
+  }
 
   @override
-  void acceptComment(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptComment(XmlElement cmtNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
 
   @override
-  void acceptDate(XmlElement node, {bool verbose = false}) {
-    if (node.name.toString() != "date") throw UnsupportedError(
-        "wrong node adressed expected date got ${node.name}...");
-    for (var node in node.children) {
-      if (node is XmlText)
-        acceptText(node as XmlText, verbose: verbose);
-      else
+  Visitor acceptDate(XmlElement dateNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (dateNode.name.toString() != "date") {
+      throw UnsupportedError(
+        "wrong node adressed expected date got ${dateNode.name}...");
+    }
+    for (var node in dateNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer: buffer);
+      } else {
         print("found in date spourious stuff $node");
+      }
     }
+    return this;
   }
 
   @override
-  void acceptSlideShow(XmlElement show, {bool verbose = false}) {
+  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer}) {
     for (var p0 in show.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "shortinfo") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "slide") {
-          acceptSlide(p0, verbose: verbose);
+          acceptSlide(p0, verbose: verbose, buffer: buffer);
         }
       } else {
         valid = false;
         errmsg += "SlideShow unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptModule(XmlElement module, {bool verbose = false}) {
+  Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
     for (var p0 in module.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "shortinfo") {
-          acceptInfo(p0, verbose: verbose);
+          acceptInfo(p0, verbose: verbose, buffer: buffer);
         } else if (value == "page") {
-          acceptPage(p0, verbose: verbose);
+          acceptPage(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
@@ -385,21 +442,22 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptPage(XmlElement module, {bool verbose = false}) {
-    for (var p0 in module.children) {
+  Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in pageNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "slide") {
-          acceptSlide(p0, verbose: verbose);
+          acceptSlide(p0, verbose: verbose, buffer: buffer);
         } else if (value == "title") {
-          acceptTitle(p0, verbose: verbose);
+          acceptTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "section") {
-          acceptSection(p0, verbose: verbose);
+          acceptSection(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
-          acceptExercice(p0, verbose: verbose);
+          acceptExercice(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "page unknown element: ${p0.runtimeType} $p0\n";
@@ -409,27 +467,28 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "page unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptSlide(XmlElement module, {bool verbose = false}) {
-    for (var p0 in module.children) {
+  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in slidNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "section") {
-          acceptSection(p0, verbose: verbose);
+          acceptSection(p0, verbose: verbose, buffer: buffer);
         } else if (value == "title") {
-          acceptTitle(p0, verbose: verbose);
+          acceptTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "subtitle") {
-          acceptSubTitle(p0, verbose: verbose);
+          acceptSubTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "list") {
-          acceptList(p0, verbose: verbose);
+          acceptList(p0, verbose: verbose, buffer: buffer);
         } else if (value == "para") {
-          acceptPara(p0, verbose: verbose);
+          acceptPara(p0, verbose: verbose, buffer: buffer);
         } else if (value == "note") {
-          acceptNote(p0, verbose: verbose);
+          acceptNote(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
-          acceptExercice(p0, verbose: verbose);
+          acceptExercice(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
@@ -439,161 +498,194 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptLevel(XmlElement node, {bool verbose = false}) {
-    node.getAttribute("value");
+  Visitor acceptLevel(XmlElement lvlNode, {bool verbose = false, StringBuffer? buffer}) {
+    lvlNode.getAttribute("value");
+    return this;
   }
 
   @override
-  void acceptState(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptState(XmlElement stateNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
 
   @override
-  void acceptDuration(XmlElement node, {bool verbose = false}) {
-    node.getAttribute("value"); //double
-    node.getAttribute("unit"); //text
+  Visitor acceptDuration(XmlElement durNode, {bool verbose = false, StringBuffer? buffer}) {
+    durNode.getAttribute("value"); //double
+    durNode.getAttribute("unit"); //text
     // TODO: implement acceptDuration
+    return this;
   }
 
   @override
-  void acceptPrerequisite(XmlElement node, {bool verbose = false}) {
-    for (var node in node.children) {
+  Visitor acceptPrerequisite(XmlElement prereqNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var node in prereqNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "para") {
-        acceptPara(node, verbose: verbose);
+        acceptPara(node, verbose: verbose, buffer: buffer);
       } else {
         valid = false;
         errmsg += "Prerequisite unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptCmd(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
-      if (p0 is XmlText)
-        acceptText(p0, verbose: verbose);
-      else
-        print("AAARGGH you put strange stuff into cmd?? $node");
+  Visitor acceptCmd(XmlElement cmdNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in cmdNode.children) {
+      if (p0 is XmlText) {
+        acceptText(p0, verbose: verbose,buffer: buffer);
+      } else {
+        print("AAARGGH you put strange stuff into cmd?? $cmdNode");
+      }
     }
+    return this;
   }
 
   @override
-  void acceptCode(XmlElement node, {bool verbose = false}) {
-    for (var txtnode in node.children)
-      if (txtnode is XmlText)
-        acceptText(txtnode, verbose: verbose);
-      else {
+  Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var txtnode in codeNode.children) {
+      if (txtnode is XmlText) {
+        acceptText(txtnode, verbose: verbose,buffer: buffer);
+      } else {
         print("AAAARGGGHHH non txt node in Code: $txtnode");
-      };
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptEm(XmlElement node, {bool verbose = false}) {
-    for (var txtnode in node.children)
-      if (txtnode is XmlText)
-        acceptText(txtnode, verbose: verbose);
-      else {
+  Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var txtnode in emNode.children) {
+      if (txtnode is XmlText) {
+        acceptText(txtnode, verbose: verbose,buffer: buffer);
+      } else {
         print("AAAARGGGHHH non txt node in EM: $txtnode");
-      };
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptFile(XmlElement node, {bool verbose = false}) {}
+  Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
 
   @override
-  void acceptImage(XmlElement node, {bool verbose = false}) {
-    String src = node.getAttribute("src") ?? "";
+  Visitor acceptImage(XmlElement imgNode, {bool verbose = false, StringBuffer? buffer}) {
+    String src = imgNode.getAttribute("src") ?? "";
     //String scale = node.getAttribute("src")??"";
     if (src.isEmpty) {
       valid = false;
       errmsg += "image: src is empty";
     }
-    for (var node in node.children) {
+    for (var node in imgNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "legend") {
-        acceptLegend(node, verbose: verbose);
+        acceptLegend(node, verbose: verbose,buffer:buffer);
       } else {
         valid = false;
         errmsg += "Image unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptMenu(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
-      if (p0 is XmlText)
-        acceptText(p0, verbose: verbose);
-      else
-        print("AAARGGH you put strange stuff into cmd?? $node");
+  Visitor acceptMenu(XmlElement menNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (menNode.name.toString() != "menu") {
+      throw UnsupportedError(
+          "wrong node adressed expected menu got ${menNode.name}...");
     }
+
+    for (var p0 in menNode.children) {
+      if (p0 is XmlText) {
+        acceptText(p0, verbose: verbose, buffer:buffer);
+      } else {
+        print("AAARGGH you put strange stuff into cmd?? $menNode");
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptTable(XmlElement node, {bool verbose = false}) {
-    for (var node in node.children) {
+  Visitor acceptTable(XmlElement tblNode, {bool verbose = false,StringBuffer? buffer}) {
+    for (var node in tblNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "row") {
-        acceptRow(node, verbose: verbose);
+        acceptRow(node, verbose: verbose,buffer: buffer);
       } else {
         valid = false;
         errmsg += "Table unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptUrl(XmlElement node, {bool verbose = false}) {
-    String href = node.getAttribute("href") ?? "";
+  Visitor acceptUrl(XmlElement urlNode, {bool verbose = false, StringBuffer? buffer}) {
+    String href = urlNode.getAttribute("href") ?? "";
     if (href.isEmpty) {
       valid = false;
       errmsg += "url: href is empty";
     }
+    return this;
   }
 
   @override
-  void acceptLegend(XmlElement node, {bool verbose = false}) {
-    // TODO: implement acceptLegend
+  Visitor acceptLegend(XmlElement legNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (legNode.name.toString() != "legend") {
+      throw UnsupportedError(
+          "wrong node adressed expected title got ${legNode.name}...");
+    }
+    for (var node in legNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose,buffer: buffer);
+      } else {
+        print("found in legend spourious stuff $node");
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptCol(XmlElement node, {bool verbose = false}) {
-    for (var node in node.children) {
+  Visitor acceptCol(XmlElement colNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var node in colNode.children) {
       if (node is XmlElement) {
-        acceptPara(node, verbose: verbose);
+        acceptPara(node, verbose: verbose,buffer: buffer);
       } else if (node is XmlText) {
-        acceptText(node, verbose: verbose);
+        acceptText(node, verbose: verbose,buffer:buffer );
       } else {
         valid = false;
         errmsg += "Table Col unknown stuff: ${node.runtimeType} $node\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptRow(XmlElement node, {bool verbose = false}) {
-    for (var node in node.children) {
+  Visitor acceptRow(XmlElement rowNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var node in rowNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "col") {
-        acceptCol(node, verbose: verbose);
+        acceptCol(node, verbose: verbose,buffer: buffer);
       } else {
         valid = false;
         errmsg += "Table Row unknown stuff: ${node.runtimeType} $node";
       }
     }
+    return this;
   }
 
   @override
-  void acceptExercice(XmlElement module, {bool verbose = false}) {
-    for (var p0 in module.children) {
+  Visitor acceptExercice(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in exNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "question") {
-          acceptQuestion(p0, verbose: verbose);
+          acceptQuestion(p0, verbose: verbose, buffer: buffer);
         } else if (value == "answer") {
-          acceptAnswer(p0, verbose: verbose);
+          acceptAnswer(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
@@ -603,15 +695,16 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptList(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
+  Visitor acceptList(XmlElement listNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in listNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "item") {
-          acceptItem(p0, verbose: verbose);
+          acceptItem(p0, verbose: verbose,buffer: buffer );
         } else {
           valid = false;
           errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
@@ -621,35 +714,43 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptNote(XmlElement module, {bool verbose = false}) {
-    String trainerAtt = module.getAttribute("trainer") ?? "true";
+  Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) {
+    String trainerAtt = notNode.getAttribute("trainer") ?? "true";
     bool trainer = (trainerAtt == "true") ? true : false;
-    if (trainer) acceptPara(module, verbose: verbose);
+    if (trainer) acceptPara(notNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptSection(XmlElement module, {bool verbose = false, int level = 0}) {
-    for (var p0 in module.children) {
+  Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+    for (var p0 in secNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
+      //print("tt sec lvl: $level child[$value]: $p0");
       if (p0 is XmlElement) {
         if (value == "title") {
-          acceptTitle(p0, verbose: verbose);
+          //print("tt sec title lvl: $level child: $p0");
+          acceptTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "section") {
-          if (level == 0) {
-            acceptSection(p0, verbose: verbose, level: level + 1);
-          } else {
-            valid = false;
-            errmsg += "Section too deep indentation: ${p0.runtimeType} $p0\n";
-          }
+          //print("tt sec ection lvl: $level child: $p0");
+          //if (level == 0) {
+            acceptSection(p0, verbose: verbose, level: level + 1, buffer: buffer);
+          //} else {
+          //  valid = false;
+          //  errmsg += "Section too deep indentation: ${p0.runtimeType} $p0\n";
+          //}
         } else if (value == "para") {
-          acceptPara(p0, verbose: verbose);
+          //print("tt sec para lvl: $level child: $p0");
+          acceptPara(p0, verbose: verbose, buffer: buffer);
         } else if (value == "note") {
-          acceptNote(p0, verbose: verbose);
+         // print("tt sec note lvl: $level child: $p0");
+          acceptNote(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
-          acceptExercice(p0, verbose: verbose);
+          //print("tt sec exerc lvl: $level child: $p0");
+          acceptExercice(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "Section unknown element: ${p0.runtimeType} $p0\n";
@@ -659,35 +760,55 @@ class VisitorTreeTraversor extends Visitor {
         errmsg += "Section unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptSubTitle(XmlElement subtitle, {bool verbose = false}) {
-    // TODO: implement acceptSubTitle
+  Visitor acceptSubTitle(XmlElement subtitle, {bool verbose = false, StringBuffer? buffer}) {
+    if (subtitle.name.toString() != "subtitle") {
+      throw UnsupportedError(
+          "wrong node adressed expected title got ${subtitle.name}...");
+    }
+    for (var node in subtitle.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer: buffer);
+      } else {
+        print("found in subtitle spourious stuff $node");
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptText(XmlText node, {bool verbose = false, bool add = true}) {
+  Visitor acceptText(XmlText txtNode, {bool verbose = false, bool add = true, StringBuffer? buffer}) {
     // TODO: implement acceptText
+    return this;
   }
 
   @override
-  void acceptMath(XmlElement node, {bool verbose = false}) {
-    String notation = node.getAttribute("notation") ?? "html";
-    for (var txtnode in node.children)
-      if (txtnode is XmlText && notation == "html")
-        acceptText(txtnode, verbose: verbose);
-      else if (txtnode is XmlCDATA && notation == "tex")
-        acceptCDATA(txtnode, verbose: verbose);
+  Visitor acceptMath(XmlElement mathNode, {bool verbose = false, StringBuffer? buffer}) {
+
+    if (mathNode.name.toString() != "math") {
+      throw UnsupportedError(
+          "wrong node adressed expected math got ${mathNode.name}...");
+    }
+    String notation = mathNode.getAttribute("notation") ?? "html";
+    for (var txtnode in mathNode.children) {
+      if (txtnode is XmlText && notation == "html") {
+        acceptText(txtnode, verbose: verbose,buffer: buffer);
+      } else if (txtnode is XmlCDATA && notation == "tex")
+        { acceptCDATA(txtnode, verbose: verbose,buffer: buffer);}
       else {
-        print("AAAARGGGHHH non $notation vs  in Math: $txtnode ${txtnode
+        print("AAAARGGGHHH non '$notation' vs  in Math: $txtnode ${txtnode
             .runtimeType}");
-      };
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptAnswer(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
+  Visitor acceptAnswer(XmlElement answNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in answNode.children) {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
           : (p0 is XmlText)
@@ -695,53 +816,63 @@ class VisitorTreeTraversor extends Visitor {
           : "node";
       if (p0 is XmlElement) {
         if (value == "para") {
-          acceptPara(p0, verbose: verbose);
+          acceptPara(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "answer unknown element: ${p0.runtimeType} $p0\n";
         }
       } else if (p0 is XmlText) {
-        acceptText(p0, verbose: verbose);
+        acceptText(p0, verbose: verbose, buffer: buffer);
       } else {
         valid = false;
         errmsg += "answer unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
     // TODO: implement acceptAnswer
+    return this;
   }
 
   @override
-  void acceptQuestion(XmlElement node, {bool verbose = false}) {
-    for (var p0 in node.children) {
-      String value = (p0 is XmlElement)
-          ? p0.name.toString()
-          : (p0 is XmlText)
-          ? "txt"
-          : "node";
-      if (p0 is XmlElement) {
+  Visitor acceptQuestion(XmlElement questNode, {bool verbose = false, StringBuffer? buffer}) {
+    for (var p0 in questNode.children) {
+      String value = (p0 is XmlElement)? p0.name.toString() : (p0 is XmlText)? "txt" : "node";
+      if (p0 is XmlText) { acceptText(p0, verbose: verbose, buffer: buffer);}
+    else if (p0 is XmlElement) {
         if (value == "para") {
-          acceptPara(p0, verbose: verbose);
+          acceptPara(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "question unknown element: ${p0.runtimeType} $p0\n";
         }
-      } else if (p0 is XmlText) {
-        acceptText(p0, verbose: verbose);
-      } else {
+      }  else {
         valid = false;
         errmsg += "question unknown stuff: ${p0.runtimeType} $p0\n";
       }
     }
+    return this;
   }
 
   @override
-  void acceptGlossary(XmlElement node, {bool verbose = false}) {
+  Visitor acceptGlossary(XmlElement gloNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (gloNode.name.toString() != "glossary") {
+      throw UnsupportedError(
+          "wrong node adressed expected glossary got ${gloNode.name}...");
+    }
+    for (var node in gloNode.children) {
+      if (node is XmlText) {
+        acceptText(node, verbose: verbose, buffer:buffer);
+      } else {
+        print("found in glosNode spourious stuff $node");
+      }
+    }
     // TODO: implement acceptGlossary
+    return this;
   }
 
-  void acceptCDATA(XmlCDATA cnode, {required bool verbose}) {
-    for (var p0 in cnode.children) {
-      print("CDATA childre: '${p0.value}' ${p0.innerText} ");
-    }
+  Visitor acceptCDATA(XmlCDATA cnode, {required bool verbose, StringBuffer? buffer}) {
+   for (var p0 in cnode.children) {
+     print("CDATA children: '${p0.value}' ${p0.innerText} ${p0.runtimeType} ");
+   }
+    return this;
   }
 }

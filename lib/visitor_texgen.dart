@@ -3,232 +3,317 @@ import 'dart:collection';
 import 'package:logidee_tools/visitor_treetraversor.dart';
 import 'package:xml/xml.dart';
 
-class VisitorTexgen extends VisitorTreeTraversor {
-  String content = "";
-  Queue<String> stack = Queue();
-  List<String> separators = const ["\\part", "\\chapter", "\\section","\\subsection","\\paragraph"];
+import 'visitor.dart';
 
-  String abstract = "";
+class VisitorTexgen extends VisitorTreeTraversor {
+  StringBuffer content = StringBuffer();
+  StringBuffer abstract = StringBuffer();
+  StringBuffer answers = StringBuffer();
+  StringBuffer glossary = StringBuffer();
+
+  Queue<String> stack = Queue();
+  List<String> separators = const [
+    "\\title",
+    "\\part",
+    "\\chapter",
+    "\\section",
+    "\\subsection",
+    "\\paragraph"
+  ];
 
   List<String> desc = [];
   List<String> object = [];
 
-
   @override
-  void acceptAnswer(XmlElement node, {bool verbose = false}) {
-    print("accept amswer, should treat stuff??");
-    super.acceptAnswer(node, verbose: verbose);
+  Visitor acceptAnswer(XmlElement answNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptAnswer(answNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptAuthor(XmlElement node, {bool verbose = false}) {
+  Visitor acceptAuthor(XmlElement authorNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    if (buffer == null) throw Exception("textgen can't have null buffer...");
     int level = stack.length;
+    //print("============ acceptAuthor $authorNode $level $stack");
     if (level == 1) {
-      content += "\\author{";
-      super.acceptAuthor(node, verbose: verbose);
-      content += "}\n";
+      StringBuffer refBuffer = StringBuffer();
+      super.acceptAuthor(authorNode, verbose: verbose, buffer: refBuffer);
+      String rpl = buffer.toString();
+      if (refBuffer.isNotEmpty && buffer.toString().contains("<AUTHOR>")) {
+        rpl = buffer.toString().replaceAll("<AUTHOR>", "\\author{$refBuffer}");
+      } else if (buffer.toString().contains("<AUTHOR>")) {
+        rpl = buffer.toString().replaceAll("<AUTHOR>", "");
+      }
+      buffer.clear();
+      buffer.write(rpl);
     } else if (level == 2) {
       //ignored for now
-    }
-    else {
-      print("accept author[$level], should treat stuff?? $object and $stack");
-      super.acceptAuthor(node, verbose: verbose);
-    }
-  }
-
-  @override
-  void acceptCDATA(XmlCDATA cnode, {required bool verbose})
-  {
-    //print("CDATA : '${cnode.value}' ${cnode.innerText} ");
-    content += cnode.value.trim()+"\n";
-    super.acceptCDATA(cnode, verbose: verbose);
-  }
-
-  @override
-  void acceptCmd(XmlElement node, {bool verbose = false}) {
-    content += "{\\tt ";
-    super.acceptCmd(node, verbose: verbose);
-    content += "} ";
-  }
-
-  @override
-  void acceptCode(XmlElement node, {bool verbose = false}) {
-    String proglang = node.getAttribute("lang") ?? "";
-    content  += "\\begin{minted}{$proglang}\n";
-    super.acceptCode(node, verbose: verbose);
-    content  += "\\end{minted}\n";
-  }
-
-  @override
-  void acceptCol(XmlElement node, {bool verbose = false}) {
-    super.acceptCol(node, verbose: verbose);
-    content += "&";
-  }
-
-  @override
-  void acceptComment(XmlElement node, {bool verbose = false}) {
-    int level = stack.length;
-    if (level == 1) {
-      super.acceptComment(node, verbose: verbose);
-    }
-    else if (level == 2 && stack.last == "theme") {}
-    else {
-      print("accept Comment[$level], should treat stuff?? $stack");
-      super.acceptComment(node, verbose: verbose);
-    }
-  }
-
-  @override
-  void acceptDate(XmlElement node, {bool verbose = false}) {
-    int level = stack.length;
-    if (level == 1) {
-      content += "\\date{";
-      super.acceptDate(node, verbose: verbose);
-      content += "}\n";
     } else {
-      print("accept date, should treat stuff??");
-      super.acceptDate(node, verbose: verbose);
+      //print("accept author[$level], should treat stuff?? $object and $stack");
+      if(stack.isEmpty || stack.last != "slideshow")
+      super.acceptAuthor(authorNode, verbose: verbose, buffer: buffer);
+      //TODO author in slideshow info??
     }
+    return this;
   }
 
   @override
-  void acceptDependency(XmlElement dependency, {bool verbose = false}) {
-    //print("accept dependency, should treat stuff??");
-    //super.acceptDependency(dependency, verbose: verbose);
+  Visitor acceptCDATA(XmlCDATA cnode,
+      {required bool verbose, StringBuffer? buffer}) {
+    //print("CDATA : '${cnode.value}' ${cnode.innerText} ");
+    add(cnode.value.trim() + "\n", buffer: buffer);
+    super.acceptCDATA(cnode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptDescription(XmlElement desc, {bool verbose = false}) {
+  Visitor acceptCmd(XmlElement cmdNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    add("{\\tt ", buffer: buffer);
+    super.acceptCmd(cmdNode, verbose: verbose, buffer: buffer);
+    add("} ", buffer: buffer);
+    return this;
+  }
+
+  @override
+  Visitor acceptCode(XmlElement codeNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    String proglang = codeNode.getAttribute("lang") ?? "";
+    add("\\begin{minted}{$proglang}\n", buffer: buffer);
+    super.acceptCode(codeNode, verbose: verbose, buffer: buffer);
+    add("\\end{minted}\n", buffer: buffer);
+    return this;
+  }
+
+  @override
+  Visitor acceptCol(XmlElement colNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptCol(colNode, verbose: verbose, buffer: buffer);
+    add("&", buffer: buffer);
+    return this;
+  }
+
+  @override
+  Visitor acceptComment(XmlElement cmtNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
     if (level == 1) {
-      stack.add(desc.name.toString());
-      super.acceptDescription(desc, verbose: verbose);
-      String removed = stack.removeLast();
-      if (removed != "description")
-        print("AYEEEHH??? stack got back $removed instead of description??");
+      super.acceptComment(cmtNode, verbose: verbose, buffer: buffer);
+    } else if (level == 2 && stack.last == "theme") {
+    } else {
+      //print("accept Comment[$level], should treat stuff?? $stack");
+      super.acceptComment(cmtNode, verbose: verbose, buffer: buffer);
+    }
+    return this;
+  }
+
+  @override
+  Visitor acceptDate(XmlElement dateNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    int level = stack.length;
+    if (level == 1) {
+      add("\\date{",buffer: buffer);
+      super.acceptDate(dateNode, verbose: verbose, buffer: buffer);
+      add("}\n",buffer: buffer);
+    } else {
+      //print("accept date, should treat stuff??");
+      super.acceptDate(dateNode, verbose: verbose, buffer: buffer);
+    }
+    return this;
+  }
+
+  @override
+  Visitor acceptDependency(XmlElement dependency,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //print("accept dependency, should treat stuff??");
+    //super.acceptDependency(dependency, verbose: verbose, buffer: buffer);
+    return this;
+  }
+
+  @override
+  Visitor acceptDescription(XmlElement desc,
+      {bool verbose = false, StringBuffer? buffer}) {
+    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    int level = stack.length;
+    if (level == 1) {
+      StringBuffer refBuffer = StringBuffer();
+      super.acceptDescription(desc, verbose: verbose, buffer: refBuffer);
+      String rpl = buffer.toString();
+      if (refBuffer.isNotEmpty && buffer.toString().contains("<SUBTITLE>")) {
+        rpl = buffer
+            .toString()
+            .replaceAll("<SUBTITLE>", "\\subtitle{$refBuffer}");
+      } else if (buffer.toString().contains("<SUBTITLE>")) {
+        rpl = buffer.toString().replaceAll("<SUBTITLE>", "");
+      }
+      buffer.clear();
+      buffer.write(rpl);
     } else if (level == 2) {
       //TODO ignored theme desc for now
-    } else if (level == 3) {
-      content += "\\section*{}\n";
-      super.acceptDescription(desc, verbose: verbose);
+    } else if (level == 3 ) {
+     StringBuffer tmpBuf = StringBuffer();
+      super.acceptDescription(desc, verbose: verbose, buffer: tmpBuf);
+      if(tmpBuf.isNotEmpty && tmpBuf.toString().trim().isNotEmpty){
+        if(stack.last != "slideshow") {
+          add("\\section*{}\n", buffer: buffer);
+          buffer.write(tmpBuf);
+        }
+        //else TODO handle slideshow info description
+      }
     } else {
-      print(
-          "accept description[$level], should treat stuff??i $desc and $stack");
-      super.acceptDescription(desc, verbose: verbose);
+      //print( "accept description[$level], should treat stuff??i $desc and $stack");
+      super.acceptDescription(desc, verbose: verbose, buffer: buffer);
     }
+    return this;
   }
 
   @override
-  void acceptDuration(XmlElement node, {bool verbose = false}) {
-    super.acceptDuration(node, verbose: verbose);
+  Visitor acceptDuration(XmlElement durNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptDuration(durNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptEm(XmlElement node, {bool verbose = false}) {
-    content += "\\emph{";
-    super.acceptEm(node, verbose: verbose);
-    content = content.trim();
-    content += "} ";
+  Visitor acceptEm(XmlElement emNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    add("\\emph{", buffer: buffer);
+    super.acceptEm(emNode, verbose: verbose, buffer: buffer);
+    //buffer = StringBuffer(buffer.toString().trim());
+    add("} ", buffer: buffer, trim: true);
+    return this;
   }
 
   @override
-  void acceptEmail(XmlElement node, {bool verbose = false}) {
-    print("accept email, should treat stuff??");
-    super.acceptEmail(node, verbose: verbose);
+  Visitor acceptEmail(XmlElement mailNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //super.acceptEmail(node, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptExercice(XmlElement module, {bool verbose = false}) {
-    print("accept exercice, should treat stuff??");
-    super.acceptExercice(module, verbose: verbose);
+  Visitor acceptExercice(XmlElement exNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //print("accept exercice, should treat stuff??");
+    //super.acceptExercice(exNode, verbose: verbose, buffer: buffer);
+    StringBuffer questBuf = StringBuffer();
+    StringBuffer answBuf = StringBuffer();
+    for (var p0 in exNode.children) {
+      String value = (p0 is XmlElement) ? p0.name.toString() : "node";
+      if (p0 is XmlElement && value == "question") {
+        acceptQuestion(p0, verbose: verbose, buffer: questBuf);
+      } else if (p0 is XmlElement && value == "answer") {
+        acceptAnswer(p0, verbose: verbose, buffer: answBuf);
+      } else {
+        valid = false;
+        errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
+      }
+    }
+    if (questBuf.isNotEmpty) {
+      add("\\begin{mybox}{Exercice} \\label{$questBuf}\n$questBuf\\end{mybox}\n",
+          buffer: buffer);
+      if (answBuf.isNotEmpty) {
+        add("\\subsection{Solution \\ref{$questBuf}}\n$answBuf\n",
+            buffer: answers);
+      }
+    }
+    return this;
   }
 
   @override
-  void acceptFile(XmlElement node, {bool verbose = false}) {
-    content +=
-    "{\\tt ${node.children.map((child) => child.toString().trim()).where((
-        child) => child.isNotEmpty).join(" ")}}";
-    super.acceptFile(node, verbose: verbose);
+  Visitor acceptFile(XmlElement fileNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    add("{\\tt ${fileNode.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}",
+        buffer: buffer, trim: false);
+    super.acceptFile(fileNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  acceptFormation(XmlElement formation, {bool verbose = false}) {
+  acceptFormation(XmlElement formation,
+      {bool verbose = false, StringBuffer? buffer}) {
     stack.add("formation");
-    super.acceptFormation(formation, verbose: verbose);
+    super.acceptFormation(formation, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
-    if (removed != "formation")
+    if (removed != "formation") {
       print("AYEEEHH??? stack got back $removed instead of formation??");
-    content += "\\end{document}\n";
+    }
+    add("\\end{document}\n",buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptGlossary(XmlElement node, {bool verbose = false}) {
-    print("accept glossary, should treat stuff??");
-    super.acceptGlossary(node, verbose: verbose);
+  Visitor acceptGlossary(XmlElement gloNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //print("accept glossary, should treat stuff?? $node");
+    String name = gloNode.getAttribute("name") ?? "";
+    if (name.isNotEmpty) add(" \\gls{$name} ", buffer: buffer, trim: false);
+    bool def = (gloNode.children.isNotEmpty) ? true : false;
+    if (def)
+      add("\\newglossaryentry{$name}\n{\n name=$name, description={",
+          buffer: glossary);
+    super.acceptGlossary(gloNode, verbose: verbose, buffer: glossary);
+    if (def) add("}\n}\n", buffer: glossary);
+    return this;
   }
 
   @override
-  void acceptImage(XmlElement node, {bool verbose = false}) {
-    String src = node.getAttribute("src") ?? "";
-    String scale = node.getAttribute("scale") ?? "1";
+  Visitor acceptImage(XmlElement imgNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    String src = imgNode.getAttribute("src") ?? "";
+    String scale = imgNode.getAttribute("scale") ?? "1";
     bool visible =
-    ((node.getAttribute("visible") ?? "true") == "true") ? true : false;
+        ((imgNode.getAttribute("visible") ?? "true") == "true") ? true : false;
     bool captionVisible = true;
 
     if (visible) {
-      content += "\\includegraphics[scale=$scale]{$src}";
-      if (node.children.isNotEmpty) {
-        XmlNode capNode = node.firstChild!;
+      add("\\includegraphics[scale=$scale]{$src}", buffer: buffer, trim: false);
+      if (imgNode.children.isNotEmpty) {
+        XmlNode capNode = imgNode.firstChild!;
         if (capNode is XmlElement) {
           if (capNode.name.toString() == 'legend') {
             captionVisible =
-            ((capNode.getAttribute("visible") ?? "true") == "true")
-                ? true
-                : false;
+                ((capNode.getAttribute("visible") ?? "true") == "true")
+                    ? true
+                    : false;
             if (captionVisible) {
-              content += "\n\\captionof{figure}{";
-              acceptPara(capNode, verbose: verbose);
-              content += "}";
+              add("\n\\captionof{figure}{", buffer: buffer, trim: false);
+              super.acceptImage(imgNode, verbose: verbose, buffer: buffer);
+              add("}", buffer: buffer, trim: false);
             }
-          } else
-            content +=
-            "unknown figure : ${capNode.runtimeType} '${capNode
-                .name}' $capNode\n";
+          } else {
+            add("unknown figure : ${capNode.runtimeType} '${capNode.name}' $capNode\n",
+                buffer: buffer, trim: false);
+          }
         }
       }
-    } else
-      content +=
-      "expected legend, don't know what to do with ${node.children.first
-          .runtimeType} ${node.firstChild}";
-    super.acceptImage(node, verbose: verbose);
+    } else {
+      add("expected legend, don't know what to do with ${imgNode.children.first.runtimeType} ${imgNode.firstChild}",
+          buffer: buffer, trim: false);
+      super.acceptImage(imgNode, verbose: verbose, buffer: buffer);
+    }
+    return this;
   }
+
   //TODO probable need an acceptLegend for image!
   @override
-  void acceptInfo(XmlElement info, {bool verbose = false}) {
+  Visitor acceptInfo(XmlElement info,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
     //print("==============called acceptInfo with $level $stack");
-    //var version = info?.getElement("version");
-    //String date = version?.getAttribute("number") ?? "";
-    //String author = version?.getElement("author")?.value ?? "";
-    //String desc = info?.getElement("description")?.value ?? "";
-    //String type = (level <= 0)
-    //    ? "part"
-    //    : (level == 1)
-    //    ? "chapter"
-    //    : "section";
-
-    //String script = "", slides = "";
 
     if (level == 1) {
-      abstract =
-      """\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
+      add("""\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
   \\begin{quotation};
   <DESC>
   <OBJ>
   \\end{quotation}
   \\clearpage
-  """;
-      content += '''\\documentclass[a4paper,12pt]{book}
+  
+  """, buffer: abstract);
+      add('''\\documentclass[a4paper,12pt]{scrbook}
 \\usepackage{babel}[$lang]
 \\usepackage[most]{tcolorbox}
 \\usepackage{tikz}
@@ -255,314 +340,471 @@ class VisitorTexgen extends VisitorTreeTraversor {
         }{}
     },
 }
-    ''';
-      super.acceptInfo(info, verbose: verbose);
+    ''', buffer: buffer);
+      super.acceptInfo(info, verbose: verbose, buffer: buffer);
 
-      content += "\\begin{document}\n";
-      content += "\\maketitle\n";
-      abstract = abstract.replaceAll("<DESC>", desc.join("\n"));
+      add("\\begin{document}\n", buffer: buffer);
+      add("\\maketitle\n", buffer: buffer);
+      String rpld = abstract.toString().replaceAll("<DESC>", desc.join("\n"));
+      abstract.clear();
+      abstract.write(rpld);
       // Convert the list into a TeX-formatted string
-      String formattedObjectives = object.map((item) => "\\item $item").join(
-          "\n");
+      String formattedObjectives =
+          object.map((item) => "\\item $item").join("\n");
       // Construct the final string with TeX formatting
-      String itemized = "\\begin{itemize}\n$formattedObjectives\n\\end{itemize}";
+      String itemized =
+          "\\begin{itemize}\n$formattedObjectives\n\\end{itemize}";
 
-      abstract = abstract.replaceAll("<OBJ>", itemized);
-      content += abstract;
+      String obRep = abstract.toString().replaceAll("<OBJ>", itemized);
+      abstract.clear();
+      abstract.write(obRep);
+      add(obRep, buffer: buffer);
     } else if (level == 2) {
-      print("TODO make a part page with the additional info $level");
-      super.acceptInfo(info, verbose: verbose);
+      //print("acceptInfo lvl 2 $info");
+      //print("TODO make a part page with the additional info $level");
+      super.acceptInfo(info, verbose: verbose, buffer: buffer);
     } else if (level == 3) {
-      super.acceptInfo(info, verbose: verbose);
+      //print("acceptInfo lvl 3 $info");
+      super.acceptInfo(info, verbose: verbose, buffer: buffer);
     } else {
-      print("don't know wjhat to do with info lvl $level");
-      super.acceptInfo(info, verbose: verbose);
+      print("don't know wjhat to do with info lvl $level $info");
+      super.acceptInfo(info, verbose: verbose, buffer: buffer);
     }
+    return this;
   }
 
   @override
-  void acceptItem(XmlElement node, {bool verbose = false}) {
+  Visitor acceptItem(XmlElement itemNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
     if (level == 2 && stack.last == "objectives") {
-      super.acceptItem(node, verbose: verbose);
-    }
-    else if (level == 2 && stack.last == "theme") {}
-    else {
+      super.acceptItem(itemNode, verbose: verbose, buffer: buffer);
+    } else if (level == 2 && stack.last == "theme") {
+    } else {
       //print("accept Item[$level], should treat stuff?? $stack $node");
-      content += "\\item ";
-      super.acceptItem(node, verbose: verbose);
-      content += "\n";
+      StringBuffer tmpBuffer = StringBuffer();
+      super.acceptItem(itemNode, verbose: verbose, buffer: tmpBuffer);
+      if (tmpBuffer.length > 0) {
+        add("\\item $tmpBuffer\n", buffer: buffer, trim: false);
+      } //else print("item was empty, no \item generated for $node");
     }
+    return this;
   }
 
   @override
-  void acceptLegend(XmlElement node, {bool verbose = false}) {
-    print("accept Legend, should treat stuff??");
-    super.acceptLegend(node, verbose: verbose);
+  Visitor acceptLegend(XmlElement legNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptLegend(legNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptLevel(XmlElement node, {bool verbose = false}) {
+  Visitor acceptLevel(XmlElement lvlNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
     if (level == 1) {
-      super.acceptLevel(node, verbose: verbose);
+      super.acceptLevel(lvlNode, verbose: verbose, buffer: buffer);
+    } else if (level == 2 && stack.last == "theme") {
+    } else if (level == 3) {
+    } else {
+      //print("accept Level[$level], should treat stuff?? $stack");
+      super.acceptLevel(lvlNode, verbose: verbose, buffer: buffer);
     }
-    else if (level == 2 && stack.last == "theme") {}
-    else if (level == 3) {}
-    else {
-      print("accept Level[$level], should treat stuff?? $stack");
-      super.acceptLevel(node, verbose: verbose);
-    }
+    return this;
   }
 
   @override
-  void acceptList(XmlElement node, {bool verbose = false}) {
-    content += "\\begin{itemize}\n";
-    super.acceptList(node, verbose: verbose);
-    content += "\\end{itemize}\n";
+  Visitor acceptList(XmlElement listNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    add("\\begin{itemize}\n", buffer: buffer);
+    super.acceptList(listNode, verbose: verbose, buffer: buffer);
+    add("\\end{itemize}\n", buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptMath(XmlElement mathnode, {bool verbose = false}) {
-    String notation = mathnode.getAttribute("notation") ?? "html";
-    content += (notation == "tex") ? "\\begin{eqnarray}\n" : "{\\tt ";
-    super.acceptMath(mathnode, verbose: verbose);
+  Visitor acceptMath(XmlElement mathNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    String notation = mathNode.getAttribute("notation") ?? "html";
+    add((notation == "tex") ? "\\begin{eqnarray}\n" : "{\\tt ", buffer: buffer);
+    super.acceptMath(mathNode, verbose: verbose, buffer: buffer);
 
-    content += (notation == "tex") ? "\\end{eqnarray}\n" : "}";
+    add((notation == "tex") ? "\\end{eqnarray}\n" : "}", buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptMenu(XmlElement node, {bool verbose = false}) {
-    content += "{\\bfseries \\large ";
-    super.acceptMenu(node, verbose: verbose);
-    content += "} ";
+  Visitor acceptMenu(XmlElement menNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    add("{\\bfseries \\large ", buffer: buffer);
+    super.acceptMenu(menNode, verbose: verbose, buffer: buffer);
+    add("} ", buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptModule(XmlElement module, {bool verbose = false}) {
+  Visitor acceptModule(XmlElement module,
+      {bool verbose = false, StringBuffer? buffer}) {
     stack.add("module");
-    super.acceptModule(module, verbose: verbose);
+    super.acceptModule(module, verbose: verbose, buffer: buffer);
+    if (answers.isNotEmpty) add("\\section{Answers}\n$answers", buffer: buffer);
+    answers.clear();
     String removed = stack.removeLast();
-    if (removed != "module")
+    if (removed != "module") {
       print("AYEEEHH??? stack got back $removed instead of module??");
+    }
+    return this;
   }
 
   @override
-  void acceptNote(XmlElement module, {bool verbose = false}) {
-    String restriction = module.getAttribute("restriction")??"";
-    String icon = module.getAttribute("restriction")??"";
-    bool trainer = ((module.getAttribute("trainer") ?? "0") == "1");
+  Visitor acceptNote(XmlElement notNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    String restriction = notNode.getAttribute("restriction") ?? "";
+    String icon = notNode.getAttribute("restriction") ?? "";
+    bool trainer = ((notNode.getAttribute("trainer") ?? "0") == "1") ||
+        ((notNode.getAttribute("trainer") ?? "0") == "true");
 
-    print("accept Note, should treat stuff??");
-    content += "\\begin{mybox}{Note}${(icon.isNotEmpty)?"{$icon}":""}\n";
-    super.acceptNote(module, verbose: verbose);
-    content += "\\end{mybox}\n";
+    //print("accept Note, should treat stuff??");
+    if (trainer) {
+      add("\\begin{mybox}{Note}${(icon.isNotEmpty) ? "{$icon}" : ""}\n",
+          buffer: buffer);
+      super.acceptNote(notNode, verbose: verbose, buffer: buffer);
+      add("\\end{mybox}\n", buffer: buffer);
+    } else
+      print("suppressed note $notNode, not a trainer");
+    return this;
   }
 
   @override
-  void acceptObjectives(XmlElement object, {bool verbose = false}) {
+  Visitor acceptObjectives(XmlElement object,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
+    if (level == 0) level = 1; //happens only in testing
     if (level == 1) {
       stack.add(object.name.toString());
-      super.acceptObjectives(object, verbose: verbose);
+      super.acceptObjectives(object, verbose: verbose, buffer: buffer);
       String removed = stack.removeLast();
-      if (removed != "objectives")
+      if (removed != "objectives") {
         print("AYEEEHH??? stack got back $removed instead of objectives??");
+      }
     } else if (level == 2) {
       //ignored for now
     } else if (level == 3) {
-      content += "\\subsection*{}\n\\begin{itemize}\n";
-      super.acceptObjectives(object, verbose: verbose);
-      content += "\\end{itemize}\n";
+      add("\\subsection*{}\n\\begin{itemize}\n", buffer: buffer);
+      super.acceptObjectives(object, verbose: verbose, buffer: buffer);
+      add("\\end{itemize}\n", buffer: buffer);
     } else {
       print(
           "accept Objective[$level], should treat stuff?? $object and $stack");
-      super.acceptObjectives(object, verbose: verbose);
+      super.acceptObjectives(object, verbose: verbose, buffer: buffer);
     }
+    return this;
   }
 
   @override
-  void acceptPage(XmlElement module, {bool verbose = false}) {
+  Visitor acceptPage(XmlElement pageNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
-    super.acceptPage(module, verbose: verbose);
+    super.acceptPage(pageNode, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
-    if (removed != "page")
+    if (removed != "page") {
       print("AYEEEHH??? stack got back $removed instead of page??");
+    }
+    return this;
   }
 
   @override
-  void acceptPara(XmlElement node,
-      {bool verbose = false, String tag = "Para"}) {
-    //print("accept Para, should treat stuff??");
-    super.acceptPara(node, verbose: verbose);
-    content += "\n";
+  Visitor acceptPara(XmlElement paraNode,
+      {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+    //print("accept Para, $stack for $paraNode");
+    super.acceptPara(paraNode, verbose: verbose, buffer: buffer);
+    add("\n", buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptPrerequisite(XmlElement node, {bool verbose = false}) {
+  Visitor acceptPrerequisite(XmlElement prereqNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     //print("accept Prerequisites, should treat stuff??");
-    //super.acceptPrerequisite(node, verbose: verbose);
+    //super.acceptPrerequisite(node, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptProofreaders(XmlElement node, {bool verbose = false}) {
+  Visitor acceptProofreaders(XmlElement proofRead,
+      {bool verbose = false, StringBuffer? buffer}) {
     //print("accept proofreader, should treat stuff??");
-    //super.acceptProofreaders(node, verbose: verbose);
+    //super.acceptProofreaders(node, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptQuestion(XmlElement node, {bool verbose = false}) {
-    print("accept question, should treat stuff??");
-    super.acceptQuestion(node, verbose: verbose);
+  Visitor acceptQuestion(XmlElement questNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //print("accept question, should treat stuff??");
+    super.acceptQuestion(questNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptRatio(XmlElement node, {bool verbose = false}) {
-    super.acceptRatio(node, verbose: verbose);
+  Visitor acceptRatio(XmlElement ratioNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptRatio(ratioNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptRef(XmlElement node, {bool verbose = false}) {
-    //super.acceptRef(node,verbose: verbose);
-  }
-
-  @override
-  void acceptRow(XmlElement node, {bool verbose = false}) {
-    bool border = ((node.getAttribute("border") ?? "1") == "1");
-    if(content.contains("<COLDEF>"))
-      {
-        String replacement = "${(border)?"|":" "}c"*node.children.length;
-        content=  content.replaceAll("<COLDEF>", replacement);
+  Visitor acceptRef(XmlElement refNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    int level = stack.length;
+    if (level == 1) {
+      StringBuffer refBuffer = StringBuffer();
+      super.acceptRef(refNode, buffer: refBuffer);
+      if (refBuffer.isNotEmpty) {
+        if (buffer.toString().contains("<SUBJECT>")) {
+          String rpl = buffer
+              .toString()
+              .replaceAll("<SUBJECT>", "\\subject{$refBuffer}");
+          buffer.clear();
+          buffer.write(rpl);
+        }
       }
-    super.acceptRow(node, verbose: verbose);
-    content = content.replaceFirst(RegExp(r'&$'), '')+" \\\\ \\hline\n";
+    }
+    return this;
   }
 
   @override
-  void acceptSection(XmlElement section, {bool verbose = false, int level = 0}) {
+  Visitor acceptRow(XmlElement rowNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    bool border = ((rowNode.getAttribute("border") ?? "1") == "1");
+    if (buffer == null) {
+      throw Exception("buffer has to be set!");
+    }
+    if (buffer.toString().contains("<COLDEF>")) {
+      String replacement = "${(border) ? "|" : " "}c" * rowNode.children.length;
+      String rpl = buffer.toString().replaceAll("<COLDEF>", replacement);
+      buffer.clear();
+      buffer.write(rpl);
+    }
+    super.acceptRow(rowNode, verbose: verbose, buffer: buffer);
+    String rpl =
+        buffer.toString().replaceFirst(RegExp(r'&$'), '') + " \\\\ \\hline\n";
+    buffer.clear();
+    buffer.write(rpl);
+    return this;
+  }
+
+  @override
+  Visitor acceptSection(XmlElement secNode,
+      {bool verbose = false, int level = 0, StringBuffer? buffer}) {
     level = stack.length;
     stack.add("section");
-    //print("accept section[$level], should treat stuff??i $stack $section");
-    super.acceptSection(section, verbose: verbose);
+    //print("txtgen lvl: $level st: $stack");
+    //print("accept section[$level], should treat stuff??i $stack $secNode");
+    super
+        .acceptSection(secNode, verbose: verbose, buffer: buffer, level: level);
     String removed = stack.removeLast();
-    if (removed != "section")
+    if (removed != "section") {
       print("AYEEEHH??? stack got back $removed instead of section??");
+    }
+    return this;
   }
 
   @override
-  void acceptSlide(XmlElement module, {bool verbose = false}) {
-    print("accept slide, should treat stuff??");
-    super.acceptSlide(module, verbose: verbose);
+  Visitor acceptSlide(XmlElement slidNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    stack.add("slide");
+    super.acceptSlide(slidNode, verbose: verbose, buffer: buffer);
+    String removed = stack.removeLast();
+    if (removed != "slide") {
+      print("AYEEEHH??? stack got back $removed instead of slide??");
+    }
+    return this;
   }
 
   @override
-  void acceptSlideShow(XmlElement show, {bool verbose = false}) {
-    print("accept slideshow, should treat stuff??");
-    super.acceptSlideShow(show, verbose: verbose);
+  Visitor acceptSlideShow(XmlElement show,
+      {bool verbose = false, StringBuffer? buffer}) {
+    //print("accept slideshow, should treat stuff??");
+    stack.add("slideshow");
+    super.acceptSlideShow(show, verbose: verbose, buffer: buffer);
+    String removed = stack.removeLast();
+    if (removed != "slideshow") {
+      print("AYEEEHH??? stack got back $removed instead of slideshow??");
+    }
+    return this;
   }
 
   @override
-  void acceptState(XmlElement node, {bool verbose = false}) {
+  Visitor acceptState(XmlElement stateNode,
+      {bool verbose = false, StringBuffer? buffer}) {
     int level = stack.length;
     if (level == 1) {
-      super.acceptState(node, verbose: verbose);
+      super.acceptState(stateNode, verbose: verbose, buffer: buffer);
+    } else if (level == 2 && stack.last == "theme") {
+    } else if (level == 3 && stack.last == "module") {
+    } else {
+      //print("accept State[$level], should treat stuff?? $stack");
+      super.acceptState(stateNode, verbose: verbose, buffer: buffer);
     }
-    else if (level == 2 && stack.last == "theme") {}
-    else if (level == 3 && stack.last == "module") {}
-    else {
-      print("accept State[$level], should treat stuff?? $stack");
-      super.acceptState(node, verbose: verbose);
-    }
+    return this;
   }
 
   @override
-  void acceptSubTitle(XmlElement subtitle, {bool verbose = false}) {
-    print("accept subtitle, should treat stuff??");
-    super.acceptSubTitle(subtitle, verbose: verbose);
+  Visitor acceptSubTitle(XmlElement subtitle,
+      {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptSubTitle(subtitle, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptSuggestion(XmlElement suggestion, {bool verbose = false}) {
+  Visitor acceptSuggestion(XmlElement suggestion,
+      {bool verbose = false, StringBuffer? buffer}) {
     //print("accept suggestion, should treat stuff??");
-    //super.acceptSuggestion(suggestion, verbose: verbose);
+    //super.acceptSuggestion(suggestion, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptTable(XmlElement node, {bool verbose = false}) {
-    bool border = ((node.getAttribute("border") ?? "1") == "1")
+  Visitor acceptTable(XmlElement tblNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    bool border = ((tblNode.getAttribute("border") ?? "1") == "1")
         ? true
         : false; //TODO do something with border
-    content += "\\begin{tabular}{<COLDEF>|}\n${(border)?"\\hline":""}\n";
-    super.acceptTable(node, verbose: verbose);
-    content += "\\end{tabular}";
+    add("\\begin{tabular}{<COLDEF>|}\n${(border) ? "\\hline" : ""}\n",
+        buffer: buffer);
+    super.acceptTable(tblNode, verbose: verbose, buffer: buffer);
+    add("\\end{tabular}", buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptText(XmlText node, {bool verbose = false, bool add = true}) {
-    String txt = ((node.value.isNotEmpty) ? node.value : node.innerText).trim();
-    if (node.children.isNotEmpty)
-      print("should do something with ${node.children}");
+  Visitor acceptText(XmlText txtNode,
+      {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    String txt =
+        ((txtNode.value.isNotEmpty) ? txtNode.value : txtNode.innerText).trim();
+    if (txtNode.children.isNotEmpty) {
+      print("should do something with ${txtNode.children}");
+    }
 
-    if (stack.last == "description") {
+    if (stack.isNotEmpty && stack.last == "description") {
       desc.add(txt);
-    } else if (stack.last == "objectives") {
+    } else if (stack.isNotEmpty && stack.last == "objectives") {
       object.add(txt);
     } else {
-      content += "$txt ";
+      this.add(txt, buffer: buffer);
+      //if(buffer != null) {
+      //  buffer.write("$txt ");
+      //} else {
+      //  add("$txt ", buffer:buffer);
+      //}
     }
-    super.acceptText(node, verbose: verbose);
+    super.acceptText(txtNode, verbose: verbose, buffer: buffer);
+    return this;
   }
 
   @override
-  void acceptTheme(XmlElement theme, {bool verbose = false}) {
+  Visitor acceptTheme(XmlElement theme,
+      {bool verbose = false, StringBuffer? buffer}) {
     stack.add("theme");
-    super.acceptTheme(theme, verbose: verbose);
+    super.acceptTheme(theme, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
-    if (removed != "theme")
+    if (removed != "theme") {
       print("AYEEEHH??? stack got back $removed instead of theme??");
-  }
-
-  @override
-  void acceptTitle(XmlElement title, {bool verbose = false, bool add = true}) {
-    int level = stack.length;
-    //print("accespt title $level with $stack $title");
-    if (level == 1) {
-      content += "\\title{";
-      if (title.children.isNotEmpty) {
-        super.acceptTitle(title, verbose: verbose);
-      }
-      content += "}\n";
-    } else {
-      content += "${separators[level-2]}{";
-      if (title.children.isNotEmpty) {
-        super.acceptTitle(title, verbose: verbose);
-      }
-      content += "}\n";
     }
+    return this;
   }
 
   @override
-  void acceptUrl(XmlElement node, {bool verbose = false}) {
-    String href = node.getAttribute("href") ?? "";
-    String name = node.getAttribute("name") ?? "";
+  Visitor acceptTitle(XmlElement title,
+      {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    int level = stack.length;
+    if (level == 2) {
+      //print("----- TODO do somthign with theme info accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
+      return this;
+    }
+    int sepLvl = level - 2;
+    if (sepLvl < 1) sepLvl = 0;
+    if (sepLvl >= separators.length) sepLvl = separators.length - 1;
+    //print("----- accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
+    if (stack.contains("slideshow")) {
+      if (sepLvl < separators.length -1) sepLvl++;
+      //print("slideshow detected: $title $level $stack $sepLvl $separators ${separators[sepLvl]}");
+      this.add("${separators[sepLvl]}{", buffer: buffer);
+      if (title.children.isNotEmpty) {
+        //print("accepting tt tile $title");
+        super.acceptTitle(title, verbose: verbose, buffer: buffer);
+      }
+      this.add("}\n", buffer: buffer);
+    } else {
+      if (level == 1) {
+        buffer!.write("<SUBJECT>\n \\title{");
+      } else
+        this.add("${separators[sepLvl]}{", buffer: buffer);
+      if (title.children.isNotEmpty) {
+        //print("accepting tt tile $title");
+        super.acceptTitle(title, verbose: verbose, buffer: buffer);
+      }
+      if (level == 1) {
+        buffer!.write("}\n<SUBTITLE>\n<AUTHOR>\n");
+      } else this.add("}\n", buffer: buffer);
+    }
+    return this;
+  }
+
+  @override
+  Visitor acceptUrl(XmlElement urlNode,
+      {bool verbose = false, StringBuffer? buffer}) {
+    String href = urlNode.getAttribute("href") ?? "";
+    String name = urlNode.getAttribute("name") ?? "";
     if (name.isEmpty) name = href;
     if (href.isNotEmpty) {
-      content += "\\href{$name}{$href}";
+      add("\\href{$name}{$href}", buffer: buffer);
       //To create a link to another place in your own document
       //\htmlref{text to have highlighted}{Label_name}
     }
-    super.acceptUrl(node, verbose: verbose);
+    return super.acceptUrl(urlNode, verbose: verbose, buffer: buffer);
   }
 
   @override
-  void acceptVersion(XmlElement version, {bool verbose = false}) {
-   // int level = stack.length;
-   // if(level == 1 || level == 2 || level == 3) {}
-   // else {
-   //   print("accept Version[$level], should treat stuff?? $object and $stack");
-   //   super.acceptVersion(version, verbose: verbose);
-   // }
+  Visitor acceptVersion(XmlElement version,
+      {bool verbose = false, StringBuffer? buffer}) {
+     int level = stack.length;
+     if(level == 1)
+     {
+       //print("accept version lvl 1");
+       super.acceptVersion(version, verbose: verbose, buffer: buffer);
+
+     }
+     else if(level == 2 || level == 3) {}
+     else {
+       //print("accept Version[$level], should treat stuff?? $object and $stack");
+       super.acceptVersion(version, verbose: verbose, buffer: buffer);
+     }
+    return this;
+  }
+
+  add(String msg, {StringBuffer? buffer, bool trim = false}) {
+    if (buffer != null) {
+      if (trim) {
+        String trimmedString = buffer.toString().trim();
+        buffer.clear();
+        buffer.write(trimmedString);
+      }
+      buffer.write(msg);
+    } else {
+      throw UnsupportedError("add needs a buffer to write to!");
+    }
+  }
+
+  void clearAll() {
+    content.clear();
+    abstract.clear();
+    answers.clear();
+    glossary.clear();
+    stack.clear();
   }
 }

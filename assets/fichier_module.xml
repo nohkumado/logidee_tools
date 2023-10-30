@@ -1,17 +1,21 @@
 <module>
+  <shortinfo>
+        <title>Module</title>
+        <subtitle>sous titre du Module</subtitle>
+      </shortinfo>
     <page>
         <section>
+          <title>section sans info</title>
         <para>
         <em>texte en évidence</em>
-        <menu>Fichier</menu>
+        <menu>un menu</menu>
         <cmd>ls -al</cmd>
         <file>/etc/passwd</file>
         <url name="linuxfr.fr" href="http://linux-france.org"/>
         <code>
-            ...
-            void main (void) {
-            printf("Hello World.\n");
-            }
+void main (void) {
+printf("Hello World.\n");
+}
         </code>
         <image src="logo.eps" scale="0.5"/>
         <image src="schema.eps">
@@ -30,14 +34,14 @@
         <math notation="tex"><![CDATA[
   $ E = MC^2 $
   ]]></math>
-        <math notation="code">
+        <math notation="html">
             [ Energie = Masse * Célérité au carré ]
         </math>
         </para>
         <para>
           Un réseau <glossary name="IP">Internet Protocol</glossary> est ...
 Les technologies <glossary name="IP"/> ...
-                <note>un encadré pour evidencier des trucs</note>
+                <note trainer="true">un encadré pour evidencier des trucs</note>
                 <note restriction="debian">un encadré pour evidencier des trucs concernant que debian</note>
 </para>
 <exercise>
@@ -47,8 +51,9 @@ Les technologies <glossary name="IP"/> ...
   </question>
 
   <answer>
+    <para>
   <image src="images/exo-tablemult.pl.1.eps" visible="true"/>
-··
+</para>
   </answer>
 
 </exercise>
@@ -56,7 +61,7 @@ Les technologies <glossary name="IP"/> ...
         </section>
     </page>
     <page>
-        <section>
+        <section name="test lien et glosaires">
 
         <para>Ceci est du texte normal, <em>du texte en évidence</em>,
             une URL <url href="http://linux-france.org"/>, etc. </para>
@@ -70,22 +75,25 @@ Les technologies <glossary name="IP"/> ...
         <title></title>
         <slide background="image.eps">
             <list>
-                <item> something <list>
-                        <item>item of sublist</item>
-                    </list>
-                </item>
-            </list>
+              <item> something </item>
+              <item>
+                 <list>
+                    <item>item of sublist</item>
+                </list>
+             </item>
+           </list>
         </slide>
 
         <section>
-            <title></title>
+            <title>Les caractëres spéciaux</title>
             <section>
-                <title></title>
+                <title>listing caractëres spéciaux</title>
                 <para>
                     Les entités pour les caractères spéciaux
 
                     Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
-
+                </para>
+                <para>
                     <list>
                         <item>ipso factum</item>
 

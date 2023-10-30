@@ -9,75 +9,75 @@ abstract class Visitor
   String errmsg = "";
 
 
-  void accept(XmlDeclaration desc)
+  Visitor accept(XmlDeclaration desc)
   {
     encoding = desc.getAttribute("encoding")??"";
     lang = desc.getAttribute("lang")??"";
     theme = desc.getAttribute("lang")??"";
+    return this;
   }
 
-  acceptFormation(XmlElement formation,{bool verbose = false});
+  Visitor acceptFormation(XmlElement formation,{bool verbose = false, StringBuffer? buffer});
 
-  void acceptInfo(XmlElement info, {bool verbose = false});
+  Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptTheme(XmlElement theme, {bool verbose = false});
+  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptTitle(XmlElement title, {bool verbose = false});
-  void acceptSubTitle(XmlElement subtitle, {bool verbose = false});
+  Visitor acceptTitle(XmlElement title, {bool verbose = false, StringBuffer? buffer});
+  Visitor acceptSubTitle(XmlElement subtitle, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptDescription(XmlElement desc, {bool verbose = false});
+  Visitor acceptDescription(XmlElement desc, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptObjectives(XmlElement object, {bool verbose = false});
+  Visitor acceptObjectives(XmlElement object, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptDependency(XmlElement dependency, {bool verbose = false});
+  Visitor acceptDependency(XmlElement dependency, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptSuggestion(XmlElement suggestion, {bool verbose = false});
+  Visitor acceptSuggestion(XmlElement suggestion, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptVersion(XmlElement version, {bool verbose = false});
+  Visitor acceptVersion(XmlElement version, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptProofreaders(XmlElement node, {bool verbose = false});
+  Visitor acceptProofreaders(XmlElement proofRead, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptRatio(XmlElement node, {bool verbose = false});
+  Visitor acceptRatio(XmlElement ratioNode, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptPara(XmlElement node, {bool verbose = false, String tag= "Para"});
+  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer});
 
-  void acceptList(XmlElement node, {bool verbose = false});
-  void acceptItem(XmlElement node, {bool verbose = false});
+  Visitor acceptList(XmlElement listNode, {bool verbose = false, StringBuffer? buffer});
+  Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer});
 
-  void acceptRef(XmlElement node, {bool verbose = false}) ;
+  Visitor acceptRef(XmlElement refNode, {bool verbose = false, StringBuffer? buffer}) ;
 
-  void acceptAuthor(XmlElement node, {bool verbose = false}) ;
-  void acceptEmail(XmlElement node, {bool verbose = false}) ;
-  void acceptComment(XmlElement node, {bool verbose = false}) ;
+  Visitor acceptAuthor(XmlElement authorNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptEmail(XmlElement mailNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptComment(XmlElement cmtNode, {bool verbose = false, StringBuffer? buffer}) ;
 
-  void acceptDate(XmlElement node, {bool verbose = false}) ;
-  void acceptLevel(XmlElement node, {bool verbose = false}) ;
-  void acceptState(XmlElement node, {bool verbose = false}) ;
-  void acceptDuration(XmlElement node, {bool verbose = false}) ;
-  void acceptPrerequisite(XmlElement node, {bool verbose = false}) ;
+  Visitor acceptDate(XmlElement dateNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptLevel(XmlElement lvlNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptState(XmlElement stateNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptDuration(XmlElement durNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptPrerequisite(XmlElement prereqNode, {bool verbose = false, StringBuffer? buffer}) ;
 
-  void acceptSlideShow(XmlElement show, {bool verbose = false}) ;
-  void acceptModule(XmlElement module, {bool verbose = false}) ;
-  void acceptPage(XmlElement module, {bool verbose = false}) ;
-  void acceptSection(XmlElement module, {bool verbose = false, int level=0}) ;
-  void acceptExercice(XmlElement module, {bool verbose = false}) ;
-  void acceptNote(XmlElement module, {bool verbose = false}) ;
-  void acceptSlide(XmlElement module, {bool verbose = false}) ;
-  void acceptEm(XmlElement node, {bool verbose = false}) ;
-  void acceptMenu(XmlElement node, {bool verbose = false}) ;
-  void acceptCmd(XmlElement node, {bool verbose = false}) ;
-  void acceptFile(XmlElement node, {bool verbose = false}) ;
-  void acceptUrl(XmlElement node, {bool verbose = false}) ;
-  void acceptCode(XmlElement node, {bool verbose = false}) ;
-  void acceptImage(XmlElement node, {bool verbose = false}) ;
-  void acceptTable(XmlElement node, {bool verbose = false}) ;
-  void acceptRow(XmlElement node, {bool verbose = false}) ;
-  void acceptCol(XmlElement node, {bool verbose = false}) ;
-  void acceptLegend(XmlElement node, {bool verbose = false}) ;
-  void acceptText(XmlText node, {bool verbose = false}) ;
-  void acceptMath(XmlElement node, {bool verbose = false}) ;
-  void acceptQuestion(XmlElement node, {bool verbose = false}) ;
-  ///add this at the end of the file
-  void acceptAnswer(XmlElement node, {bool verbose = false}) ;
-  void acceptGlossary(XmlElement node, {bool verbose = false}) ;
+  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level=0, StringBuffer? buffer}) ;
+  Visitor acceptExercice(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptMenu(XmlElement menNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptCmd(XmlElement cmdNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptUrl(XmlElement urlNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptImage(XmlElement imgNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptTable(XmlElement tblNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptRow(XmlElement rowNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptCol(XmlElement colNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptLegend(XmlElement legNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptText(XmlText txtNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptMath(XmlElement mathNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptQuestion(XmlElement questNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptAnswer(XmlElement answNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptGlossary(XmlElement gloNode, {bool verbose = false, StringBuffer? buffer}) ;
 }
