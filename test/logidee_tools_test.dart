@@ -72,7 +72,7 @@ void main()
       list = parser.document!.findAllElements('subtitle');
       expect(list.length,1);
       txtVis.clearAll();
-      txtVis.stack..add("formation");
+      txtVis.stack.add("formation");
       result = "sous titre du Module";
       resBuf.clear();
       txtVis.acceptSubTitle(list.first,buffer: resBuf);
@@ -162,13 +162,13 @@ void main()
 
       list = parser.document!.findAllElements('cmd');
       expect(list.length,1);
-      result = "{\\tt ls -al} ";
+      result = "{\\texttt ls -al} ";
       resBuf.clear();
       txtVis.acceptCmd(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
       list = parser.document!.findAllElements('file');
       expect(list.length,1);
-      result = "{\\tt /etc/passwd}";
+      result = "{\\texttt /etc/passwd}";
       resBuf.clear();
       txtVis.acceptFile(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
@@ -181,6 +181,7 @@ void main()
       list = parser.document!.findAllElements('code');
       expect(list.length,1);
       result = '\\begin{minted}{}\nvoid main (void) {\nprintf("Hello World.\\n");\n}\\end{minted}\n';
+      result ='\\begin{lstlisting}[language=C ]\nvoid main (void) {\nprintf("Hello World.\\n");\n}\\end{lstlisting}\n';
       resBuf.clear();
       txtVis.acceptCode(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
@@ -208,7 +209,7 @@ void main()
       resBuf.clear();
       txtVis.acceptMath(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
-      result = "{\\tt [ Energie = Masse * Célérité au carré ]}";
+      result = "{\\texttt [ Energie = Masse * Célérité au carré ]}";
       resBuf.clear();
       txtVis.acceptMath(list.last,buffer: resBuf);
       expect(resBuf.toString(),result);
@@ -314,10 +315,10 @@ void main()
       txtVis.acceptSection(list.first,buffer: resBuf);
       expect(list.length,4);
       result = """\\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\tt ls -al} {\\tt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{minted}{}
+\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
 void main (void) {
 printf("Hello World.\\n");
-}\\end{minted}
+}\\end{lstlisting}
 \\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
 \\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
 \\hline
@@ -326,7 +327,7 @@ col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
 \$ E = MC^2 \$
 \\end{eqnarray}
-{\\tt [ Energie = Masse * Célérité au carré ]}
+{\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...\\begin{mybox}{Note}
 un encadré pour evidencier des trucs
@@ -355,10 +356,10 @@ expect(resBuf.toString(),result);
       txtVis.acceptPage(list.first,buffer: resBuf);
       expect(list.length,3);
       result = """\\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\tt ls -al} {\\tt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{minted}{}
+\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
 void main (void) {
 printf("Hello World.\\n");
-}\\end{minted}
+}\\end{lstlisting}
 \\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
 \\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
 \\hline
@@ -367,7 +368,7 @@ col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
 \$ E = MC^2 \$
 \\end{eqnarray}
-{\\tt [ Energie = Masse * Célérité au carré ]}
+{\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...\\begin{mybox}{Note}
 un encadré pour evidencier des trucs
@@ -403,7 +404,7 @@ un encadré pour evidencier des trucs
 \\usepackage{graphicx}
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
-\\usepackage{minted}
+\\usepackage{listings}
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -451,10 +452,10 @@ un encadré pour evidencier des trucs
       result = """
 \\part{Module}
 \\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\tt ls -al} {\\tt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{minted}{}
+\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
 void main (void) {
 printf("Hello World.\\n");
-}\\end{minted}
+}\\end{lstlisting}
 \\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
 \\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
 \\hline
@@ -463,7 +464,7 @@ col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
 \$ E = MC^2 \$
 \\end{eqnarray}
-{\\tt [ Energie = Masse * Célérité au carré ]}
+{\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...\\begin{mybox}{Note}
 un encadré pour evidencier des trucs
@@ -536,10 +537,10 @@ combien font 2 plus 2 ?
 \\title{Titre du diaporama}
 \\part{Module}
 \\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\tt ls -al} {\\tt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{minted}{}
+\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
 void main (void) {
 printf("Hello World.\\n");
-}\\end{minted}
+}\\end{lstlisting}
 \\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
 \\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
 \\hline
@@ -548,7 +549,7 @@ col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
 \$ E = MC^2 \$
 \\end{eqnarray}
-{\\tt [ Energie = Masse * Célérité au carré ]}
+{\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...
 \\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
@@ -620,7 +621,7 @@ combien font 2 plus 2 ?
 \\usepackage{graphicx}
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
-\\usepackage{minted}
+\\usepackage{listings}
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -660,10 +661,10 @@ combien font 2 plus 2 ?
   
   \\part{Module}
 \\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\tt ls -al} {\\tt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{minted}{}
+\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
 void main (void) {
 printf("Hello World.\\n");
-}\\end{minted}
+}\\end{lstlisting}
 \\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
 \\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
 \\hline
@@ -672,7 +673,7 @@ col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
 \$ E = MC^2 \$
 \\end{eqnarray}
-{\\tt [ Energie = Masse * Célérité au carré ]}
+{\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...\\begin{mybox}{Note}
 un encadré pour evidencier des trucs

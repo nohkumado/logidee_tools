@@ -44,6 +44,7 @@ void main(List<String> arguments) {
       var val = argResults[key];
       data[key] = (val == null) ? "null" : val;
     }
+    print("parsed arguments: $data");
     rest = argResults.rest;
     //postprocessing
     if (data.containsKey("file") && data["file"].isNotEmpty) {

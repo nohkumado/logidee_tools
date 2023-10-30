@@ -52,8 +52,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
       //ignored for now
     } else {
       //print("accept author[$level], should treat stuff?? $object and $stack");
-      if(stack.isEmpty || stack.last != "slideshow")
-      super.acceptAuthor(authorNode, verbose: verbose, buffer: buffer);
+      if(stack.isEmpty || stack.last != "slideshow") {
+        super.acceptAuthor(authorNode, verbose: verbose, buffer: buffer);
+      }
       //TODO author in slideshow info??
     }
     return this;
@@ -71,7 +72,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCmd(XmlElement cmdNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    add("{\\tt ", buffer: buffer);
+    add("{\\texttt ", buffer: buffer);
     super.acceptCmd(cmdNode, verbose: verbose, buffer: buffer);
     add("} ", buffer: buffer);
     return this;
@@ -80,10 +81,11 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCode(XmlElement codeNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    String proglang = codeNode.getAttribute("lang") ?? "";
-    add("\\begin{minted}{$proglang}\n", buffer: buffer);
+    String proglang = (codeNode.getAttribute("lang") ?? "C").trim();
+    String caption = codeNode.getAttribute("caption") ?? "";
+    add("\\begin{lstlisting}[language=$proglang ${(caption.isNotEmpty)? ", caption=\"$caption\"":""}]\n", buffer: buffer);
     super.acceptCode(codeNode, verbose: verbose, buffer: buffer);
-    add("\\end{minted}\n", buffer: buffer);
+    add("\\end{lstlisting}\n", buffer: buffer);
     return this;
   }
 
@@ -226,7 +228,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptFile(XmlElement fileNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    add("{\\tt ${fileNode.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}",
+    add("{\\texttt ${fileNode.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}",
         buffer: buffer, trim: false);
     super.acceptFile(fileNode, verbose: verbose, buffer: buffer);
     return this;
@@ -235,6 +237,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   acceptFormation(XmlElement formation,
       {bool verbose = false, StringBuffer? buffer}) {
+    buffer ??= content;
     stack.add("formation");
     super.acceptFormation(formation, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
@@ -242,6 +245,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
       print("AYEEEHH??? stack got back $removed instead of formation??");
     }
     add("\\end{document}\n",buffer: buffer);
+    if(glossary.isNotEmpty)
+      {
+        String txt = buffer.toString().replaceAll("<GLOSSARY>", "\\usepackage{glossaries}\n\\input{glossaire.tex}\n\\makeglossaries\n");
+        buffer.clear();
+        buffer.write(txt);
+      }
     return this;
   }
 
@@ -252,9 +261,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
     String name = gloNode.getAttribute("name") ?? "";
     if (name.isNotEmpty) add(" \\gls{$name} ", buffer: buffer, trim: false);
     bool def = (gloNode.children.isNotEmpty) ? true : false;
-    if (def)
+    if (def) {
       add("\\newglossaryentry{$name}\n{\n name=$name, description={",
           buffer: glossary);
+    }
     super.acceptGlossary(gloNode, verbose: verbose, buffer: glossary);
     if (def) add("}\n}\n", buffer: glossary);
     return this;
@@ -323,7 +333,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 \\usepackage{graphicx}
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
-\\usepackage{minted}
+\\usepackage{listings}
+\\usepackage{glossaries}
+<GLOSSARY>
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -427,7 +439,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   Visitor acceptMath(XmlElement mathNode,
       {bool verbose = false, StringBuffer? buffer}) {
     String notation = mathNode.getAttribute("notation") ?? "html";
-    add((notation == "tex") ? "\\begin{eqnarray}\n" : "{\\tt ", buffer: buffer);
+    add((notation == "tex") ? "\\begin{eqnarray}\n" : "{\\texttt ", buffer: buffer);
     super.acceptMath(mathNode, verbose: verbose, buffer: buffer);
 
     add((notation == "tex") ? "\\end{eqnarray}\n" : "}", buffer: buffer);
@@ -471,8 +483,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
           buffer: buffer);
       super.acceptNote(notNode, verbose: verbose, buffer: buffer);
       add("\n\\end{mybox}\n", buffer: buffer);
-    } else
+    } else {
       print("suppressed note $notNode, not a trainer");
+    }
     return this;
   }
 
@@ -657,8 +670,10 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSubTitle(XmlElement subtitle,
       {bool verbose = false, StringBuffer? buffer}) {
-    if(stack.length == 1) //TODO check if some other part needs subtutles
+    if(stack.length == 1) {
+      //TODO check if some other part needs subtitles
     super.acceptSubTitle(subtitle, verbose: verbose, buffer: buffer);
+    }
     return this;
   }
 
@@ -688,6 +703,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       {bool verbose = false, bool add = true, StringBuffer? buffer}) {
     String txt =
         ((txtNode.value.isNotEmpty) ? txtNode.value : txtNode.innerText).trim();
+    txt = txt.replaceAll("&", "\\&");
     if (txtNode.children.isNotEmpty) {
       print("should do something with ${txtNode.children}");
     }
@@ -725,7 +741,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       {bool verbose = false, bool add = true, StringBuffer? buffer}) {
     int level = stack.length;
     if (level == 2) {
-      //print("----- TODO do somthign with theme info accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
+      //print("----- TODO do something with theme info accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
       return this;
     }
     int sepLvl = level - 2;
@@ -744,15 +760,18 @@ class VisitorTexgen extends VisitorTreeTraversor {
     } else {
       if (level == 1) {
         buffer!.write("<SUBJECT>\n \\title{");
-      } else
+      } else {
         this.add("${separators[sepLvl]}{", buffer: buffer);
+      }
       if (title.children.isNotEmpty) {
         //print("accepting tt tile $title");
         super.acceptTitle(title, verbose: verbose, buffer: buffer);
       }
       if (level == 1) {
         buffer!.write("}\n<SUBTITLE>\n<AUTHOR>\n");
-      } else this.add("}\n", buffer: buffer);
+      } else {
+        this.add("}\n", buffer: buffer);
+      }
     }
     return this;
   }

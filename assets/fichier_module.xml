@@ -32,7 +32,7 @@ printf("Hello World.\n");
             </row>
         </table>
         <math notation="tex"><![CDATA[
-  $ E = MC^2 $
+   E = MC^2 
   ]]></math>
         <math notation="html">
             [ Energie = Masse * Célérité au carré ]

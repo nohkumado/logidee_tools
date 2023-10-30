@@ -27,9 +27,9 @@ class LogideeChecker {
 }
 
 class FormationChecker {
-  FormationChecker(XmlElement desc, Visitor visit)
+  FormationChecker(XmlElement desc, Visitor visit,{ StringBuffer? buffer})
   {
-    visit.acceptFormation(desc);
+    visit.acceptFormation(desc, buffer: buffer);
   }
 }
 

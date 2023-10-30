@@ -207,6 +207,8 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(codeNode,{"lang": {"option": true}});
+    valid &= checkAttributes(codeNode,{"caption": {"option": true}});
     // TODO: implement acceptCode
     super.acceptCode(codeNode, verbose: verbose,buffer:buffer);
     return this;

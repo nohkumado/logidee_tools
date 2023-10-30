@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:logidee_tools/visitor.dart';
 import 'package:logidee_tools/visitor_check.dart';
 import 'package:logidee_tools/visitor_texgen.dart';
 import 'package:path/path.dart' as path;
@@ -96,9 +95,17 @@ class LogideeTools {
       //print("PREPARATION OF visitor: $root");
       if(root != null) FormationChecker(root,txtVis);
       //print("visitor produced : ${txtVis.content}");
+      if(txtVis.glossary.isNotEmpty)
+      {
+        String glosname ="${((outdir.isNotEmpty) ? outdir : dirname)}${path.separator}glossaire.tex";
+        final glosfile = File(glosname);
+        glosfile.writeAsStringSync(txtVis.glossary.toString());
+      }
       scriptfile.writeAsStringSync(txtVis.content.toString());
       print("written script file $scriptname");
+      print("now run : pdflatex -shell-escape $scriptname");
     }
+    else print("something went wrong creating $scriptname");
     return parsevalid;
   }
   /// replace recursively the xi:include by the file given in the href
