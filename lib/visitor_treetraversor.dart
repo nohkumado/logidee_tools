@@ -39,6 +39,8 @@ class VisitorTreeTraversor extends Visitor {
       if (p0 is XmlElement) {
         if (value == "title") {
           acceptTitle(p0, verbose: verbose, buffer: buffer);
+        } else if (value == "subtitle") {
+          acceptSubTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "ref") {
           acceptRef(p0, verbose: verbose, buffer: buffer);
         } else if (value == "description") {
@@ -118,6 +120,10 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptDescription(XmlElement desc, {bool verbose = false, StringBuffer? buffer}) {
+    if (desc.name.toString() != "description") {
+      throw UnsupportedError(
+          "wrong node adressed expected description got ${desc.name}...");
+    }
     for (var node in desc.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
@@ -136,6 +142,10 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptObjectives(XmlElement object, {bool verbose = false, StringBuffer? buffer}) {
+    if (object.name.toString() != "objectives") {
+      throw UnsupportedError(
+          "wrong node adressed expected objectives got ${object.name}...");
+    }
     for (var node in object.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
@@ -154,6 +164,10 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptDependency(XmlElement dependency, {bool verbose = false, StringBuffer? buffer}) {
+    if (dependency.name.toString() != "dependency") {
+      throw UnsupportedError(
+          "wrong node adressed expected dependency got ${dependency.name}...");
+    }
     for (var node in dependency.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
@@ -172,6 +186,10 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptSuggestion(XmlElement suggestion, {bool verbose = false, StringBuffer? buffer}) {
+if (suggestion.name.toString() != "suggestion") {
+  throw UnsupportedError(
+      "wrong node adressed expected suggestion got ${suggestion.name}...");
+}
     for (var node in suggestion.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
@@ -190,6 +208,11 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptVersion(XmlElement version, {bool verbose = false, StringBuffer? buffer}) {
+
+    if (version.name.toString() != "version") {
+      throw UnsupportedError(
+          "wrong node adressed expected version got ${version.name}...");
+    }
     String number = version.getAttribute("number") ?? "";
     if (number.isEmpty) {
       valid = false;
@@ -219,6 +242,11 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptProofreaders(XmlElement proofRead, {bool verbose = false, StringBuffer? buffer}) {
+
+    if (proofRead.name.toString() != "proofreaders") {
+      throw UnsupportedError(
+          "wrong node adressed expected proofreader got ${proofRead.name}...");
+    }
     for (var node in proofRead.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement) {
@@ -237,6 +265,11 @@ class VisitorTreeTraversor extends Visitor {
 
   @override
   Visitor acceptRatio(XmlElement ratioNode, {bool verbose = false, StringBuffer? buffer}) {
+
+    if (ratioNode.name.toString() != "ratio") {
+      throw UnsupportedError(
+          "wrong node adressed expected ratio got ${ratioNode.name}...");
+    }
     return this;
   }
 
@@ -244,6 +277,10 @@ class VisitorTreeTraversor extends Visitor {
   @override
   Visitor acceptPara(XmlElement paraNode,
       {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+    if (paraNode.name.toString() != "para") {
+      throw UnsupportedError(
+          "wrong node ?? expected para got  ${paraNode.name}...");
+    }
     for (var subnode in paraNode.children) {
       //print("acceptPara child loop treating $node of ${node.runtimeType}");
       if (subnode is XmlText) {
@@ -290,7 +327,9 @@ class VisitorTreeTraversor extends Visitor {
           acceptMath(subnode, verbose: verbose,buffer: buffer);
         } else if (subnode.name.toString() == "glossary") {
           acceptGlossary(subnode, verbose: verbose,buffer: buffer);
-        } else {
+        } else if (subnode.name.toString() == "note") {
+          acceptNote(subnode, verbose: verbose,buffer: buffer);
+        } else{
           errmsg += "parsing paragraph unknown element ${subnode.name}\n";
           valid = false;
         }
@@ -304,6 +343,11 @@ return this;
 
   @override
   Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer}) {
+
+    if (itemNode.name.toString() != "item") {
+      throw UnsupportedError(
+          "wrong node adressed expected item got ${itemNode.name}...");
+    }
     for (var p0 in itemNode.children) {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
@@ -384,7 +428,12 @@ return this;
   }
 
   @override
-  Visitor acceptComment(XmlElement cmtNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
+  Visitor acceptComment(XmlElement cmtNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (cmtNode.name.toString() != "comment") {
+      throw UnsupportedError(
+          "wrong node adressed expected comment got ${cmtNode.name}...");
+    }
+    return this;}
 
   @override
   Visitor acceptDate(XmlElement dateNode, {bool verbose = false, StringBuffer? buffer}) {
@@ -404,6 +453,10 @@ return this;
 
   @override
   Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer}) {
+    if (show.name.toString() != "slideshow") {
+      throw UnsupportedError(
+          "wrong node adressed expected slideshow got ${show.name}...");
+    }
     for (var p0 in show.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -424,6 +477,10 @@ return this;
 
   @override
   Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
+    if (module.name.toString() != "module") {
+      throw UnsupportedError(
+          "wrong node adressed expected module got ${module.name}...");
+    }
     for (var p0 in module.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -447,6 +504,10 @@ return this;
 
   @override
   Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (pageNode.name.toString() != "page") {
+      throw UnsupportedError(
+          "wrong node adressed expected page got ${pageNode.name}...");
+    }
     for (var p0 in pageNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -457,7 +518,7 @@ return this;
         } else if (value == "section") {
           acceptSection(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
-          acceptExercice(p0, verbose: verbose, buffer: buffer);
+          acceptExercise(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "page unknown element: ${p0.runtimeType} $p0\n";
@@ -472,6 +533,10 @@ return this;
 
   @override
   Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (slidNode.name.toString() != "slide") {
+      throw UnsupportedError(
+          "wrong node adressed expected slide got ${slidNode.name}...");
+    }
     for (var p0 in slidNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -488,7 +553,7 @@ return this;
         } else if (value == "note") {
           acceptNote(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
-          acceptExercice(p0, verbose: verbose, buffer: buffer);
+          acceptExercise(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
@@ -503,15 +568,28 @@ return this;
 
   @override
   Visitor acceptLevel(XmlElement lvlNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (lvlNode.name.toString() != "level") {
+      throw UnsupportedError(
+          "wrong node adressed expected level got ${lvlNode.name}...");
+    }
     lvlNode.getAttribute("value");
     return this;
   }
 
   @override
-  Visitor acceptState(XmlElement stateNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
+  Visitor acceptState(XmlElement stateNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (stateNode.name.toString() != "state") {
+      throw UnsupportedError(
+          "wrong node adressed expected state got ${stateNode.name}...");
+    }
+    return this;}
 
   @override
   Visitor acceptDuration(XmlElement durNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (durNode.name.toString() != "duration") {
+      throw UnsupportedError(
+          "wrong node adressed expected duration got ${durNode.name}...");
+    }
     durNode.getAttribute("value"); //double
     durNode.getAttribute("unit"); //text
     // TODO: implement acceptDuration
@@ -520,6 +598,10 @@ return this;
 
   @override
   Visitor acceptPrerequisite(XmlElement prereqNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (prereqNode.name.toString() != "prerequisite") {
+      throw UnsupportedError(
+          "wrong node adressed expected prereqation got ${prereqNode.name}...");
+    }
     for (var node in prereqNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "para") {
@@ -534,6 +616,10 @@ return this;
 
   @override
   Visitor acceptCmd(XmlElement cmdNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (cmdNode.name.toString() != "cmd") {
+      throw UnsupportedError(
+          "wrong node adressed expected cmd got ${cmdNode.name}...");
+    }
     for (var p0 in cmdNode.children) {
       if (p0 is XmlText) {
         acceptText(p0, verbose: verbose,buffer: buffer);
@@ -546,6 +632,10 @@ return this;
 
   @override
   Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (codeNode.name.toString() != "code") {
+      throw UnsupportedError(
+          "wrong node adressed expected code got ${codeNode.name}...");
+    }
     for (var txtnode in codeNode.children) {
       if (txtnode is XmlText) {
         acceptText(txtnode, verbose: verbose,buffer: buffer);
@@ -558,6 +648,10 @@ return this;
 
   @override
   Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (emNode.name.toString() != "em") {
+      throw UnsupportedError(
+          "wrong node adressed expected em got ${emNode.name}...");
+    }
     for (var txtnode in emNode.children) {
       if (txtnode is XmlText) {
         acceptText(txtnode, verbose: verbose,buffer: buffer);
@@ -569,10 +663,19 @@ return this;
   }
 
   @override
-  Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) {return this;}
+  Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (fileNode.name.toString() != "file") {
+      throw UnsupportedError(
+          "wrong node adressed expected file got ${fileNode.name}...");
+    }
+    return this;}
 
   @override
   Visitor acceptImage(XmlElement imgNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (imgNode.name.toString() != "image") {
+      throw UnsupportedError(
+          "wrong node adressed expected img got ${imgNode.name}...");
+    }
     String src = imgNode.getAttribute("src") ?? "";
     //String scale = node.getAttribute("src")??"";
     if (src.isEmpty) {
@@ -610,6 +713,10 @@ return this;
 
   @override
   Visitor acceptTable(XmlElement tblNode, {bool verbose = false,StringBuffer? buffer}) {
+    if (tblNode.name.toString() != "table") {
+      throw UnsupportedError(
+          "wrong node adressed expected table got ${tblNode.name}...");
+    }
     for (var node in tblNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "row") {
@@ -624,6 +731,10 @@ return this;
 
   @override
   Visitor acceptUrl(XmlElement urlNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (urlNode.name.toString() != "url") {
+      throw UnsupportedError(
+          "wrong node adressed expected url got ${urlNode.name}...");
+    }
     String href = urlNode.getAttribute("href") ?? "";
     if (href.isEmpty) {
       valid = false;
@@ -650,6 +761,10 @@ return this;
 
   @override
   Visitor acceptCol(XmlElement colNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (colNode.name.toString() != "col") {
+      throw UnsupportedError(
+          "wrong node adressed expected col got ${colNode.name}...");
+    }
     for (var node in colNode.children) {
       if (node is XmlElement) {
         acceptPara(node, verbose: verbose,buffer: buffer);
@@ -665,6 +780,10 @@ return this;
 
   @override
   Visitor acceptRow(XmlElement rowNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (rowNode.name.toString() != "row") {
+      throw UnsupportedError(
+          "wrong node adressed expected row got ${rowNode.name}...");
+    }
     for (var node in rowNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlElement && value == "col") {
@@ -678,7 +797,11 @@ return this;
   }
 
   @override
-  Visitor acceptExercice(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptExercise(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (exNode.name.toString() != "exercise") {
+      throw UnsupportedError(
+          "wrong node adressed expected exercise got ${exNode.name}...");
+    }
     for (var p0 in exNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -700,6 +823,10 @@ return this;
 
   @override
   Visitor acceptList(XmlElement listNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (listNode.name.toString() != "list") {
+      throw UnsupportedError(
+          "wrong node adressed expected list got ${listNode.name}...");
+    }
     for (var p0 in listNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
@@ -719,14 +846,26 @@ return this;
 
   @override
   Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) {
-    String trainerAtt = notNode.getAttribute("trainer") ?? "true";
-    bool trainer = (trainerAtt == "true") ? true : false;
-    if (trainer) acceptPara(notNode, verbose: verbose, buffer: buffer);
+    if (notNode.name.toString() != "note") {
+      throw UnsupportedError(
+          "wrong node adressed expected note got ${notNode.name}...");
+    }
+    for (var p0 in notNode.children) {
+      if (p0 is XmlText) {
+        acceptText(p0, verbose: verbose,buffer: buffer);
+      } else {
+        print("AAARGGH you put strange stuff into note?? $notNode");
+      }
+    }
     return this;
   }
 
   @override
   Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+    if (secNode.name.toString() != "section") {
+      throw UnsupportedError(
+          "wrong node adressed expected section got ${secNode.name}...");
+    }
     for (var p0 in secNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       //print("tt sec lvl: $level child[$value]: $p0");
@@ -735,7 +874,7 @@ return this;
           //print("tt sec title lvl: $level child: $p0");
           acceptTitle(p0, verbose: verbose, buffer: buffer);
         } else if (value == "section") {
-          //print("tt sec ection lvl: $level child: $p0");
+          //print("tt sec section lvl: $level child: $p0");
           //if (level == 0) {
             acceptSection(p0, verbose: verbose, level: level + 1, buffer: buffer);
           //} else {
@@ -750,7 +889,7 @@ return this;
           acceptNote(p0, verbose: verbose, buffer: buffer);
         } else if (value == "exercise") {
           //print("tt sec exerc lvl: $level child: $p0");
-          acceptExercice(p0, verbose: verbose, buffer: buffer);
+          acceptExercise(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
           errmsg += "Section unknown element: ${p0.runtimeType} $p0\n";
@@ -808,6 +947,10 @@ return this;
 
   @override
   Visitor acceptAnswer(XmlElement answNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (answNode.name.toString() != "answer") {
+      throw UnsupportedError(
+          "wrong node adressed expected answer got ${answNode.name}...");
+    }
     for (var p0 in answNode.children) {
       String value = (p0 is XmlElement)
           ? p0.name.toString()
@@ -834,6 +977,10 @@ return this;
 
   @override
   Visitor acceptQuestion(XmlElement questNode, {bool verbose = false, StringBuffer? buffer}) {
+    if (questNode.name.toString() != "question") {
+      throw UnsupportedError(
+          "wrong node adressed expected questNode got ${questNode.name}...");
+    }
     for (var p0 in questNode.children) {
       String value = (p0 is XmlElement)? p0.name.toString() : (p0 is XmlText)? "txt" : "node";
       if (p0 is XmlText) { acceptText(p0, verbose: verbose, buffer: buffer);}

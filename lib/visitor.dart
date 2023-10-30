@@ -61,7 +61,7 @@ abstract class Visitor
   Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level=0, StringBuffer? buffer}) ;
-  Visitor acceptExercice(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptExercise(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) ;

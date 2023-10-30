@@ -61,13 +61,13 @@ Les technologies <glossary name="IP"/> ...
         </section>
     </page>
     <page>
-        <section name="test lien et glosaires">
+        <section>
 
         <para>Ceci est du texte normal, <em>du texte en évidence</em>,
             une URL <url href="http://linux-france.org"/>, etc. </para>
         <para>
-            Un réseau <glossary name="IP">Internet Protocol</glossary> est ...
-            Les technologies <glossary name="IP"/> ...
+            Un autre <glossary name="TE">terme</glossary> est ...
+            Les mots <glossary name="TE"/> ...
         </para>
         </section>
     </page>

@@ -194,10 +194,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   }
 
   @override
-  Visitor acceptExercice(XmlElement exNode,
+  Visitor acceptExercise(XmlElement exNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    //print("accept exercice, should treat stuff??");
-    //super.acceptExercice(exNode, verbose: verbose, buffer: buffer);
     StringBuffer questBuf = StringBuffer();
     StringBuffer answBuf = StringBuffer();
     for (var p0 in exNode.children) {
@@ -212,11 +210,14 @@ class VisitorTexgen extends VisitorTreeTraversor {
       }
     }
     if (questBuf.isNotEmpty) {
-      add("\\begin{mybox}{Exercice} \\label{$questBuf}\n$questBuf\\end{mybox}\n",
+      String question = "\\begin{mybox}{Exercise} \\label{$questBuf}\n$questBuf\\end{mybox}\n";
+      add(question,
           buffer: buffer);
+      //print("buffer now $buffer");
       if (answBuf.isNotEmpty) {
-        add("\\subsection{Solution \\ref{$questBuf}}\n$answBuf\n",
-            buffer: answers);
+        String answer = "\\subsection{Solution \\ref{$questBuf}}\n$answBuf\n";
+        //print(" exercise, answering $answer");
+        add(answer, buffer: answers);
       }
     }
     return this;
@@ -469,7 +470,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       add("\\begin{mybox}{Note}${(icon.isNotEmpty) ? "{$icon}" : ""}\n",
           buffer: buffer);
       super.acceptNote(notNode, verbose: verbose, buffer: buffer);
-      add("\\end{mybox}\n", buffer: buffer);
+      add("\n\\end{mybox}\n", buffer: buffer);
     } else
       print("suppressed note $notNode, not a trainer");
     return this;
@@ -656,6 +657,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSubTitle(XmlElement subtitle,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(stack.length == 1) //TODO check if some other part needs subtutles
     super.acceptSubTitle(subtitle, verbose: verbose, buffer: buffer);
     return this;
   }

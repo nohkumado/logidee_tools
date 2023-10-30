@@ -6,7 +6,6 @@ import 'visitor.dart';
 
 class VisitorCheck extends VisitorTreeTraversor
 {
-
   @override
   acceptFormation(XmlElement formation,{bool verbose = false, StringBuffer? buffer})
   {
@@ -18,7 +17,7 @@ class VisitorCheck extends VisitorTreeTraversor
   @override
   Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer})
   {
-    List<String> check = ["title","ref","description", "objectives","ratio", "duration", "prerequisite", "dependency","suggestion","version","level","state","proofreaders"];
+    List<String> check = ["title","subtitle","ref","description", "objectives","ratio", "duration", "prerequisite", "dependency","suggestion","version","level","state","proofreaders"];
     valid &= structureCheck(info,check, verbose:verbose, tag: "Info");
     super.acceptInfo(info, verbose: verbose, buffer: buffer);
     return this;
@@ -43,11 +42,15 @@ class VisitorCheck extends VisitorTreeTraversor
   }
   bool structureCheck(XmlElement module,List<String> check, {bool verbose = false, tag="unknown node"}) {
     bool ret = true;
+    //print("SC: ${module.name} ret is $ret");
     for (var p0 in module.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : (p0 is XmlText) ? "txt" :"node";
       if(value == "txt" && p0.toString().trim().isEmpty) continue;
+      //print("SC: child ${value} in $check? ${check.any((key) => key == value)}");
       ret &= check.any((key) => key == value);
+      //print("SC: ${module.name} ret evolved to  $ret");
       if (!ret) {
+        //print("####### Found problem text: '${p0.toString().trim()}' ${p0.parent}");
         if(value == "txt") print("####### Found problem text: '${p0.toString().trim()}' ${p0.parent}");
         String msg = "$tag problem with ";
         msg += "$value = '";
@@ -58,29 +61,31 @@ class VisitorCheck extends VisitorTreeTraversor
         }
         msg += "]";
         if(verbose) print(msg);
+        errmsg += msg;
       }
     }
+    if(ret == false  && verbose) print("PROBLEM with $module gave '$errmsg'");
     return ret;
   }
 
   @override
-  Visitor acceptAuthor(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptAuthor(XmlElement authorNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptAuthor
-    super.acceptAuthor(node, verbose: verbose, buffer: buffer);
+    super.acceptAuthor(authorNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptComment(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptComment(XmlElement cmtNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptComment
-    super.acceptComment(node, verbose: verbose, buffer: buffer);
+    super.acceptComment(cmtNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptDate(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptDate(XmlElement dateNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptDate
-    super.acceptDate(node, verbose: verbose, buffer: buffer);
+    super.acceptDate(dateNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
@@ -102,17 +107,17 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptEmail(XmlElement emailNode, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptEmail(XmlElement mailNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptEmail
-    super.acceptEmail(emailNode, verbose: verbose,buffer: buffer);
+    super.acceptEmail(mailNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptItem(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["txt","list","para","cmd","url"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Item");
-    super.acceptItem(node, verbose: verbose,buffer: buffer);
+    valid &= structureCheck(itemNode,check, verbose:verbose, tag: "Item");
+    super.acceptItem(itemNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
@@ -125,26 +130,26 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptPara(XmlElement node, {bool verbose = false, String tag= "Para", StringBuffer? buffer}) {
-    valid &= checkAttributes(node,{"icon": {"option": true},"restriction": {"option": true}});
-    List<String> check = ["txt","url", "image", "list", "em", "cmd", "menu", "file", "code", "table", "math", "glossary"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: tag);
-    super.acceptPara(node, verbose: verbose,buffer: buffer);
+  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer}) {
+    valid &= checkAttributes(paraNode,{"icon": {"option": true},"restriction": {"option": true}});
+    List<String> check = ["txt","url", "image", "list", "em", "cmd", "menu", "file", "code", "table", "math", "glossary", "note"];
+    valid &= structureCheck(paraNode,check, verbose:verbose, tag: tag);
+    super.acceptPara(paraNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptProofreaders(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptProofreaders(XmlElement proofRead, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["item"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Proofreaders");
-    super.acceptProofreaders(node, verbose: verbose, buffer: buffer);
+    valid &= structureCheck(proofRead,check, verbose:verbose, tag: "Proofreaders");
+    super.acceptProofreaders(proofRead, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptRatio(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptRatio(XmlElement ratioNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptRatio
-    super.acceptRatio(node, verbose: verbose, buffer: buffer);
+    super.acceptRatio(ratioNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
@@ -187,177 +192,180 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptAnswer(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptAnswer(XmlElement answNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptAnswer
-    super.acceptAnswer(node, verbose: verbose,buffer: buffer);
+    super.acceptAnswer(answNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptCmd(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptCmd(XmlElement cmdNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptCmd
-    super.acceptCmd(node, verbose: verbose,buffer: buffer);
+    super.acceptCmd(cmdNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptCode(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptCode
-    super.acceptCode(node, verbose: verbose,buffer:buffer);
+    super.acceptCode(codeNode, verbose: verbose,buffer:buffer);
     return this;
   }
 
   @override
-  Visitor acceptCol(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptCol(XmlElement colNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptCol
-    super.acceptCol(node, verbose: verbose,buffer: buffer);
+    super.acceptCol(colNode, verbose: verbose,buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptDuration(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptDuration(XmlElement durNode, {bool verbose = false, StringBuffer? buffer}) {
     // TODO: implement acceptDuration
-    super.acceptDuration(node, verbose: verbose, buffer: buffer);
+    super.acceptDuration(durNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptEm(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptEm(node, verbose: verbose,buffer: buffer);
+  Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptEm(emNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptEm
     return this;
   }
 
   @override
-  Visitor acceptExercice(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(module,{"restriction": {"option": true}});
-    super.acceptExercice(module, verbose: verbose, buffer: buffer);
-    // TODO: implement acceptExercice
+  Visitor acceptExercise(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(exNode,{"restriction": {"option": true}});
+    super.acceptExercise(exNode, verbose: verbose, buffer: buffer);
+    // TODO: implement acceptExercise
     return this;
   }
 
   @override
-  Visitor acceptFile(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptFile(node, verbose: verbose,buffer: buffer);
+  Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptFile(fileNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptFile
     return this;
   }
 
   @override
-  Visitor acceptGlossary(XmlElement glosNode, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptGlossary(glosNode, verbose: verbose, buffer: buffer);
+  Visitor acceptGlossary(XmlElement gloNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptGlossary(gloNode, verbose: verbose, buffer: buffer);
     // TODO: implement acceptGlossary
     return this;
   }
 
   @override
-  Visitor acceptImage(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptImage(node, verbose: verbose,buffer: buffer);
+  Visitor acceptImage(XmlElement imgNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptImage(imgNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptImage
     return this;
   }
 
   @override
-  Visitor acceptLegend(XmlElement legend, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptLegend(legend, verbose: verbose,buffer: buffer);
+  Visitor acceptLegend(XmlElement legNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptLegend(legNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptLegend
     return this;
   }
 
   @override
-  Visitor acceptLevel(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(node,{"value": {"option": false}});
-    super.acceptLevel(node, verbose: verbose, buffer: buffer);
+  Visitor acceptLevel(XmlElement lvlNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(lvlNode,{"value": {"option": false}});
+    super.acceptLevel(lvlNode, verbose: verbose, buffer: buffer);
     // TODO: implement acceptLevel
     return this;
   }
 
   @override
-  Visitor acceptList(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptList(XmlElement listNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["item","list"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "List");
-    super.acceptList(node, verbose: verbose,buffer: buffer);
+    valid &= structureCheck(listNode,check, verbose:verbose, tag: "List");
+    super.acceptList(listNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptList
     return this;
   }
 
   @override
-  Visitor acceptMath(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptMath(node, verbose: verbose,buffer: buffer);
+  Visitor acceptMath(XmlElement mathNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptMath(mathNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptMath
     return this;
   }
 
   @override
-  Visitor acceptMenu(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    super.acceptMenu(node, verbose: verbose,buffer: buffer);
+  Visitor acceptMenu(XmlElement menNode, {bool verbose = false, StringBuffer? buffer}) {
+    super.acceptMenu(menNode, verbose: verbose,buffer: buffer);
     // TODO: implement acceptMenu
     return this;
   }
 
   @override
-  Visitor acceptNote(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(module,{"restriction": {"option": true}});
-    super.acceptNote(module, verbose: verbose, buffer: buffer);
+  Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(notNode,{
+      "restriction": {"option": true},
+      "trainer": {"option": true}
+    });
+    super.acceptNote(notNode, verbose: verbose, buffer: buffer);
     // TODO: implement acceptNote
     return this;
   }
 
   @override
-  Visitor acceptPage(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(module,{"restriction": {"option": true}});
+  Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(pageNode,{"restriction": {"option": true}});
     List<String> check = ["slide", "title", "section", "exercise"];
-    valid &= structureCheck(module,check, verbose:verbose, tag: "Page");
-    super.acceptPage(module, verbose: verbose, buffer: buffer);
+    valid &= structureCheck(pageNode,check, verbose:verbose, tag: "Page");
+    super.acceptPage(pageNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptPrerequisite(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptPrerequisite(XmlElement prereqNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["para"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Prerequisite");
-    super.acceptPrerequisite(node, verbose: verbose, buffer: buffer);
+    valid &= structureCheck(prereqNode,check, verbose:verbose, tag: "Prerequisite");
+    super.acceptPrerequisite(prereqNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptQuestion(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptQuestion(XmlElement questNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["para","txt"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Question");
-    super.acceptQuestion(node, verbose: verbose, buffer: buffer);
+    valid &= structureCheck(questNode,check, verbose:verbose, tag: "Question");
+    super.acceptQuestion(questNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptRow(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptRow(XmlElement rowNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["col"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Row");
-    super.acceptRow(node, verbose: verbose,buffer:buffer);
+    valid &= structureCheck(rowNode,check, verbose:verbose, tag: "Row");
+    super.acceptRow(rowNode, verbose: verbose,buffer:buffer);
     return this;
   }
 
   @override
-  Visitor acceptSection(XmlElement module, {bool verbose = false, int level = 0, StringBuffer? buffer}) {
-    valid &= checkAttributes(module,{"restriction": {"option": true}});
-    List<String> check = ["title","section", "para", "note", "exercice"];
-    valid &= structureCheck(module,check, verbose:verbose, tag: "Section");
-    super.acceptSection(module, verbose: verbose, buffer: buffer);
+  Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+    valid &= checkAttributes(secNode,{"restriction": {"option": true}});
+    List<String> check = ["title","section", "para", "note", "exercise"];
+    valid &= structureCheck(secNode,check, verbose:verbose, tag: "Section");
+    super.acceptSection(secNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptSlide(XmlElement module, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(module,{"background": {"option": true}});
-    List<String> check = ["section", "title", "subtitle", "list", "para", "note", "exercice"];
-    valid &= structureCheck(module,check, verbose:verbose, tag: "SlideShow");
-    super.acceptSlide(module, verbose: verbose, buffer: buffer);
+  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(slidNode,{"background": {"option": true}});
+    List<String> check = ["section", "title", "subtitle", "list", "para", "note", "exercise"];
+    valid &= structureCheck(slidNode,check, verbose:verbose, tag: "SlideShow");
+    super.acceptSlide(slidNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
   @override
-  Visitor acceptState(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(node,{"finished": {"option": true},"proofread": {"option": true}});
-    super.acceptState(node, verbose: verbose, buffer: buffer);
+  Visitor acceptState(XmlElement stateNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(stateNode,{"finished": {"option": true},"proofread": {"option": true}});
+    super.acceptState(stateNode, verbose: verbose, buffer: buffer);
     return this;
   }
 
@@ -369,24 +377,24 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptTable(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptTable(XmlElement tblNode, {bool verbose = false, StringBuffer? buffer}) {
     List<String> check = ["row"];
-    valid &= structureCheck(node,check, verbose:verbose, tag: "Table");
-    super.acceptTable(node, verbose: verbose,buffer:buffer);
+    valid &= structureCheck(tblNode,check, verbose:verbose, tag: "Table");
+    super.acceptTable(tblNode, verbose: verbose,buffer:buffer);
     return this;
   }
 
   @override
-  Visitor acceptText(XmlText node, {bool verbose = false, bool add = true, StringBuffer? buffer}) {
-    super.acceptText(node, verbose: verbose, buffer: buffer);
+  Visitor acceptText(XmlText txtNode, {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    super.acceptText(txtNode, verbose: verbose, buffer: buffer);
     // TODO: implement acceptText
     return this;
   }
 
   @override
-  Visitor acceptUrl(XmlElement node, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(node,{"href": {"option": false},"name": {"option": true}});
-    super.acceptUrl(node, verbose: verbose,buffer:buffer);
+  Visitor acceptUrl(XmlElement urlNode, {bool verbose = false, StringBuffer? buffer}) {
+    valid &= checkAttributes(urlNode,{"href": {"option": false},"name": {"option": true}});
+    super.acceptUrl(urlNode, verbose: verbose,buffer:buffer);
     return this;
     // TODO: implement acceptUrl
   }
@@ -395,13 +403,14 @@ class VisitorCheck extends VisitorTreeTraversor
     bool ret = true;
     List<String> obligatory = [];
     map.forEach((key, value) {
-      if(value["option"] == "false") obligatory.add(key);
+      if(value.containsKey("option") && value["option"] == false) obligatory.add(key);
     });
+    //if(obligatory.isNotEmpty) print("${node.name} oblig attr: $obligatory");
     for (var p0 in node.attributes) {
       if(!map.containsKey(p0.name.toString()))
         {
           ret = false;
-          errmsg += "${node.name} attribute problems: ${p0.name} is not a valid attribute\n";
+          errmsg += "${node.name} attribute problems: '${p0.name}' is not a valid attribute in  $map\n";
         }
       if(obligatory.contains(p0.name.toString())) obligatory.remove(p0.name.toString());
     }

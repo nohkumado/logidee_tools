@@ -21,126 +21,9 @@ void main()
     test('dtd validation',()
     {
       fname = "assets/formation_wrong.xml";
-      expect(parser.loadXml(fname, outdir: outdir),false);
-    });
-  });
-  group('xml parsing function',(){
-    test('xml parsing',()
-    {
-      parser.loadXml(fname, outdir: outdir);
-      //parser.parse(fname, outdir: outdir);
-      var list = parser.document!.findAllElements('em');
-      expect(list.length,2);
-      String result = "\\emph{texte en évidence}";
-      expect(parser.parseEm(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('menu');
-      expect(list.length,1);
-      result = "{\\bfseries \\large  Fichier}";
-      expect(parser.parseMenu(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('cmd');
-      expect(list.length,1);
-      result = "{\\tt ls -al} ";
-      expect(parser.parseCmd(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('file');
-      expect(list.length,1);
-      result = "{\\tt /etc/passwd}";
-      expect(parser.parseFile(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('url');
-      expect(list.length,2);
-      result = "\\htmladdnormallink{linuxfr.fr}{http://linux-france.org}";
-      expect(parser.parseUrl(list.first, nowrite: true, verbose: true, toReplace: {}),result);
-      list = parser.document!.findAllElements('code');
-      expect(list.length,1);
-      result = '\\begin{minted}{}\n\n            ...\n            void main (void) {\n            printf("Hello World.\\n");\n            }\n        \n\\end{minted}\n';
-      expect(parser.parseCode(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('image');
-      expect(list.length,2);
-      List<String> results =[
-      "\\includegraphics[scale=1]{logo.eps}",
-        "\\includegraphics[scale=1]{schema.eps}\n\\captionof{figure}{Schéma d'interconnexion}"
-      ];
-      expect(parser.parseImage(list.first, nowrite: true, verbose: true),results[0]);
-      expect(parser.parseImage(list.last, nowrite: true, verbose: true),results[1]);
-      list = parser.document!.findAllElements('table');
-      expect(list.length,1);
-      result = "\\begin{tabular}{|c|c|}\n\\hline\n\\textbf{col1}&col2 \\hline\ncol3&col4 \\hline\n\\end{tabular}";
-      expect(parser.parseTable(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('math');
-      expect(list.length,2);
-      result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}";
-      expect(parser.parseMath(list.first, nowrite: true, verbose: true),result);
-      result = "{\\tt [ Energie = Masse * Célérité au carré ]\n}";
-      expect(parser.parseMath(list.last, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('list');
-      //print("got back list: ${list.length} and $list");
-      //expect(list.length,2);
-      result = "\\begin{itemize}\n\\item something\n\\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\\end{itemize}";
-      expect(parser.parseList(list.first, nowrite: true, verbose: true),result);
-      list = parser.document!.findAllElements('glossary');
-      //print("got back list: ${list.length} and $list");
-      expect(list.length,2);
-      result = "\\index{Internet Protocol}";
-      expect(parser.parseGlossary(list.first, nowrite: true, verbose: true),result);
-
-
-
-      //   <formation>
-      //   <theme>
-      //   <module>
-      //   <module>
-      //   <page> page, section, exercise, para et note disposent d'un attribut <note restriction="debian">Tout ce qui est dit là est   spécifique à Debian.      </note>
-      //exercise, para et note disposent d'un attribut icon
-      //   <slide>, section,exercice
-      //      -> section,para,note,exercice
-      //           -> para,note,exercice
-    });
-    test('xml structure test',()
-    {
-      VisitorCheck vis = VisitorCheck();
-      bool valid = parser.loadXml(fname, outdir: outdir);
-      //bool valid = parser.parse(fname, outdir: outdir, verbose:  true);
-      if(!valid) print("Parsing had errors: ${parser.errmsg}");
-      expect(valid,true);
-      var list = parser.document!.findAllElements('formation');
-      bool subvalid = true;
-      //print("got back list: ${list.length} and $list");
-      expect(list.length,1);
-      XmlElement formation = list.first;
-      late XmlElement node;
-      vis.acceptFormation(formation, verbose:  true);
-      if(!vis.valid)print("retour vis:\n${vis.errmsg}");
-      for (var p0 in formation.children) {
-     if(p0 is XmlElement && p0.name.toString() == "theme") node = p0;}
-        expect(vis.valid,true);
-      subvalid = true;
-      late XmlElement module, slideshow;
-      vis.acceptTheme(node);
-      for (var p0 in node.children) {
-        //(p0 is XmlElement)? print("theme child: ${p0.name.toString()}"):print("theme unknown: $p0 of ${p0.runtimeType}");
-        if(p0 is XmlElement && p0.name.toString() == "module") {
-          module= p0;
-        } else if(p0 is XmlElement && p0.name.toString() == "slideshow") slideshow= p0;
-      }
-      expect(vis.valid,true);
-      vis.acceptModule(module);
-      expect(vis.valid,true);
-      vis.acceptSlideShow(slideshow);
-      expect(vis.valid,true);
-
-      subvalid = true;
-      for (var p0 in slideshow.children) {
-        String value = (p0 is XmlElement)?p0.name.toString():"node";
-        List<String> check = ["info","shortinfo","slide"];
-        if(!check.any((listElement) => listElement.contains(value))) print("slideshow $p0 $value not in $check failed");
-        subvalid &= check.any((listElement) => listElement.contains(value));
-        //if(p0 is XmlElement && p0.name.toString() == "module") module= p0;
-      }
-      expect(subvalid,true);
-      //print("got back list: ${node.children.length} and $node");
-      //expect(node.children.length,1);
-      vis.acceptFormation(formation);
-      expect(vis.valid,true);
-
+      expect(parser.loadXml(fname, outdir: outdir, verbose: false).valid,false);
+      fname = "assets/formation.xml";
+      expect(parser.loadXml(fname, outdir: outdir, verbose: true).valid,true);
     });
   });
   group('full tex generation by visitor',(){
@@ -188,6 +71,8 @@ void main()
 
       list = parser.document!.findAllElements('subtitle');
       expect(list.length,1);
+      txtVis.clearAll();
+      txtVis.stack..add("formation");
       result = "sous titre du Module";
       resBuf.clear();
       txtVis.acceptSubTitle(list.first,buffer: resBuf);
@@ -197,6 +82,7 @@ void main()
       expect(list.length,1);
       result = "";
       resBuf.clear();
+      txtVis.clearAll();
       txtVis.acceptRatio(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
 
@@ -405,9 +291,9 @@ void main()
       list = parser.document!.findAllElements('exercise');
       //print("got back list: ${list.length} and $list");
       resBuf.clear();
-      txtVis.acceptExercice(list.first,buffer: resBuf);
+      txtVis.acceptExercise(list.first,buffer: resBuf);
       expect(list.length,2);
-      result = """\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+      result = """\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 """;
       expect(resBuf.toString(),result);
@@ -442,8 +328,11 @@ col3&col4 \\\\ \\hline
 \\end{eqnarray}
 {\\tt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...
-\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+Les technologies \\gls{IP} ...\\begin{mybox}{Note}
+un encadré pour evidencier des trucs
+\\end{mybox}
+
+\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 """;
 expect(resBuf.toString(),result);
@@ -480,8 +369,11 @@ col3&col4 \\\\ \\hline
 \\end{eqnarray}
 {\\tt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...
-\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+Les technologies \\gls{IP} ...\\begin{mybox}{Note}
+un encadré pour evidencier des trucs
+\\end{mybox}
+
+\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 """;
       expect(resBuf.toString(),result);
@@ -573,13 +465,16 @@ col3&col4 \\\\ \\hline
 \\end{eqnarray}
 {\\tt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...
-\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+Les technologies \\gls{IP} ...\\begin{mybox}{Note}
+un encadré pour evidencier des trucs
+\\end{mybox}
+
+\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 Ceci est du texte normal,\\emph{du texte en évidence} ,
             une URL\\href{http://linux-france.org}{http://linux-france.org}, etc.
-Un réseau \\gls{IP} est ...
-            Les technologies \\gls{IP} ...
+Un autre \\gls{TE} est ...
+            Les mots \\gls{TE} ...
 \\chapter{}
 \\begin{itemize}
 \\item something
@@ -607,7 +502,7 @@ Les entités pour les caractères spéciaux
 \\item &euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
-\\begin{mybox}{Exercice} \\label{combien font 2 plus 2 ?
+\\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
 }
 combien font 2 plus 2 ?
 \\end{mybox}
@@ -656,7 +551,7 @@ col3&col4 \\\\ \\hline
 {\\tt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
 Les technologies \\gls{IP} ...
-\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 Ceci est du texte normal,\\emph{du texte en évidence} ,
             une URL\\href{http://linux-france.org}{http://linux-france.org}, etc.
@@ -689,7 +584,7 @@ Les entités pour les caractères spéciaux
 \\item &euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
-\\begin{mybox}{Exercice} \\label{combien font 2 plus 2 ?
+\\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
 }
 combien font 2 plus 2 ?
 \\end{mybox}
@@ -779,13 +674,16 @@ col3&col4 \\\\ \\hline
 \\end{eqnarray}
 {\\tt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...
-\\begin{mybox}{Exercice} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
+Les technologies \\gls{IP} ...\\begin{mybox}{Note}
+un encadré pour evidencier des trucs
+\\end{mybox}
+
+\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
 Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
 Ceci est du texte normal,\\emph{du texte en évidence} ,
             une URL\\href{http://linux-france.org}{http://linux-france.org}, etc.
-Un réseau \\gls{IP} est ...
-            Les technologies \\gls{IP} ...
+Un autre \\gls{TE} est ...
+            Les mots \\gls{TE} ...
 \\chapter{}
 \\begin{itemize}
 \\item something
@@ -813,7 +711,7 @@ Les entités pour les caractères spéciaux
 \\item &euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
-\\begin{mybox}{Exercice} \\label{combien font 2 plus 2 ?
+\\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
 }
 combien font 2 plus 2 ?
 \\end{mybox}
@@ -835,11 +733,12 @@ combien font 2 plus 2 ?
     });
     test('xml structure test',()
     {
-      VisitorCheck vis = VisitorCheck();
-      bool valid = parser.loadXml(fname, outdir: outdir);
+      VisitorCheck vis =  parser.loadXml(fname, outdir: outdir);
+      parser.loadXml(fname, outdir: outdir);
+      parser.loadXml(fname, outdir: outdir);
       //bool valid = parser.parse(fname, outdir: outdir, verbose:  true);
-      if(!valid) print("Parsing had errors: ${parser.errmsg}");
-      expect(valid,true);
+      if(!vis.valid) print("Parsing had errors: ${vis.errmsg}");
+      expect(vis.valid,true);
       var list = parser.document!.findAllElements('formation');
       bool subvalid = true;
       //print("got back list: ${list.length} and $list");
