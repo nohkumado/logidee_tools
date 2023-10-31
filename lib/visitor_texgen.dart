@@ -198,6 +198,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptExercise(XmlElement exNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    String restriction = exNode.getAttribute("restriction") ?? "all";
+    if(restriction != "all" || restriction != selection) return this;
     StringBuffer questBuf = StringBuffer();
     StringBuffer answBuf = StringBuffer();
     for (var p0 in exNode.children) {
@@ -334,7 +336,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
 \\usepackage{listings}
-\\usepackage{glossaries}
 <GLOSSARY>
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
@@ -472,8 +473,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptNote(XmlElement notNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    String restriction = notNode.getAttribute("restriction") ?? "";
-    String icon = notNode.getAttribute("restriction") ?? "";
+    String restriction = notNode.getAttribute("restriction") ?? "all";
+    if(restriction != "all" || restriction != selection) return this;
+    String icon = notNode.getAttribute("icon") ?? "";
     bool trainer = ((notNode.getAttribute("trainer") ?? "0") == "1") ||
         ((notNode.getAttribute("trainer") ?? "0") == "true");
 
@@ -518,6 +520,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptPage(XmlElement pageNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    String restriction = pageNode.getAttribute("restriction") ?? "all";
+    if(restriction != "all" || restriction != selection) return this;
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
@@ -532,6 +536,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptPara(XmlElement paraNode,
       {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+    String restriction = paraNode.getAttribute("restriction") ?? "all";
+    if(restriction != "all" || restriction != selection) return this;
+
     //print("accept Para, $stack for $paraNode");
     super.acceptPara(paraNode, verbose: verbose, buffer: buffer);
     add("\n", buffer: buffer);
@@ -614,6 +621,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSection(XmlElement secNode,
       {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+    String restriction = secNode.getAttribute("restriction") ?? "all";
+    if(restriction != "all" || restriction != selection) return this;
     level = stack.length;
     stack.add("section");
     //print("txtgen lvl: $level st: $stack");
@@ -828,4 +837,6 @@ class VisitorTexgen extends VisitorTreeTraversor {
     glossary.clear();
     stack.clear();
   }
+
+  VisitorTexgen({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
 }

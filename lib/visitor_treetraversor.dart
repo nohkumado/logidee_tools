@@ -2,6 +2,7 @@ import 'package:logidee_tools/visitor.dart';
 import 'package:xml/xml.dart';
 
 class VisitorTreeTraversor extends Visitor {
+  VisitorTreeTraversor({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
 
   @override
   Visitor acceptFormation(XmlElement formation, {bool verbose = false, StringBuffer? buffer}) {

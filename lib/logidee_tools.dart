@@ -90,7 +90,12 @@ class LogideeTools {
     //scriptsink = scriptfile.openWrite();
     if(parsevalid)
     {
-      VisitorTexgen txtVis = VisitorTexgen();
+      String charte = Platform.environment["CHARTE"] ?? "default";
+      bool trainer = bool.parse(Platform.environment["TRAINER"]??"false");
+      String selection = Platform.environment["SELECTION"]??"all ";
+      bool cycle = bool.parse(Platform.environment["CYCLE"]??"false");
+      String lange = Platform.environment["LANG"]??"en";
+      VisitorTexgen txtVis = VisitorTexgen(charte: charte, trainer: trainer, selection: selection, lang: lang);
       XmlElement? root = document?.getElement("formation");
       //print("PREPARATION OF visitor: $root");
       if(root != null) FormationChecker(root,txtVis);

@@ -7,13 +7,24 @@ abstract class Visitor
   String theme = "default";
   bool valid = true;
   String errmsg = "";
+  String charte = "default";
+  bool trainer = false;
+  String selection  = "all";
+  bool cycle = false;
 
+  Visitor({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}) {
+    if(charte!= null && charte.isNotEmpty) this.charte = charte;
+    if(selection!= null && selection.isNotEmpty) this.selection = selection;
+    if(lang!= null && lang.isNotEmpty) this.lang = lang;
+    if(trainer!= null) this.trainer = trainer;
+    if(cycle!= null) this.cycle = cycle;
+  }
 
   Visitor accept(XmlDeclaration desc)
   {
     encoding = desc.getAttribute("encoding")??"";
     lang = desc.getAttribute("lang")??"";
-    theme = desc.getAttribute("lang")??"";
+    theme = desc.getAttribute("theme")??"";
     return this;
   }
 

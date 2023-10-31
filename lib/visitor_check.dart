@@ -3,7 +3,6 @@ import 'package:xml/xml.dart';
 
 import 'visitor.dart';
 
-
 class VisitorCheck extends VisitorTreeTraversor
 {
   @override

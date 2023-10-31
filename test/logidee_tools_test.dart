@@ -205,7 +205,7 @@ void main()
       expect(resBuf.toString(),result);
       list = parser.document!.findAllElements('math');
       expect(list.length,2);
-      result = "\\begin{eqnarray}\n\$ E = MC^2 \$\n\\end{eqnarray}\n";
+      result = "\\begin{eqnarray}\nE = MC^2\n\\end{eqnarray}\n";
       resBuf.clear();
       txtVis.acceptMath(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
@@ -325,7 +325,7 @@ printf("Hello World.\\n");
 col1&col2 \\\\ \\hline
 col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
-\$ E = MC^2 \$
+E = MC^2
 \\end{eqnarray}
 {\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
@@ -366,7 +366,7 @@ printf("Hello World.\\n");
 col1&col2 \\\\ \\hline
 col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
-\$ E = MC^2 \$
+E = MC^2
 \\end{eqnarray}
 {\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
@@ -405,6 +405,7 @@ un encadré pour evidencier des trucs
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
 \\usepackage{listings}
+<GLOSSARY>
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -462,7 +463,7 @@ printf("Hello World.\\n");
 col1&col2 \\\\ \\hline
 col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
-\$ E = MC^2 \$
+E = MC^2
 \\end{eqnarray}
 {\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
@@ -491,16 +492,16 @@ Les entités pour les caractères spéciaux
                     Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
 \\begin{itemize}
 \\item ipso factum
-\\item &nbsp; : l'espace insécable ;
-\\item &tir; : le tiret d'intervalle '?';
+\\item \\&nbsp; : l'espace insécable ;
+\\item \\&tir; : le tiret d'intervalle '?';
 \\item " : le caractère '”' ;
-\\item & : le caractère '&' ;
+\\item \\& : le caractère '\\&' ;
 \\item < : le caractère pluspetitque ;
 \\item > : le caractère plusgrandque ;
-\\item &OElig; : le caractère OE ligaturé (?) ;
-\\item &oelig; : le caractère oe ligaturé (?) ;
-\\item &reg; : le caractère '©' ;
-\\item &euro; : le caractère pour l'euro (?).
+\\item \\&OElig; : le caractère OE ligaturé (?) ;
+\\item \\&oelig; : le caractère oe ligaturé (?) ;
+\\item \\&reg; : le caractère '©' ;
+\\item \\&euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
 \\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
@@ -547,7 +548,7 @@ printf("Hello World.\\n");
 col1&col2 \\\\ \\hline
 col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
-\$ E = MC^2 \$
+E = MC^2
 \\end{eqnarray}
 {\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
@@ -573,16 +574,16 @@ Les entités pour les caractères spéciaux
                     Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
 \\begin{itemize}
 \\item ipso factum
-\\item &nbsp; : l'espace insécable ;
-\\item &tir; : le tiret d'intervalle '?';
+\\item \\&nbsp; : l'espace insécable ;
+\\item \\&tir; : le tiret d'intervalle '?';
 \\item " : le caractère '”' ;
-\\item & : le caractère '&' ;
+\\item \\& : le caractère '&' ;
 \\item < : le caractère pluspetitque ;
 \\item > : le caractère plusgrandque ;
-\\item &OElig; : le caractère OE ligaturé (?) ;
-\\item &oelig; : le caractère oe ligaturé (?) ;
-\\item &reg; : le caractère '©' ;
-\\item &euro; : le caractère pour l'euro (?).
+\\item \\&OElig; : le caractère OE ligaturé (?) ;
+\\item \\&oelig; : le caractère oe ligaturé (?) ;
+\\item \\&reg; : le caractère '©' ;
+\\item \\&euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
 \\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
@@ -622,6 +623,10 @@ combien font 2 plus 2 ?
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
 \\usepackage{listings}
+\\usepackage{glossaries}
+\\input{glossaire.tex}
+\\makeglossaries
+
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -671,7 +676,7 @@ printf("Hello World.\\n");
 col1&col2 \\\\ \\hline
 col3&col4 \\\\ \\hline
 \\end{tabular}\\begin{eqnarray}
-\$ E = MC^2 \$
+E = MC^2
 \\end{eqnarray}
 {\\texttt [ Energie = Masse * Célérité au carré ]}
 Un réseau \\gls{IP} est ...
@@ -700,16 +705,16 @@ Les entités pour les caractères spéciaux
                     Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
 \\begin{itemize}
 \\item ipso factum
-\\item &nbsp; : l'espace insécable ;
-\\item &tir; : le tiret d'intervalle '?';
+\\item \\&nbsp; : l'espace insécable ;
+\\item \\&tir; : le tiret d'intervalle '?';
 \\item " : le caractère '”' ;
-\\item & : le caractère '&' ;
+\\item \\& : le caractère '\\&' ;
 \\item < : le caractère pluspetitque ;
 \\item > : le caractère plusgrandque ;
-\\item &OElig; : le caractère OE ligaturé (?) ;
-\\item &oelig; : le caractère oe ligaturé (?) ;
-\\item &reg; : le caractère '©' ;
-\\item &euro; : le caractère pour l'euro (?).
+\\item \\&OElig; : le caractère OE ligaturé (?) ;
+\\item \\&oelig; : le caractère oe ligaturé (?) ;
+\\item \\&reg; : le caractère '©' ;
+\\item \\&euro; : le caractère pour l'euro (?).
 \\end{itemize}
 
 \\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
