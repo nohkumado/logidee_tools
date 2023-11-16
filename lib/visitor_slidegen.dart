@@ -1,11 +1,12 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:logidee_tools/visitor_treetraversor.dart';
 import 'package:xml/xml.dart';
 
 import 'visitor.dart';
 
-class VisitorTexgen extends VisitorTreeTraversor {
+class VisitorSlideGen extends VisitorTreeTraversor {
   StringBuffer content = StringBuffer();
   StringBuffer abstract = StringBuffer();
   StringBuffer answers = StringBuffer();
@@ -34,7 +35,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptAuthor(XmlElement authorNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if (buffer == null) throw Exception("slidegen can't have null buffer...");
     int level = stack.length;
     //print("============ acceptAuthor $authorNode $level $stack");
     if (level == 1) {
@@ -137,7 +138,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptDescription(XmlElement desc,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if (buffer == null) throw Exception("slidegen can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       StringBuffer refBuffer = StringBuffer();
@@ -246,7 +247,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     if (removed != "formation") {
       print("AYEEEHH??? stack got back $removed instead of formation??");
     }
-    add("\\tableofcontents\n\\listoffigures\n\\listoftables\n\\end{document}\n",buffer: buffer);
+    add("\\end{document}\n",buffer: buffer);
     if(glossary.isNotEmpty)
       {
         String txt = buffer.toString().replaceAll("<GLOSSARY>", "\\usepackage{glossaries}\n\\input{glossaire.tex}\n\\makeglossaries\n");
@@ -326,7 +327,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   \\clearpage
   
   """, buffer: abstract);
-      add('''\\documentclass[a4paper,12pt]{scrbook}
+      add('''\\documentclass{beamer}
 \\usepackage{babel}[$lang]
 \\usepackage[most]{tcolorbox}
 \\usepackage{tikz}
@@ -336,7 +337,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
 \\usepackage{listings}
-<GLOSSARY>
+\\newcounter{paragraph}
+\\newcommand{\\paragraph} %otherwise html stop compilation
+\\usepackage{html}
 
 \\definecolor{myblue}{RGB}{20, 70, 180}
 \\newtcolorbox{mybox}[3][Note]{
@@ -354,11 +357,33 @@ class VisitorTexgen extends VisitorTreeTraversor {
         }{}
     },
 }
+\\usetheme{$theme}
+<TITLE>
+<SUBTITLE>
+<AUTHOR>
+\\institute{Beamer Slides}
     ''', buffer: buffer);
+ if(File("logo.png").existsSync()) {
+        add(
+            "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n",buffer: buffer);
+      }
+
       super.acceptInfo(info, verbose: verbose, buffer: buffer);
 
       add("\\begin{document}\n", buffer: buffer);
       add("\\maketitle\n", buffer: buffer);
+      add("\\begin{frame}\n", buffer: buffer); //% Print the title page as the first slide\n"), buffer: buffer);
+      add("\\titlepage\n", buffer: buffer);
+      add("\\end{frame}\n", buffer: buffer); //% Presentation outline\n"), buffer: buffer);
+      add("\\begin{frame}{Outline}\n", buffer: buffer);
+      add("\\tableofcontents\n", buffer: buffer);
+      add("\\end{frame}\n", buffer: buffer); //open not formation info
+      add("\\begin{frame}\n", buffer: buffer);
+      add("\\Large{title}\n", buffer: buffer);
+      add("$desc\n", buffer: buffer);
+      add("\\end{frame}\n", buffer: buffer);
+
+
       String rpld = abstract.toString().replaceAll("<DESC>", desc.join("\n"));
       abstract.clear();
       abstract.write(rpld);
@@ -579,7 +604,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptRef(XmlElement refNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if (buffer == null) throw Exception("slidegen can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       StringBuffer refBuffer = StringBuffer();
@@ -838,5 +863,5 @@ class VisitorTexgen extends VisitorTreeTraversor {
     stack.clear();
   }
 
-  VisitorTexgen({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
+  VisitorSlideGen({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
 }
