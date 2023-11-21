@@ -4,6 +4,7 @@
         <subtitle>sous titre du Module</subtitle>
       </shortinfo>
     <page>
+        <title>Page with all para elements</title>
         <section>
           <title>section sans info</title>
         <para>
@@ -61,7 +62,9 @@ Les technologies <glossary name="IP"/> ...
         </section>
     </page>
     <page>
+        <title>Page with glossary stuff</title>
         <section>
+        <title>Para with glossary stuff</title>
 
         <para>Ceci est du texte normal, <em>du texte en évidence</em>,
             une URL <url href="http://linux-france.org"/>, etc. </para>
@@ -69,10 +72,30 @@ Les technologies <glossary name="IP"/> ...
             Un autre <glossary name="TE">terme</glossary> est ...
             Les mots <glossary name="TE"/> ...
         </para>
+	  <section>
+	  <title>subsection lvl1</title>
+
+	  <para> empty</para>
+	    <section>
+	    <title>subsection lvl2</title>
+
+	    <para> empty</para>
+	      <section>
+	      <title>subsection lvl3</title>
+
+	      <para> empty</para>
+	      </section>
+	    </section>
+	  </section>
         </section>
+	      <section>
+	      <title>2nd top level section</title>
+
+	      <para> empty</para>
+	      </section>
     </page>
     <page>
-        <title></title>
+        <title>page with slides</title>
         <slide background="image.eps">
             <list>
               <item> something </item>
