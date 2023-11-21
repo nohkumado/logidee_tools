@@ -8,3 +8,10 @@ build/
 *.swp
 sample
 *.tex
+*.log
+*.pdf
+*.aux
+*.glo
+*.lst
+*.ist
+*.out
