@@ -99,7 +99,7 @@ void main()
       expect(resBuf.toString(),result);
 
       list = parser.document!.findAllElements('title');
-      expect(list.length,18);
+      expect(list.length,19);
       result = "\\title{Le titre}\n";
       resBuf.clear();
       txtVis.acceptTitle(list.first,buffer: resBuf);
@@ -395,7 +395,9 @@ expect(resBuf.toString(),result);
       txtVis.stack..add("formation")..add("theme")..add("module");
       txtVis.acceptSlide(list.first,buffer: resBuf);
       expect(list.length,4);
-      result = "\\begin{itemize}\n\\item something\n\\item \\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\n\\end{itemize}\n";
+
+
+      result = "\\chapter{page with slides}\n\\begin{itemize}\n\\item something\n\\item \\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\n\\end{itemize}\n";
       expect(resBuf.toString(),result);
 
       list = parser.document!.findAllElements('page');
@@ -539,7 +541,8 @@ empty
 empty
 \\section{2nd top level section}
 empty
-\\chapter{page with slides}
+\\chapter{page with slides this title shouldn\'t show}
+\\section{page with slides}
 \\begin{itemize}
 \\item something
 \\item \\begin{itemize}
@@ -766,7 +769,8 @@ empty
 empty
 \\section{2nd top level section}
 empty
-\\chapter{page with slides}
+\\chapter{page with slides this title shouldn\'t show}
+\\section{page with slides}
 \\begin{itemize}
 \\item something
 \\item \\begin{itemize}
@@ -818,6 +822,7 @@ combien font 2 plus 2 ?
     });
     test('slide parsing',()
     {
+
       parser.loadXml(fname, outdir: outdir);
       VisitorSlideGen txtVis = VisitorSlideGen();
       XmlElement? root = parser.document?.getElement("formation");
@@ -838,8 +843,8 @@ combien font 2 plus 2 ?
       expect(resBuf.toString(),result);
 
       list = parser.document!.findAllElements('title');
-      expect(list.length,11);
-      result = "\\title{Le titre}\n";
+      expect(list.length,19);
+      result = "Le titre";
       resBuf.clear();
       txtVis.acceptTitle(list.first,buffer: resBuf);
       expect(resBuf.toString(),result);
@@ -1021,7 +1026,7 @@ combien font 2 plus 2 ?
 
       list = parser.document!.findAllElements('para');
       //print("got back list: ${list.length} and $list");
-      expect(list.length,13);
+      expect(list.length,17);
       resBuf.clear();
       txtVis.acceptPara(list.first,buffer: resBuf);
       result = "Une brève description\n";
@@ -1083,8 +1088,9 @@ combien font 2 plus 2 ?
       resBuf.clear();
       txtVis.acceptExercise(list.first,buffer: resBuf);
       expect(list.length,2);
-      result = """\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
-Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
+      result = """\\begin{exampleblock}{Exercise}
+Écrivez un script qui imprime la table de multiplication de 1 à 10
+\\end{exampleblock}
 """;
       expect(resBuf.toString(),result);
 
@@ -1093,7 +1099,7 @@ combien font 2 plus 2 ?
       resBuf.clear();
       txtVis.acceptNote(list.first,buffer: resBuf);
       expect(list.length,2);
-      result = "\\begin{mybox}{Note}\nun encadré pour evidencier des trucs\n\\end{mybox}\n";
+      result = "\\begin{alertblock}{Note}\nun encadré pour evidencier des trucs\n\\end{alertblock}\n";
       expect(resBuf.toString(),result);
 
       list = parser.document!.findAllElements('section');
@@ -1102,28 +1108,11 @@ combien font 2 plus 2 ?
       txtVis.clearAll();
       txtVis.stack..add("formation")..add("theme")..add("module")..add("page");
       txtVis.acceptSection(list.first,buffer: resBuf);
-      expect(list.length,4);
-      result = """\\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
-void main (void) {
-printf("Hello World.\\n");
-}\\end{lstlisting}
-\\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
-\\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
-\\hline
-col1&col2 \\\\ \\hline
-col3&col4 \\\\ \\hline
-\\end{tabular}\\begin{eqnarray}
-E = MC^2
-\\end{eqnarray}
-{\\texttt [ Energie = Masse * Célérité au carré ]}
-Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...\\begin{mybox}{Note}
-un encadré pour evidencier des trucs
-\\end{mybox}
-
-\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
-Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
+      expect(list.length,8);
+      result = """\\item section sans info
+\\begin{exampleblock}{Exercise}
+Écrivez un script qui imprime la table de multiplication de 1 à 10
+\\end{exampleblock}
 """;
       expect(resBuf.toString(),result);
 
@@ -1134,7 +1123,7 @@ un encadré pour evidencier des trucs
       txtVis.stack..add("formation")..add("theme")..add("module");
       txtVis.acceptSlide(list.first,buffer: resBuf);
       expect(list.length,4);
-      result = "\\begin{itemize}\n\\item something\n\\item \\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\n\\end{itemize}\n";
+      result = "{\n\\setbeamertemplate{background}\n{\n\\includegraphics[width=\\paperwidth,height=\\paperheight]{image.eps}\n}\n\\begin{frame}{page with slides}\n\\begin{itemize}\n\\item something\n\\item \\begin{itemize}\n\\item item of sublist\n\\end{itemize}\n\n\\end{itemize}\n\\end{frame}\n}\n";
       expect(resBuf.toString(),result);
 
       list = parser.document!.findAllElements('page');
@@ -1144,27 +1133,14 @@ un encadré pour evidencier des trucs
       txtVis.stack..add("formation")..add("theme")..add("module");
       txtVis.acceptPage(list.first,buffer: resBuf);
       expect(list.length,3);
-      result = """\\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
-void main (void) {
-printf("Hello World.\\n");
-}\\end{lstlisting}
-\\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
-\\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
-\\hline
-col1&col2 \\\\ \\hline
-col3&col4 \\\\ \\hline
-\\end{tabular}\\begin{eqnarray}
-E = MC^2
-\\end{eqnarray}
-{\\texttt [ Energie = Masse * Célérité au carré ]}
-Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...\\begin{mybox}{Note}
-un encadré pour evidencier des trucs
-\\end{mybox}
-
-\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
-Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
+      result = """\\begin{frame}{Page with all para elements}
+\\begin{itemize}
+\\item section sans info
+\\begin{exampleblock}{Exercise}
+Écrivez un script qui imprime la table de multiplication de 1 à 10
+\\end{exampleblock}
+\\end{itemize}
+\\end{frame}
 """;
       expect(resBuf.toString(),result);
 
@@ -1184,51 +1160,33 @@ un encadré pour evidencier des trucs
       txtVis.acceptInfo(list.first,buffer: resBuf);
       expect(list.length,1);
       result = """
-\\documentclass[a4paper,12pt]{scrbook}
-\\usepackage{babel}[fr]
-\\usepackage[most]{tcolorbox}
-\\usepackage{tikz}
-\\usepackage{fontawesome}
-\\usepackage[font=small,labelfont=bf]{caption} 
+\\documentclass{beamer}
+\\usepackage[T1]{fontenc}
+\\usepackage[francais]{babel}
 \\usepackage{graphicx}
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
+\\usepackage[most]{tcolorbox}
 \\usepackage{listings}
-<GLOSSARY>
 
-\\definecolor{myblue}{RGB}{20, 70, 180}
-\\newtcolorbox{mybox}[3][Note]{
-    colback=myblue!5!white,
-    colframe=myblue,
-    fonttitle=\\bfseries,
-    title=#2,
-    sharp corners,
-    rounded corners=southeast, 
-    attach boxed title to top left={xshift=5mm, yshift=-\\tcboxedtitleheight/2, yshifttext=-1mm},
-    boxed title style={size=small, colback=myblue, sharp corners=north, boxrule=0.5mm},
-    overlay={
-         \\IfFileExists{#3}{
-            \\node[anchor=north east, inner sep=0pt] at (frame.north east) {\\includegraphics[height=0.5cm]{#3}};
-        }{}
-    },
-}
-    \\subject{Une référence}
- \\title{Le titre}
-\\subtitle{Une brève description
-}
+\\title{Le titre}
+\\subtitle{Une brève description}
 \\author{Auteur du texte}
 \\date{2001-08-09}
 \\begin{document}
-\\maketitle
-\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
-  \\begin{quotation};
-  
-  \\begin{itemize}
+\\begin{frame}
+\\titlepage
+\\end{frame}
+\\begin{frame}{Outline}
+\\tableofcontents
+\\end{frame}
+\\section{Abstract}
+\\begin{frame}{Objectives}
+\\begin{itemize}
 \\item Objectif 1
 \\item Objectif 2
 \\end{itemize}
-  \\end{quotation}
-  \\clearpage""";
+\\end{frame}""";
       expect(resBuf.toString().trim(),result);
 
 
@@ -1239,45 +1197,35 @@ un encadré pour evidencier des trucs
       txtVis.stack..add("formation")..add("theme");
       txtVis.acceptModule(list.first,buffer: resBuf);
       expect(list.length,1);
-      result = """
-\\part{Module}
-\\chapter{Page with all para elements}
-\\section{section sans info}
-\\emph{texte en évidence} {\\bfseries \\large un menu} {\\texttt ls -al} {\\texttt /etc/passwd}\\href{linuxfr.fr}{http://linux-france.org}\\begin{lstlisting}[language=C ]
-void main (void) {
-printf("Hello World.\\n");
-}\\end{lstlisting}
-\\includegraphics[scale=0.5]{logo.eps}\\includegraphics[scale=1]{schema.eps}
-\\captionof{figure}{Schéma d'interconnexion}\\begin{tabular}{|c|c|}
-\\hline
-col1&col2 \\\\ \\hline
-col3&col4 \\\\ \\hline
-\\end{tabular}\\begin{eqnarray}
-E = MC^2
-\\end{eqnarray}
-{\\texttt [ Energie = Masse * Célérité au carré ]}
-Un réseau \\gls{IP} est ...
-Les technologies \\gls{IP} ...\\begin{mybox}{Note}
-un encadré pour evidencier des trucs
-\\end{mybox}
-
-\\begin{mybox}{Exercise} \\label{Écrivez un script qui imprime la table de multiplication de 1 à 10}
-Écrivez un script qui imprime la table de multiplication de 1 à 10\\end{mybox}
-\\chapter{Page with glossary stuff}
-\\section{Para with glossary stuff}
-Ceci est du texte normal,\\emph{du texte en évidence} ,
-            une URL\\href{http://linux-france.org}{http://linux-france.org}, etc.
-Un autre \\gls{TE} est ...
-            Les mots \\gls{TE} ...
-\\subsection{subsection lvl1}
-empty
-\\paragraph{subsection lvl2}
-empty
-\\paragraph{subsection lvl3}
-empty
-\\section{2nd top level section}
-empty
-\\chapter{page with slides}
+      result = """\\begin{frame}{Page with all para elements}
+\\begin{itemize}
+\\item section sans info
+\\begin{exampleblock}{Exercise}
+Écrivez un script qui imprime la table de multiplication de 1 à 10
+\\end{exampleblock}
+\\end{itemize}
+\\end{frame}
+\\begin{frame}{Page with glossary stuff}
+\\begin{itemize}
+\\item Para with glossary stuff
+\\item \\begin{itemize}
+\\item subsection lvl1
+\\item \\begin{itemize}
+\\item subsection lvl2
+\\item \\begin{itemize}
+\\item subsection lvl3
+\\end{itemize}
+\\end{itemize}
+\\end{itemize}
+\\item 2nd top level section
+\\end{itemize}
+\\end{frame}
+{
+\\setbeamertemplate{background}
+{
+\\includegraphics[width=\\paperwidth,height=\\paperheight]{image.eps}
+}
+\\begin{frame}{page with slides}
 \\begin{itemize}
 \\item something
 \\item \\begin{itemize}
@@ -1285,38 +1233,8 @@ empty
 \\end{itemize}
 
 \\end{itemize}
-\\section{Les caractëres spéciaux}
-\\subsection{listing caractëres spéciaux}
-Les entités pour les caractères spéciaux
-
-                    Un certain nombre de caractères ne sont pas accessibles au clavier ou sont réservés en XML, pour pallier cela, certaines entités ont été définies.
-\\begin{itemize}
-\\item ipso factum
-\\item \\&nbsp; : l'espace insécable ;
-\\item \\&tir; : le tiret d'intervalle '?';
-\\item " : le caractère '”' ;
-\\item \\& : le caractère '\\&' ;
-\\item < : le caractère pluspetitque ;
-\\item > : le caractère plusgrandque ;
-\\item \\&OElig; : le caractère OE ligaturé (?) ;
-\\item \\&oelig; : le caractère oe ligaturé (?) ;
-\\item \\&reg; : le caractère '©' ;
-\\item \\&euro; : le caractère pour l'euro (?).
-\\end{itemize}
-
-\\begin{mybox}{Exercise} \\label{combien font 2 plus 2 ?
-}
-combien font 2 plus 2 ?
-\\end{mybox}
-\\section{Answers}
-\\subsection{Solution \\ref{Écrivez un script qui imprime la table de multiplication de 1 à 10}}
-\\includegraphics[scale=1]{images/exo-tablemult.pl.1.eps}
-
-\\subsection{Solution \\ref{combien font 2 plus 2 ?
-}}
-4
-
-""" ;
+\\end{frame}
+}\n""" ;
       expect(resBuf.toString(),result);
 
       // list = parser.document!.findAllElements('slideshow');
@@ -1407,8 +1325,6 @@ combien font 2 plus 2 ?
 \\chapter{(deuxième diapo)}
 \\chapter{(Nièmediapo)}
 """ ;
-      //TODO implement slideshow expect(resBuf.toString(),result);
-
       list = parser.document!.findAllElements('formation');
       //print("got back list: ${list.length} and $list");
       resBuf.clear();
@@ -1416,7 +1332,7 @@ combien font 2 plus 2 ?
       txtVis.acceptFormation(list.first,buffer: resBuf);
       expect(list.length,1);
       result = """
-      \\documentclass{beamer}
+\\documentclass{beamer}
 \\usepackage[T1]{fontenc}
 \\usepackage[francais]{babel}
 \\usepackage{graphicx}
@@ -1426,76 +1342,69 @@ combien font 2 plus 2 ?
 \\usepackage{listings}
 
 \\title{Le titre}
+\\subtitle{Une brève description}
 \\author{Auteur du texte}
 \\date{2001-08-09}
-
 \\begin{document}
-
 \\begin{frame}
-  \\titlepage
+\\titlepage
 \\end{frame}
-
 \\begin{frame}{Outline}
-  \\tableofcontents
+\\tableofcontents
 \\end{frame}
-
-\\section*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
-\\begin{frame}{Abstract frame}
-  \\begin{itemize}
-    \\item Objectif 1
-    \\item Objectif 2
-    \\item Objectif 1
-    \\item Objectif 2
-  \\end{itemize}
+\\section{Abstract}
+\\begin{frame}{Objectives}
+\\begin{itemize}
+\\item Objectif 1
+\\item Objectif 2
+\\item Objectif 1
+\\item Objectif 2
+\\end{itemize}
 \\end{frame}
-
-\\begin{frame}{Section sans info}
-  \\begin{itemize}
-    \\item Section sans info
-  \\end{itemize}
-
-  \\begin{alertblock}{Exercise}
-    Écrivez un script qui imprime la table de multiplication de 1 à 10
-  \\end{alertblock}
+\\begin{frame}{Page with all para elements}
+\\begin{itemize}
+\\item section sans info
+\\begin{exampleblock}{Exercise}
+Écrivez un script qui imprime la table de multiplication de 1 à 10
+\\end{exampleblock}
+\\end{itemize}
 \\end{frame}
-
 \\begin{frame}{Page with glossary stuff}
-  \\begin{itemize}
-    \\item·
-  \\end{itemize}
+\\begin{itemize}
+\\item Para with glossary stuff
+\\item \\begin{itemize}
+\\item subsection lvl1
+\\item \\begin{itemize}
+\\item subsection lvl2
+\\item \\begin{itemize}
+\\item subsection lvl3
+\\end{itemize}
+\\end{itemize}
+\\end{itemize}
+\\item 2nd top level section
+\\end{itemize}
 \\end{frame}
+{
+\\setbeamertemplate{background}
+{
+\\includegraphics[width=\\paperwidth,height=\\paperheight]{image.eps}
+}
+\\begin{frame}{page with slides}
+\\begin{itemize}
+\\item something
+\\item \\begin{itemize}
+\\item item of sublist
+\\end{itemize}
 
-\\begin{frame}{Page with slides}
-  \\addtobeamertemplate{background}{\\includegraphics[width=\\paperwidth,height=\\paperheight]{image.eps}}{}
-  \\begin{itemize}
-    \\item Something
-    \\item \\begin{itemize}
-              \\item Item of sublist
-           \\end{itemize}
-  \\end{itemize}
-  \\begin{alertblock}{Exercise}
-    Combien font 2 plus 2 ?
-  \\end{alertblock}
+\\end{itemize}
 \\end{frame}
-
-\\begin{frame}{Page with glossary stuff}
-  \\begin{itemize}
-    \\item Première diapo
-  \\end{itemize}
+}
+\\begin{frame}{(première diapo)}
 \\end{frame}
-
-\\begin{frame}{Page with glossary stuff}
-  \\begin{itemize}
-    \\item Deuxième diapo
-  \\end{itemize}
+\\begin{frame}{(deuxième diapo)}
 \\end{frame}
-
-\\begin{frame}{Page with glossary stuff}
-  \\begin{itemize}
-    \\item Nième diapo
-  \\end{itemize}
+\\begin{frame}{(Nièmediapo)}
 \\end{frame}
-
 \\end{document}
 """;
       expect(resBuf.toString(),result);

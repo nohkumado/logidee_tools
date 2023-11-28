@@ -95,8 +95,9 @@ Les technologies <glossary name="IP"/> ...
 	      </section>
     </page>
     <page>
-        <title>page with slides</title>
+        <title>page with slides this title shouldn't show</title>
         <slide background="image.eps">
+            <title>page with slides</title>
             <list>
               <item> something </item>
               <item>

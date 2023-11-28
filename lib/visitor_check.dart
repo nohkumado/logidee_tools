@@ -14,16 +14,16 @@ class VisitorCheck extends VisitorTreeTraversor
     return this;
   }
   @override
-  Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer})
+  Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []})
   {
     List<String> check = ["title","subtitle","ref","description", "objectives","ratio", "duration", "prerequisite", "dependency","suggestion","version","level","state","proofreaders"];
     valid &= structureCheck(info,check, verbose:verbose, tag: "Info");
-    super.acceptInfo(info, verbose: verbose, buffer: buffer);
+    super.acceptInfo(info, verbose: verbose, buffer: buffer, treated: treated);
     return this;
   }
 
   @override
-  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer})
+  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []})
   {
     List<String> check = ["info","shortinfo","module", "slideshow"];
     valid &= structureCheck(theme,check, verbose:verbose, tag: "Theme");
@@ -32,11 +32,11 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer})
+  Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer, List<String> treated = const []})
   {
     List<String> check = ["info","shortinfo","page"];
     valid &= structureCheck(module,check, verbose:verbose, tag: "Module");
-    super.acceptModule(module, verbose: verbose, buffer: buffer);
+    super.acceptModule(module, verbose: verbose, buffer: buffer, treated: treated);
     return this;
   }
   bool structureCheck(XmlElement module,List<String> check, {bool verbose = false, tag="unknown node"}) {
@@ -160,7 +160,7 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     List<String> check = ["info","shortinfo","slide"];
     valid &= structureCheck(show,check, verbose:verbose, tag: "SlideShow");
     super.acceptSlideShow(show, verbose: verbose, buffer: buffer);
@@ -313,11 +313,11 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     valid &= checkAttributes(pageNode,{"restriction": {"option": true}});
     List<String> check = ["slide", "title", "section", "exercise"];
     valid &= structureCheck(pageNode,check, verbose:verbose, tag: "Page");
-    super.acceptPage(pageNode, verbose: verbose, buffer: buffer);
+    super.acceptPage(pageNode, verbose: verbose, buffer: buffer,treated:treated);
     return this;
   }
 
@@ -346,16 +346,16 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+  Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level = 0, StringBuffer? buffer, List<String> treated =const []}) {
     valid &= checkAttributes(secNode,{"restriction": {"option": true}});
     List<String> check = ["title","section", "para", "note", "exercise"];
     valid &= structureCheck(secNode,check, verbose:verbose, tag: "Section");
-    super.acceptSection(secNode, verbose: verbose, buffer: buffer);
+    super.acceptSection(secNode, verbose: verbose, buffer: buffer,treated: treated);
     return this;
   }
 
   @override
-  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) {
+  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     valid &= checkAttributes(slidNode,{"background": {"option": true}});
     List<String> check = ["section", "title", "subtitle", "list", "para", "note", "exercise"];
     valid &= structureCheck(slidNode,check, verbose:verbose, tag: "SlideShow");

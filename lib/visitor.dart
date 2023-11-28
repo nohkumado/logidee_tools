@@ -32,7 +32,7 @@ abstract class Visitor
 
   Visitor acceptInfo(XmlElement info, {bool verbose = false, StringBuffer? buffer});
 
-  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer});
+  Visitor acceptTheme(XmlElement theme, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []});
 
   Visitor acceptTitle(XmlElement title, {bool verbose = false, StringBuffer? buffer});
   Visitor acceptSubTitle(XmlElement subtitle, {bool verbose = false, StringBuffer? buffer});
@@ -68,13 +68,13 @@ abstract class Visitor
   Visitor acceptDuration(XmlElement durNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptPrerequisite(XmlElement prereqNode, {bool verbose = false, StringBuffer? buffer}) ;
 
-  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptSlideShow(XmlElement show, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) ;
   Visitor acceptModule(XmlElement module, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptPage(XmlElement pageNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptSection(XmlElement secNode, {bool verbose = false, int level=0, StringBuffer? buffer}) ;
   Visitor acceptExercise(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptNote(XmlElement notNode, {bool verbose = false, StringBuffer? buffer}) ;
-  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer}) ;
+  Visitor acceptSlide(XmlElement slidNode, {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) ;
   Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptMenu(XmlElement menNode, {bool verbose = false, StringBuffer? buffer}) ;
   Visitor acceptCmd(XmlElement cmdNode, {bool verbose = false, StringBuffer? buffer}) ;

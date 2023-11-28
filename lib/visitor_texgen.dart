@@ -313,7 +313,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   //TODO probable need an acceptLegend for image!
   @override
   Visitor acceptInfo(XmlElement info,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     int level = stack.length;
     //print("==============called acceptInfo with $level $stack");
 
@@ -355,7 +355,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     },
 }
     ''', buffer: buffer);
-      super.acceptInfo(info, verbose: verbose, buffer: buffer);
+      super.acceptInfo(info, verbose: verbose, buffer: buffer, treated: treated);
 
       add("\\begin{document}\n", buffer: buffer);
       add("\\maketitle\n", buffer: buffer);
@@ -458,9 +458,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptModule(XmlElement module,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated = const []}) {
     stack.add("module");
-    super.acceptModule(module, verbose: verbose, buffer: buffer);
+    super.acceptModule(module, verbose: verbose, buffer: buffer, treated: treated);
     if (answers.isNotEmpty) add("\\section{Answers}\n$answers", buffer: buffer);
     answers.clear();
     String removed = stack.removeLast();
@@ -519,13 +519,13 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptPage(XmlElement pageNode,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     String restriction = pageNode.getAttribute("restriction") ?? "all";
     if(restriction != "all" || restriction != selection) return this;
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
-    super.acceptPage(pageNode, verbose: verbose, buffer: buffer);
+    super.acceptPage(pageNode, verbose: verbose, buffer: buffer, treated: treated);
     String removed = stack.removeLast();
     if (removed != "page") {
       print("AYEEEHH??? stack got back $removed instead of page??");
@@ -620,7 +620,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSection(XmlElement secNode,
-      {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+      {bool verbose = false, int level = 0, StringBuffer? buffer, List<String> treated =const []}) {
     String restriction = secNode.getAttribute("restriction") ?? "all";
     if(restriction != "all" || restriction != selection) return this;
     level = stack.length;
@@ -628,7 +628,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     //print("txtgen lvl: $level st: $stack");
     //print("accept section[$level], should treat stuff??i $stack $secNode");
     super
-        .acceptSection(secNode, verbose: verbose, buffer: buffer, level: level);
+        .acceptSection(secNode, verbose: verbose, buffer: buffer, level: level, treated: treated);
     String removed = stack.removeLast();
     if (removed != "section") {
       print("AYEEEHH??? stack got back $removed instead of section??");
@@ -638,7 +638,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSlide(XmlElement slidNode,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     stack.add("slide");
     super.acceptSlide(slidNode, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
@@ -650,7 +650,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSlideShow(XmlElement show,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     //print("accept slideshow, should treat stuff??");
     stack.add("slideshow");
     super.acceptSlideShow(show, verbose: verbose, buffer: buffer);
@@ -735,7 +735,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptTheme(XmlElement theme,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     stack.add("theme");
     super.acceptTheme(theme, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();

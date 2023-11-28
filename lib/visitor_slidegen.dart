@@ -32,34 +32,6 @@ class VisitorSlideGen extends VisitorTreeTraversor {
     return this;
   }
 
-  @override
-  Visitor acceptAuthor(XmlElement authorNode,
-      {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("slidegen can't have null buffer...");
-    int level = stack.length;
-    //print("============ acceptAuthor $authorNode $level $stack");
-    if (level == 1) {
-      StringBuffer refBuffer = StringBuffer();
-      super.acceptAuthor(authorNode, verbose: verbose, buffer: refBuffer);
-      String rpl = buffer.toString();
-      if (refBuffer.isNotEmpty && buffer.toString().contains("<AUTHOR>")) {
-        rpl = buffer.toString().replaceAll("<AUTHOR>", "\\author{$refBuffer}");
-      } else if (buffer.toString().contains("<AUTHOR>")) {
-        rpl = buffer.toString().replaceAll("<AUTHOR>", "");
-      }
-      buffer.clear();
-      buffer.write(rpl);
-    } else if (level == 2) {
-      //ignored for now
-    } else {
-      //print("accept author[$level], should treat stuff?? $object and $stack");
-      if(stack.isEmpty || stack.last != "slideshow") {
-        super.acceptAuthor(authorNode, verbose: verbose, buffer: buffer);
-      }
-      //TODO author in slideshow info??
-    }
-    return this;
-  }
 
   @override
   Visitor acceptCDATA(XmlCDATA cnode,
@@ -138,37 +110,8 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   @override
   Visitor acceptDescription(XmlElement desc,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("slidegen can't have null buffer...");
-    int level = stack.length;
-    if (level == 1) {
-      StringBuffer refBuffer = StringBuffer();
-      super.acceptDescription(desc, verbose: verbose, buffer: refBuffer);
-      String rpl = buffer.toString();
-      if (refBuffer.isNotEmpty && buffer.toString().contains("<SUBTITLE>")) {
-        rpl = buffer
-            .toString()
-            .replaceAll("<SUBTITLE>", "\\subtitle{$refBuffer}");
-      } else if (buffer.toString().contains("<SUBTITLE>")) {
-        rpl = buffer.toString().replaceAll("<SUBTITLE>", "");
-      }
-      buffer.clear();
-      buffer.write(rpl);
-    } else if (level == 2) {
-      //TODO ignored theme desc for now
-    } else if (level == 3 ) {
-     StringBuffer tmpBuf = StringBuffer();
-      super.acceptDescription(desc, verbose: verbose, buffer: tmpBuf);
-      if(tmpBuf.isNotEmpty && tmpBuf.toString().trim().isNotEmpty){
-        if(stack.last != "slideshow") {
-          add("\\section*{}\n", buffer: buffer);
-          buffer.write(tmpBuf);
-        }
-        //else TODO handle slideshow info description
-      }
-    } else {
-      //print( "accept description[$level], should treat stuff??i $desc and $stack");
+    if (buffer == null) throw Exception("description can't have null buffer...");
       super.acceptDescription(desc, verbose: verbose, buffer: buffer);
-    }
     return this;
   }
 
@@ -202,28 +145,13 @@ class VisitorSlideGen extends VisitorTreeTraversor {
     String restriction = exNode.getAttribute("restriction") ?? "all";
     if(restriction != "all" || restriction != selection) return this;
     StringBuffer questBuf = StringBuffer();
-    StringBuffer answBuf = StringBuffer();
-    for (var p0 in exNode.children) {
-      String value = (p0 is XmlElement) ? p0.name.toString() : "node";
-      if (p0 is XmlElement && value == "question") {
-        acceptQuestion(p0, verbose: verbose, buffer: questBuf);
-      } else if (p0 is XmlElement && value == "answer") {
-        acceptAnswer(p0, verbose: verbose, buffer: answBuf);
-      } else {
-        valid = false;
-        errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
-      }
-    }
-    if (questBuf.isNotEmpty) {
-      String question = "\\begin{mybox}{Exercise} \\label{$questBuf}\n$questBuf\\end{mybox}\n";
-      add(question,
-          buffer: buffer);
-      //print("buffer now $buffer");
-      if (answBuf.isNotEmpty) {
-        String answer = "\\subsection{Solution \\ref{$questBuf}}\n$answBuf\n";
-        //print(" exercise, answering $answer");
-        add(answer, buffer: answers);
-      }
+    exNode.findElements("question").forEach((quest) {
+      acceptQuestion(quest, verbose: verbose, buffer: questBuf);
+    });
+
+    if (questBuf.isNotEmpty && questBuf.toString().trim().isNotEmpty) {
+      String question = "\\begin{exampleblock}{Exercise}\n${questBuf}\n\\end{exampleblock}\n";
+      add(question, buffer: buffer);
     }
     return this;
   }
@@ -248,12 +176,9 @@ class VisitorSlideGen extends VisitorTreeTraversor {
       print("AYEEEHH??? stack got back $removed instead of formation??");
     }
     add("\\end{document}\n",buffer: buffer);
-    if(glossary.isNotEmpty)
-      {
-        String txt = buffer.toString().replaceAll("<GLOSSARY>", "\\usepackage{glossaries}\n\\input{glossaire.tex}\n\\makeglossaries\n");
+        String txt = buffer.toString().replaceAll("<GLOSSARY>", "");
         buffer.clear();
         buffer.write(txt);
-      }
     return this;
   }
 
@@ -314,9 +239,34 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   //TODO probable need an acceptLegend for image!
   @override
   Visitor acceptInfo(XmlElement info,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     int level = stack.length;
     //print("==============called acceptInfo with $level $stack");
+    StringBuffer title = StringBuffer();
+    StringBuffer subtitle = StringBuffer();
+    StringBuffer author = StringBuffer();
+    StringBuffer date = StringBuffer();
+    info.findElements('title').firstOrNull?.let((element) => acceptTitle(element!, buffer: title));
+    info.findElements('subtitle').firstOrNull?.let((element) => acceptSubTitle(element!, buffer: subtitle));
+    info.findElements('author').firstOrNull?.let((element) => acceptAuthor(element!, buffer: author));
+    if(subtitle.isEmpty){
+      info.findElements('description').firstOrNull?.let((element) => acceptDescription(element!, buffer: subtitle));
+      treated = [... treated,"description"];
+    }
+    if(author.isEmpty){
+      info.findElements('version').firstOrNull?.findElements('author').firstOrNull?.let((element) => acceptAuthor(element!, buffer: author));
+      treated = [... treated,"version"];
+    }
+    info.findElements('version').firstOrNull?.findElements('date').firstOrNull?.let((element) => acceptDate(element!, buffer: date));
+
+
+ //  for (var p0 in info.children) {
+ //    String value = (p0 is XmlElement) ? p0.name.toString() : "node";
+ //    if (p0 is XmlElement && value == "title") acceptTitle(p0, buffer: title);
+ //    else if (p0 is XmlElement && value == "subtitle") acceptSubTitle(p0, buffer: subtitle);
+ //    else if (p0 is XmlElement && value == "author") acceptAuthor(p0, buffer: author);
+ //  }
+    treated = [... treated,"title","subtitle","author", "date"];
 
     if (level == 1) {
       add("""\\chapter*{\\centering \\begin{normalsize}Abstract\\end{normalsize}}
@@ -328,76 +278,48 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   
   """, buffer: abstract);
       add('''\\documentclass{beamer}
-\\usepackage{babel}[$lang]
-\\usepackage[most]{tcolorbox}
-\\usepackage{tikz}
-\\usepackage{fontawesome}
-\\usepackage[font=small,labelfont=bf]{caption} 
+\\usepackage[T1]{fontenc}
+\\usepackage[francais]{babel}
 \\usepackage{graphicx}
 \\usepackage{epstopdf}
 \\usepackage{hyperref}
+\\usepackage[most]{tcolorbox}
 \\usepackage{listings}
-\\newcounter{paragraph}
-\\newcommand{\\paragraph} %otherwise html stop compilation
-\\usepackage{html}
 
-\\definecolor{myblue}{RGB}{20, 70, 180}
-\\newtcolorbox{mybox}[3][Note]{
-    colback=myblue!5!white,
-    colframe=myblue,
-    fonttitle=\\bfseries,
-    title=#2,
-    sharp corners,
-    rounded corners=southeast, 
-    attach boxed title to top left={xshift=5mm, yshift=-\\tcboxedtitleheight/2, yshifttext=-1mm},
-    boxed title style={size=small, colback=myblue, sharp corners=north, boxrule=0.5mm},
-    overlay={
-         \\IfFileExists{#3}{
-            \\node[anchor=north east, inner sep=0pt] at (frame.north east) {\\includegraphics[height=0.5cm]{#3}};
-        }{}
-    },
-}
-\\usetheme{$theme}
-<TITLE>
-<SUBTITLE>
-<AUTHOR>
-\\institute{Beamer Slides}
-    ''', buffer: buffer);
+\\title{${title.toString().trim()}}
+\\subtitle{${subtitle.toString().trim()}}
+\\author{${author.toString().trim()}}
+${date.toString().trim()}
+''', buffer: buffer);
  if(File("logo.png").existsSync()) {
         add(
             "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n",buffer: buffer);
       }
 
-      super.acceptInfo(info, verbose: verbose, buffer: buffer);
+  //    super.acceptInfo(info, verbose: verbose, buffer: buffer, treated: treated);
 
       add("\\begin{document}\n", buffer: buffer);
-      add("\\maketitle\n", buffer: buffer);
       add("\\begin{frame}\n", buffer: buffer); //% Print the title page as the first slide\n"), buffer: buffer);
       add("\\titlepage\n", buffer: buffer);
       add("\\end{frame}\n", buffer: buffer); //% Presentation outline\n"), buffer: buffer);
       add("\\begin{frame}{Outline}\n", buffer: buffer);
       add("\\tableofcontents\n", buffer: buffer);
       add("\\end{frame}\n", buffer: buffer); //open not formation info
-      add("\\begin{frame}\n", buffer: buffer);
-      add("\\Large{title}\n", buffer: buffer);
-      add("$desc\n", buffer: buffer);
-      add("\\end{frame}\n", buffer: buffer);
 
-
-      String rpld = abstract.toString().replaceAll("<DESC>", desc.join("\n"));
-      abstract.clear();
-      abstract.write(rpld);
+      add("\\section{Abstract}\n", buffer: buffer); //open not formation info
+      add("\\begin{frame}{Objectives}\n", buffer: buffer); //open not formation info
+      StringBuffer objBuf = StringBuffer();
+      info.findElements('objectives').firstOrNull?.let((element) => acceptObjectives(element!, buffer: objBuf));
       // Convert the list into a TeX-formatted string
       String formattedObjectives =
           object.map((item) => "\\item $item").join("\n");
       // Construct the final string with TeX formatting
       String itemized =
           "\\begin{itemize}\n$formattedObjectives\n\\end{itemize}";
+      add("$itemized\n", buffer: buffer); //open not formation info
+      add("\\end{frame}\n", buffer: buffer); //open not formation info
+      treated.add("title");
 
-      String obRep = abstract.toString().replaceAll("<OBJ>", itemized);
-      abstract.clear();
-      abstract.write(obRep);
-      add(obRep, buffer: buffer);
     } else if (level == 2) {
       //print("acceptInfo lvl 2 $info");
       //print("TODO make a part page with the additional info $level");
@@ -483,11 +405,10 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptModule(XmlElement module,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated = const []}) {
     stack.add("module");
-    super.acceptModule(module, verbose: verbose, buffer: buffer);
-    if (answers.isNotEmpty) add("\\section{Answers}\n$answers", buffer: buffer);
-    answers.clear();
+    treated = [...treated, "module","info","shortinfo"];
+    super.acceptModule(module, verbose: verbose, buffer: buffer,treated: treated);
     String removed = stack.removeLast();
     if (removed != "module") {
       print("AYEEEHH??? stack got back $removed instead of module??");
@@ -504,12 +425,10 @@ class VisitorSlideGen extends VisitorTreeTraversor {
     bool trainer = ((notNode.getAttribute("trainer") ?? "0") == "1") ||
         ((notNode.getAttribute("trainer") ?? "0") == "true");
 
-    //print("accept Note, should treat stuff??");
     if (trainer) {
-      add("\\begin{mybox}{Note}${(icon.isNotEmpty) ? "{$icon}" : ""}\n",
-          buffer: buffer);
+      add("\\begin{alertblock}{Note}\n", buffer: buffer);
       super.acceptNote(notNode, verbose: verbose, buffer: buffer);
-      add("\n\\end{mybox}\n", buffer: buffer);
+      add("\n\\end{alertblock}\n", buffer: buffer);
     } else {
       print("suppressed note $notNode, not a trainer");
     }
@@ -544,18 +463,48 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptPage(XmlElement pageNode,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    //if(treated.isEmpty())
+    treated = [];
     String restriction = pageNode.getAttribute("restriction") ?? "all";
     if(restriction != "all" || restriction != selection) return this;
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
-    super.acceptPage(pageNode, verbose: verbose, buffer: buffer);
-    String removed = stack.removeLast();
-    if (removed != "page") {
-      print("AYEEEHH??? stack got back $removed instead of page??");
+
+   bool collate = false;
+    if(pageNode.findElements('slide').isNotEmpty) {
+      treated.add('section');//ignore all besides the slide
+      treated.add('exercise');//ignore all besides the slide
+    } else {
+      collate = true;
     }
-    return this;
+    final titleElement = pageNode.findElements('title').firstOrNull;
+    String title = "";
+    if (titleElement != null) {
+      StringBuffer titlebuf = StringBuffer();
+      acceptTitle(titleElement, buffer: titlebuf);
+      title = titlebuf.toString().trim();
+    }
+    treated = [... treated,"title","para"];
+    if(collate) {
+      buffer?.write("\\begin{frame}");
+      if (title.isNotEmpty) buffer?.write("{${title}}");
+      if (title.isNotEmpty) buffer?.write("\n");
+      if (collate) {
+        buffer?.write("\\begin{itemize}\n");
+      }
+    }
+        super.acceptPage(pageNode, verbose: verbose, buffer: buffer, treated: treated);
+        if(collate) {
+          buffer?.write("\\end{itemize}\n");
+          buffer?.write("\\end{frame}\n");
+        }
+        String removed = stack.removeLast();
+        if (removed != "page") {
+          print("AYEEEHH??? stack got back $removed instead of page??");
+        }
+        return this;
   }
 
   @override
@@ -645,15 +594,33 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSection(XmlElement secNode,
-      {bool verbose = false, int level = 0, StringBuffer? buffer}) {
+      {bool verbose = false, int level = 0, StringBuffer? buffer, List<String> treated =const []}) {
     String restriction = secNode.getAttribute("restriction") ?? "all";
     if(restriction != "all" || restriction != selection) return this;
     level = stack.length;
+    bool stacked = false;
+    if(stack.last == "section"){//ok, we are delving deeper into the itemize
+      add("\\item \\begin{itemize}\n",buffer: buffer);
+      stacked = true;
+    };
     stack.add("section");
-    //print("txtgen lvl: $level st: $stack");
-    //print("accept section[$level], should treat stuff??i $stack $secNode");
-    super
-        .acceptSection(secNode, verbose: verbose, buffer: buffer, level: level);
+    //print("entering section with stack as $stack");
+
+    final titleElement = secNode.findElements('title').firstOrNull;
+    String title = "";
+    if (titleElement != null) {
+      StringBuffer titlebuf = StringBuffer();
+      acceptTitle(titleElement, buffer: titlebuf);
+      title = titlebuf.toString().trim();
+    }
+    treated = [...treated,"title","para"];
+
+    buffer?.write("\\item ${title}\n");
+
+    super.acceptSection(secNode, verbose: verbose, buffer: buffer, level: level, treated: treated);
+    if(stacked){
+      add("\\end{itemize}\n",buffer: buffer);
+    };
     String removed = stack.removeLast();
     if (removed != "section") {
       print("AYEEEHH??? stack got back $removed instead of section??");
@@ -663,9 +630,32 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSlide(XmlElement slidNode,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     stack.add("slide");
-    super.acceptSlide(slidNode, verbose: verbose, buffer: buffer);
+    String background = slidNode.getAttribute("background") ?? "";
+    if (background.isNotEmpty) {
+      //print("gound background $background");
+      buffer?.write("{\n\\setbeamertemplate{background}\n{\n\\includegraphics[width=\\paperwidth,height=\\paperheight]{$background}\n}\n");
+    }
+
+    //print("checking for title in $slidNode");
+    final titleElement = slidNode.findElements('title').firstOrNull;
+    String title = "";
+    if (titleElement != null) {
+      StringBuffer titlebuf = StringBuffer();
+      acceptTitle(titleElement, buffer: titlebuf);
+      title = titlebuf.toString().trim();
+    }
+    treated = [... treated,"title","para"];
+    buffer?.write("\\begin{frame}");
+    if(title.isNotEmpty) buffer?.write("{${title}}");
+    if(title.isNotEmpty) buffer?.write("\n");
+
+    super.acceptSlide(slidNode, verbose: verbose, buffer: buffer, treated: treated);
+    buffer?.write("\\end{frame}\n");
+    if (background.isNotEmpty) {
+      buffer?.write("}\n");
+    }
     String removed = stack.removeLast();
     if (removed != "slide") {
       print("AYEEEHH??? stack got back $removed instead of slide??");
@@ -675,47 +665,15 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptSlideShow(XmlElement show,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     //print("accept slideshow, should treat stuff??");
     stack.add("slideshow");
-    super.acceptSlideShow(show, verbose: verbose, buffer: buffer);
+    treated = [... treated, "info", "shortinfo"];//TODO add a nice presentation page also for a slideshow....
+    super.acceptSlideShow(show, verbose: verbose, buffer: buffer, treated: treated);
     String removed = stack.removeLast();
     if (removed != "slideshow") {
       print("AYEEEHH??? stack got back $removed instead of slideshow??");
     }
-    return this;
-  }
-
-  @override
-  Visitor acceptState(XmlElement stateNode,
-      {bool verbose = false, StringBuffer? buffer}) {
-    int level = stack.length;
-    if (level == 1) {
-      super.acceptState(stateNode, verbose: verbose, buffer: buffer);
-    } else if (level == 2 && stack.last == "theme") {
-    } else if (level == 3 && stack.last == "module") {
-    } else {
-      //print("accept State[$level], should treat stuff?? $stack");
-      super.acceptState(stateNode, verbose: verbose, buffer: buffer);
-    }
-    return this;
-  }
-
-  @override
-  Visitor acceptSubTitle(XmlElement subtitle,
-      {bool verbose = false, StringBuffer? buffer}) {
-    if(stack.length == 1) {
-      //TODO check if some other part needs subtitles
-    super.acceptSubTitle(subtitle, verbose: verbose, buffer: buffer);
-    }
-    return this;
-  }
-
-  @override
-  Visitor acceptSuggestion(XmlElement suggestion,
-      {bool verbose = false, StringBuffer? buffer}) {
-    //print("accept suggestion, should treat stuff??");
-    //super.acceptSuggestion(suggestion, verbose: verbose, buffer: buffer);
     return this;
   }
 
@@ -760,9 +718,10 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptTheme(XmlElement theme,
-      {bool verbose = false, StringBuffer? buffer}) {
+      {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
     stack.add("theme");
-    super.acceptTheme(theme, verbose: verbose, buffer: buffer);
+    treated = [... treated, "info", "shortinfo"];
+    super.acceptTheme(theme, verbose: verbose, buffer: buffer, treated: treated);
     String removed = stack.removeLast();
     if (removed != "theme") {
       print("AYEEEHH??? stack got back $removed instead of theme??");
@@ -770,45 +729,6 @@ class VisitorSlideGen extends VisitorTreeTraversor {
     return this;
   }
 
-  @override
-  Visitor acceptTitle(XmlElement title,
-      {bool verbose = false, bool add = true, StringBuffer? buffer}) {
-    int level = stack.length;
-    if (level == 2) {
-      //print("----- TODO do something with theme info accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
-      return this;
-    }
-    int sepLvl = level - 2;
-    if (sepLvl < 1) sepLvl = 0;
-    if (sepLvl >= separators.length) sepLvl = separators.length - 1;
-    //print("----- accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
-    if (stack.contains("slideshow")) {
-      if (sepLvl < separators.length -1) sepLvl++;
-      //print("slideshow detected: $title $level $stack $sepLvl $separators ${separators[sepLvl]}");
-      this.add("${separators[sepLvl]}{", buffer: buffer);
-      if (title.children.isNotEmpty) {
-        //print("accepting tt tile $title");
-        super.acceptTitle(title, verbose: verbose, buffer: buffer);
-      }
-      this.add("}\n", buffer: buffer);
-    } else {
-      if (level == 1) {
-        buffer!.write("<SUBJECT>\n \\title{");
-      } else {
-        this.add("${separators[sepLvl]}{", buffer: buffer);
-      }
-      if (title.children.isNotEmpty) {
-        //print("accepting tt tile $title");
-        super.acceptTitle(title, verbose: verbose, buffer: buffer);
-      }
-      if (level == 1) {
-        buffer!.write("}\n<SUBTITLE>\n<AUTHOR>\n");
-      } else {
-        this.add("}\n", buffer: buffer);
-      }
-    }
-    return this;
-  }
 
   @override
   Visitor acceptUrl(XmlElement urlNode,
@@ -864,4 +784,11 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   }
 
   VisitorSlideGen({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
+
+}
+
+extension Let<T> on T? {
+  R let<R>(R Function(T?) apply) {
+    return this != null ? apply(this!) : apply(null); // Pass null if the receiver is null
+  }
 }
