@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:logidee_tools/visitor_check.dart';
+import 'package:logidee_tools/visitor_slidegen.dart';
+import 'package:logidee_tools/visitor_texgen.dart';
 import 'package:posix/posix.dart';
 import 'package:path/path.dart' as path;
 
@@ -44,7 +47,6 @@ void main(List<String> arguments) {
       var val = argResults[key];
       data[key] = (val == null) ? "null" : val;
     }
-    print("parsed arguments: $data");
     rest = argResults.rest;
     //postprocessing
     if (data.containsKey("file") && data["file"].isNotEmpty) {
@@ -62,10 +64,28 @@ bool rewrite = (data.containsKey("reinstall") && data["reinstall"])?true:false;
     String fname = data['file'];
     fname = tildeExpansion(fname);
     fname = path.canonicalize(fname);
-    print("treating $fname");
-    parser.loadXml(fname);
-    print("loaded the xml $fname");
-    parser.buildTexScript(fname);
+    VisitorCheck checker = parser.loadXml(fname);
+    if(!parser.parsevalid){
+      print("Error checking the file.... ${checker.errmsg}");
+    }
+    else {
+      VisitorTexgen script = parser.buildTexScript(fname);
+      if(script.errmsg.isNotEmpty){
+        print("Script parser reported ${script.errmsg}");
+      }
+      VisitorSlideGen slides = parser.buildTexSlides(fname);
+      if(slides.errmsg.isNotEmpty){
+        print("slides parser reported ${slides.errmsg}");
+      }
+
+    }
+
+
+
+
+
+
+
     //parser.parse();
     //print("parsed $fname");
     print("check formation.tex and run it with pdflatex formation");

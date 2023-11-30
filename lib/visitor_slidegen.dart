@@ -25,6 +25,8 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   List<String> desc = [];
   List<String> object = [];
 
+  String background = "";
+
   @override
   Visitor acceptAnswer(XmlElement answNode,
       {bool verbose = false, StringBuffer? buffer}) {
@@ -143,7 +145,10 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   Visitor acceptExercise(XmlElement exNode,
       {bool verbose = false, StringBuffer? buffer}) {
     String restriction = exNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen exercise $restriction != all or '$selection' bailing out");
+      return this;
+    }
     StringBuffer questBuf = StringBuffer();
     exNode.findElements("question").forEach((quest) {
       acceptQuestion(quest, verbose: verbose, buffer: questBuf);
@@ -168,6 +173,8 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   @override
   acceptFormation(XmlElement formation,
       {bool verbose = false, StringBuffer? buffer}) {
+    String background = formation.getAttribute("background") ?? "";
+    if(background.isNotEmpty) this.background = background;
     buffer ??= content;
     stack.add("formation");
     super.acceptFormation(formation, verbose: verbose, buffer: buffer);
@@ -208,6 +215,7 @@ class VisitorSlideGen extends VisitorTreeTraversor {
     bool captionVisible = true;
 
     if (visible) {
+      print("image has scale $scale for $imgNode");
       add("\\includegraphics[scale=$scale]{$src}", buffer: buffer, trim: false);
       if (imgNode.children.isNotEmpty) {
         XmlNode capNode = imgNode.firstChild!;
@@ -291,6 +299,9 @@ class VisitorSlideGen extends VisitorTreeTraversor {
 \\author{${author.toString().trim()}}
 ${date.toString().trim()}
 ''', buffer: buffer);
+      if(background.isNotEmpty) {
+        add("\\setbeamertemplate{background}\n {\n \\includegraphics[width=\\paperwidth,height=\\paperheight]{$background}\n}\n" ,buffer: buffer);
+      }
  if(File("logo.png").existsSync()) {
         add(
             "\\logo{\\includegraphics[width=2.5cm,height=2.5cm]{logo.png}}\n",buffer: buffer);
@@ -420,7 +431,10 @@ ${date.toString().trim()}
   Visitor acceptNote(XmlElement notNode,
       {bool verbose = false, StringBuffer? buffer}) {
     String restriction = notNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen note $restriction != all or '$selection' bailing out");
+      return this;
+    }
     String icon = notNode.getAttribute("icon") ?? "";
     bool trainer = ((notNode.getAttribute("trainer") ?? "0") == "1") ||
         ((notNode.getAttribute("trainer") ?? "0") == "true");
@@ -467,7 +481,10 @@ ${date.toString().trim()}
     //if(treated.isEmpty())
     treated = [];
     String restriction = pageNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen page $restriction != all or '$selection' bailing out");
+      return this;
+    }
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
@@ -509,12 +526,15 @@ ${date.toString().trim()}
 
   @override
   Visitor acceptPara(XmlElement paraNode,
-      {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+      {bool verbose = false, String tag = "Para", StringBuffer? buffer, List<String> treated =const []}) {
     String restriction = paraNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen para $restriction != all or '$selection' bailing out");
+      return this;
+    }
 
     //print("accept Para, $stack for $paraNode");
-    super.acceptPara(paraNode, verbose: verbose, buffer: buffer);
+    super.acceptPara(paraNode, verbose: verbose, buffer: buffer, treated: treated);
     add("\n", buffer: buffer);
     return this;
   }
@@ -596,7 +616,10 @@ ${date.toString().trim()}
   Visitor acceptSection(XmlElement secNode,
       {bool verbose = false, int level = 0, StringBuffer? buffer, List<String> treated =const []}) {
     String restriction = secNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen section $restriction != all or '$selection' bailing out");
+      return this;
+    }
     level = stack.length;
     bool stacked = false;
     if(stack.last == "section"){//ok, we are delving deeper into the itemize
@@ -646,7 +669,7 @@ ${date.toString().trim()}
       acceptTitle(titleElement, buffer: titlebuf);
       title = titlebuf.toString().trim();
     }
-    treated = [... treated,"title","para"];
+    treated = [... treated,"title"];
     buffer?.write("\\begin{frame}");
     if(title.isNotEmpty) buffer?.write("{${title}}");
     if(title.isNotEmpty) buffer?.write("\n");

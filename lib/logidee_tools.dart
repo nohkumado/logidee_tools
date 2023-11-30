@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:logidee_tools/visitor_check.dart';
+import 'package:logidee_tools/visitor_slidegen.dart';
 import 'package:logidee_tools/visitor_texgen.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
@@ -14,6 +15,7 @@ class LogideeTools {
   late IOSink slidesink;
   //late IOSink scriptsink;
   bool parsevalid = true;
+  StringBuffer errors = new StringBuffer();
 
   bool documentBegun = false;
   XmlDocument? document;
@@ -21,34 +23,26 @@ class LogideeTools {
   VisitorCheck loadXml(String fname, {String outdir = "", bool verbose = false}) {
     VisitorCheck visit = VisitorCheck();
     dirname = path.dirname(fname);
-    String outname = ((outdir.isNotEmpty) ? outdir : dirname) +
-        path.separator +
-        path.basenameWithoutExtension(fname);
-    String slidename = outname + "_gen_slides.tex";
-    String scriptname = outname + "_gen.tex";
-    if (verbose) print("ouputname = $slidename $scriptname");
     if (dirname.isNotEmpty) dirname += path.separator;
     final file = File(fname);
-    final slidefile = File(slidename);
-    final scriptfile = File(scriptname);
-    slidesink = slidefile.openWrite();
-    //scriptsink = scriptfile.openWrite();
 
     try {
       document = XmlDocument.parse(file.readAsStringSync());
     } catch (e) {
       if (e is XmlException) {
-        visit.errmsg = "parse error in  $fname : $e";
+        visit.errmsg.write("parse error in  $fname : $e");
         print("parse error in  $fname : $e");
+        errors.write(visit.errmsg);
       } else {
-        visit.errmsg = "couldn't open file $fname : $e";
+        visit.errmsg.write("couldn't open file $fname : $e");
         print(visit.errmsg);
+        errors.write(visit.errmsg);
       }
       visit.valid = false;
       return visit;
     }
     if (document == null) {
-      visit.errmsg = "Well don't know why (there should have been previous errors) but the parsing of $fname failed....";
+      visit.errmsg.write("Well don't know why (there should have been previous errors) but the parsing of $fname failed....");
       print(visit.errmsg );
       visit.valid = false;
       return visit;
@@ -60,7 +54,7 @@ class LogideeTools {
           .findAllElements('xi:include')
           .forEach((toInc) => processInclude(toInc));
     } catch (e) {
-      visit.errmsg = "something bad happened.... $e";
+      visit.errmsg.write("something bad happened.... $e");
       print(visit.errmsg );
       visit.valid = false;
       return visit;
@@ -73,10 +67,11 @@ class LogideeTools {
     if (!parsevalid && verbose) print("Errors occurred, check the log");
     return visit;
   }
-  bool buildTexScript(String fname, {String outdir = "", bool verbose = false}) {
+  VisitorTexgen buildTexScript(String fname, {String outdir = "", bool verbose = false}) {
+    VisitorTexgen txtVis = VisitorTexgen();
     if (document == null) {
       print("invocation of buildTexScript  impossible, document is null...");
-      return false;
+      return txtVis;
     }
     dirname = path.dirname(fname);
     String outname = ((outdir.isNotEmpty) ? outdir : dirname) +
@@ -85,33 +80,47 @@ class LogideeTools {
     String scriptname = outname + "_gen.tex";
     if (verbose) print("ouputname = $scriptname");
     if (dirname.isNotEmpty) dirname += path.separator;
-    final file = File(fname);
     final scriptfile = File(scriptname);
     //scriptsink = scriptfile.openWrite();
     if(parsevalid)
     {
-      String charte = Platform.environment["CHARTE"] ?? "default";
+      String charte = (Platform.environment["CHARTE"] ?? "default").trim();
       bool trainer = bool.parse(Platform.environment["TRAINER"]??"false");
-      String selection = Platform.environment["SELECTION"]??"all ";
+      String selection = (Platform.environment["SELECTION"]??"all").trim();
       bool cycle = bool.parse(Platform.environment["CYCLE"]??"false");
-      String lange = Platform.environment["LANG"]??"en";
-      VisitorTexgen txtVis = VisitorTexgen(charte: charte, trainer: trainer, selection: selection, lang: lang);
+      String lang = Platform.environment["LANG"]??"en";
+      txtVis = VisitorTexgen(charte: charte, trainer: trainer, selection: selection, lang: lang);
+
+
+
+
+     //list = parser.document!.findAllElements('formation');
+     ////print("got back list: ${list.length} and $list");
+     //txtVis.acceptFormation(list.first,buffer: resBuf);
+
+
+
       XmlElement? root = document?.getElement("formation");
-      //print("PREPARATION OF visitor: $root");
-      if(root != null) FormationChecker(root,txtVis);
-      //print("visitor produced : ${txtVis.content}");
+      //print("PREPARATION OF visitor: $root\n\n");
+      StringBuffer result = StringBuffer();
+      //if(root != null) FormationChecker(root,txtVis, buffer: result);
+      result.clear();
+      txtVis.clearAll();
+      if(root != null) txtVis.acceptFormation(root, buffer: result);
+      //print("visitor produced : ${result}");
       if(txtVis.glossary.isNotEmpty)
       {
         String glosname ="${((outdir.isNotEmpty) ? outdir : dirname)}${path.separator}glossaire.tex";
         final glosfile = File(glosname);
         glosfile.writeAsStringSync(txtVis.glossary.toString());
       }
-      scriptfile.writeAsStringSync(txtVis.content.toString());
+      //scriptfile.writeAsStringSync(txtVis.content.toString());
+      scriptfile.writeAsStringSync(result.toString());
       print("written script file $scriptname");
       print("now run : pdflatex -shell-escape $scriptname");
     }
     else print("something went wrong creating $scriptname");
-    return parsevalid;
+    return txtVis;
   }
   /// replace recursively the xi:include by the file given in the href
   void processInclude(XmlElement toInc) {
@@ -142,77 +151,43 @@ class LogideeTools {
     }
   }
 
-  void processNode(XmlNode node) {
-    if (node is XmlAttribute) {
-      print("found attribute :${node.value}");
-    } else if (node is XmlCDATA) {
-      print("found CDATA :${node.value}");
-    } else if (node is XmlComment) {
-      //print("found comment :${node.text}");
-    } else if (node is XmlDeclaration) {
-      print("found Declaration :${node.value}");
-    } else if (node is XmlDoctype) {
-      print("found Doctype :${node.value}");
-    } else if (node is XmlDocument) {
-      print("found Document :${node.value}");
-    } else if (node is XmlDocumentFragment) {
-      print("found DocumentFragment :${node.value}");
-    } else if (node is XmlElement) {
-      processElement(node);
-    } else if (node is XmlProcessing) {
-      print("found XmlProcessing :${node.value}");
-    } else if (node is XmlText) {
-      processTxt(node);
-    } else {
-      print(
-          "found unknown node t:${node.nodeType} txt:${node.value} txt:${node.innerText}");
-      parsevalid = false;
+  VisitorSlideGen buildTexSlides(String fname, {String outdir = "", bool verbose = false}) {
+    VisitorSlideGen txtVis = VisitorSlideGen();
+    if (document == null) {
+      print("invocation of buildTexScript  impossible, document is null...");
+      return txtVis;
     }
-  }
 
-  void processElement(XmlElement node) {
-    switch (node.name.toString()) {
-      case "shortinfo":
-      case "info":
-        processInfo(node);
-        break;
-      default:
-        print("found XmlElement :${node.name} ");
-        for (var element in node.attributes) {
-          print("att: $element");
-        }
+
+    dirname = path.dirname(fname);
+    String outname = ((outdir.isNotEmpty) ? outdir : dirname) +
+        path.separator +
+        path.basenameWithoutExtension(fname);
+    String scriptname = outname + "_gen_slides.tex";
+    if (verbose) print("ouputname = $scriptname");
+    if (dirname.isNotEmpty) dirname += path.separator;
+    final file = File(fname);
+    final scriptfile = File(scriptname);
+    //scriptsink = scriptfile.openWrite();
+    if(parsevalid)
+    {
+      String charte = Platform.environment["CHARTE"] ?? "default";
+      bool trainer = bool.parse(Platform.environment["TRAINER"]??"false");
+      String selection = Platform.environment["SELECTION"]??"all ";
+      bool cycle = bool.parse(Platform.environment["CYCLE"]??"false");
+      String lange = Platform.environment["LANG"]??"en";
+      txtVis = VisitorSlideGen(charte: charte, trainer: trainer, selection: selection, lang: lang);
+      XmlElement? root = document?.getElement("formation");
+      //print("PREPARATION OF visitor: $root");
+      if(root != null) FormationChecker(root,txtVis);
+      //print("visitor produced : ${txtVis.content}");
+      scriptfile.writeAsStringSync(txtVis.content.toString());
+      print("written slide file $scriptname");
+      print("now run : pdflatex -shell-escape $scriptname");
     }
+    else print("something went wrong creating $scriptname");
+    return txtVis;
   }
-
-  void processTxt(XmlText node) {
-    //ignore empty nodes
-    if (node.value.trim().isNotEmpty) print("found XmlText : '${node.value}'");
-  }
-
-  void processInfo(XmlElement node) {}
-
-  /*
-   * or \begin{titlepage}
-      \vspace*{\stretch{1}}
-      \begin{center}
-      {\huge\bfseries Thesis \\[1ex]
-      title}                  \\[6.5ex]
-      {\large\bfseries Author name}           \\
-      \vspace{4ex}
-      Thesis  submitted to                    \\[5pt]
-      \textit{University name}                \\[2cm]
-      in partial fulfilment for the award of the degree of \\[2cm]
-      \textsc{\Large Doctor of Philosophy}    \\[2ex]
-      \textsc{\large Mathematics}             \\[12ex]
-      \vfill
-      Department of Mathematics               \\
-      Address                                 \\
-      \vfill
-      \today
-      \end{center}
-      \vspace{\stretch{2}}
-      \end{titlepage}
-   */
 
   void cleanList(List<XmlNode> nodes,
       {bool verbose = false, recursive = false}) {
@@ -236,18 +211,4 @@ class LogideeTools {
     }
   }
 
-
-  void writeslide(String txt) {
-    if (txt.contains(r'_')) txt = txt.replaceAll(r'_', r'\_');
-    slidesink.write(txt);
-  }
-
-  void writescript(String txt, {bool onlyfilled = false}) {
-    if (txt.contains(r'_')) txt = txt.replaceAll(r'_', r'\_');
-    if (txt == 'null') print("some fucker added null....");
-    print("WARNING writescript ATM inactivated writing to file '$txt'");
-    //if (onlyfilled && txt.trim().isNotEmpty)
-    //  scriptsink.write(txt);
-    //else if (!onlyfilled) scriptsink.write(txt);
-  }
 }

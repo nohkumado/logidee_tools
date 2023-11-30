@@ -2,7 +2,7 @@ import 'package:logidee_tools/visitor.dart';
 import 'package:xml/xml.dart';
 
 class VisitorTreeTraversor extends Visitor {
-  VisitorTreeTraversor({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
+  VisitorTreeTraversor({super.charte, super.trainer, super.selection, super.lang, super.cycle});
 
   @override
   Visitor acceptFormation(XmlElement formation, {bool verbose = false, StringBuffer? buffer}) {
@@ -11,7 +11,7 @@ class VisitorTreeTraversor extends Visitor {
         "wrong node addressed expected formation got ${formation.name}...");
     }
     for (var p0 in formation.children) {
-      //(p0 is XmlElement)? errmsg += "formation child: ${p0.name.toString()}"):errmsg += "formation unknown: $p0 of ${p0.runtimeType}");
+      //(p0 is XmlElement)? errmsg.write("formation child: ${p0.name.toString()}"):errmsg.write("formation unknown: $p0 of ${p0.runtimeType}");
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
@@ -23,7 +23,7 @@ class VisitorTreeTraversor extends Visitor {
         }
       } else {
         valid = false;
-        errmsg += "formation unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("formation unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -67,11 +67,11 @@ class VisitorTreeTraversor extends Visitor {
         } else if (value == "proofreaders" && !treated.contains("proofreaders")) {
           acceptProofreaders(p0, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "info unknown stuff: ${p0.runtimeType} $p0\n";
+          errmsg.write("info unknown stuff: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "info unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("info unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -87,21 +87,27 @@ class VisitorTreeTraversor extends Visitor {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-        if (!treated.contains("info"))
+          //print("entering theme info");
+        if (!treated.contains("info")) {
           acceptInfo(p0, verbose: verbose, buffer: buffer);
+        }
+          //else print("refusing theme info");
         } else if (value == "shortinfo") {
-          if (!treated.contains("shortinfo"))
+          if (!treated.contains("shortinfo")) {
             acceptInfo(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "module") {
-          if (!treated.contains("module"))
-          acceptModule(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("module")) {
+            acceptModule(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "slideshow") {
-          if (!treated.contains("slideshow"))
-          acceptSlideShow(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("slideshow")) {
+            acceptSlideShow(p0, verbose: verbose, buffer: buffer);
+          }
         }
       } else {
         valid = false;
-        errmsg += "Theme unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("Theme unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -135,11 +141,11 @@ class VisitorTreeTraversor extends Visitor {
         if (value == "para") {
           acceptPara(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Description unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Description unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Description unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Description unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -157,11 +163,11 @@ class VisitorTreeTraversor extends Visitor {
         if (value == "item") {
           acceptItem(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Objectives unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Objectives unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Objectives unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Objectives unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -179,11 +185,11 @@ class VisitorTreeTraversor extends Visitor {
         if (value == "ref") {
           acceptRef(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Dependency unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Dependency unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Dependency unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Dependency unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -201,11 +207,11 @@ if (suggestion.name.toString() != "suggestion") {
         if (value == "ref") {
           acceptRef(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Suggestion unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Suggestion unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Suggestion unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Suggestion unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -221,7 +227,7 @@ if (suggestion.name.toString() != "suggestion") {
     String number = version.getAttribute("number") ?? "";
     if (number.isEmpty) {
       valid = false;
-      errmsg += "Version tag version needs a number";
+      errmsg.write("Version tag version needs a number");
     }
     for (var node in version.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
@@ -235,11 +241,11 @@ if (suggestion.name.toString() != "suggestion") {
         } else if (value == "date") {
           acceptDate(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Version unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Version unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Version unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Version unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -258,11 +264,11 @@ if (suggestion.name.toString() != "suggestion") {
         if (value == "item") {
           acceptItem(node, verbose: verbose, buffer: buffer);
         } else {
-          errmsg += "Proofreaders unknown stuff: ${node.runtimeType} $node";
+          errmsg.write("Proofreaders unknown stuff: ${node.runtimeType} $node");
         }
       } else {
         valid = false;
-        errmsg += "Proofreaders unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Proofreaders unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -281,7 +287,7 @@ if (suggestion.name.toString() != "suggestion") {
   //String icon = module.getAttribute("icon")??""; //para note exercise image link of type
   @override
   Visitor acceptPara(XmlElement paraNode,
-      {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+      {bool verbose = false, String tag = "Para", StringBuffer? buffer, List<String> treated =const []}) {
     if (paraNode.name.toString() != "para") {
       throw UnsupportedError(
           "wrong node ?? expected para got  ${paraNode.name}...");
@@ -289,57 +295,83 @@ if (suggestion.name.toString() != "suggestion") {
     for (var subnode in paraNode.children) {
       //print("acceptPara child loop treating $node of ${node.runtimeType}");
       if (subnode is XmlText) {
-        acceptText(subnode, verbose: verbose,buffer: buffer);
+        if (!treated.contains("text")) {
+          acceptText(subnode, verbose: verbose,buffer: buffer);
+        }
       } else if (subnode is XmlElement) {
         if (subnode.name.toString() == "url") {
-          acceptUrl(
+          if (!treated.contains("url")) {
+            acceptUrl(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "image") {
-          acceptImage(
+          if (!treated.contains("image")) {
+            acceptImage(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "list") {
-          //print("acceptPara calling acceptList $node of ${node.runtimeType}");
+          if (!treated.contains("list")) {
+            //print("acceptPara calling acceptList $node of ${node.runtimeType}");
           acceptList(subnode, verbose: verbose,buffer: buffer);
+          }
         } else if (subnode.name.toString() == "em") {
-          acceptEm(subnode, verbose: verbose,buffer: buffer);
+          if (!treated.contains("em")) {
+            acceptEm(subnode, verbose: verbose,buffer: buffer);
+          }
         } else if (subnode.name.toString() == "cmd") {
-          acceptCmd(
+          if (!treated.contains("cmd")) {
+            acceptCmd(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "menu") {
-          acceptMenu(
+          if (!treated.contains("menu")) {
+            acceptMenu(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "file") {
-          acceptFile(
+          if (!treated.contains("file")) {
+            acceptFile(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "code") {
-          acceptCode(
+          if (!treated.contains("code")) {
+            acceptCode(
             subnode,
             verbose: verbose,buffer: buffer
           );
+          }
         } else if (subnode.name.toString() == "table") {
-          acceptTable(subnode, verbose: verbose,buffer: buffer);
+          if (!treated.contains("table")) {
+            acceptTable(subnode, verbose: verbose,buffer: buffer);
+          }
         } else if (subnode.name.toString() == "math") {
-          acceptMath(subnode, verbose: verbose,buffer: buffer);
+          if (!treated.contains("math")) {
+            acceptMath(subnode, verbose: verbose,buffer: buffer);
+          }
         } else if (subnode.name.toString() == "glossary") {
-          acceptGlossary(subnode, verbose: verbose,buffer: buffer);
+          if (!treated.contains("glossary")) {
+            acceptGlossary(subnode, verbose: verbose,buffer: buffer);
+          }
         } else if (subnode.name.toString() == "note") {
-          acceptNote(subnode, verbose: verbose,buffer: buffer);
+          if (!treated.contains("note")) {
+            acceptNote(subnode, verbose: verbose,buffer: buffer);
+          }
         } else{
-          errmsg += "parsing paragraph unknown element ${subnode.name}\n";
+          errmsg.write("parsing paragraph unknown element ${subnode.name}\n");
           valid = false;
         }
       } else {
-        errmsg += "parsing paragraph unknown  ${subnode.runtimeType}\n";
+        errmsg.write("parsing paragraph unknown  ${subnode.runtimeType}\n");
         valid = false;
       }
     }
@@ -372,12 +404,12 @@ return this;
           acceptUrl(p0, verbose: verbose,buffer: buffer);
         } else {
           valid = false;
-          errmsg += "Item unknown element: ${p0.runtimeType} $p0\n";
+          errmsg.write("Item unknown element: ${p0.runtimeType} $p0\n");
         }
 
       } else {
         valid = false;
-        errmsg += "Item unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("Item unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -471,18 +503,21 @@ return this;
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          if (!treated.contains("info"))
-          acceptInfo(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("info")) {
+            acceptInfo(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "shortinfo") {
-          if (!treated.contains("shortinfo"))
-          acceptInfo(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("shortinfo")) {
+            acceptInfo(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "slide") {
-          if (!treated.contains("slide"))
-          acceptSlide(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("slide")) {
+            acceptSlide(p0, verbose: verbose, buffer: buffer);
+          }
         }
       } else {
         valid = false;
-        errmsg += "SlideShow unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("SlideShow unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -498,21 +533,24 @@ return this;
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "info") {
-          if (!treated.contains("info"))
-          acceptInfo(p0, verbose: verbose, buffer: buffer);
-        } else if (value == "shortinfo") {
-          if (!treated.contains("shortinfo"))
+          if (!treated.contains("info")) {
             acceptInfo(p0, verbose: verbose, buffer: buffer);
+          }
+        } else if (value == "shortinfo") {
+          if (!treated.contains("shortinfo")) {
+            acceptInfo(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "page") {
-          if (!treated.contains("page"))
-          acceptPage(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("page")) {
+            acceptPage(p0, verbose: verbose, buffer: buffer);
+          }
         } else {
           valid = false;
-          errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
+          errmsg.write("module unknown stuff: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "module unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("module unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -527,30 +565,33 @@ return this;
     for (var p0 in pageNode.children) {
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
-        if (value == "slide" && !treated.contains("slide")) {
-          bool noExercise = false;
-          if (treated.contains("exercise")) {
-            noExercise = true;
-            treated.remove("exercise"); //we need this because exercice is a valid page element, but it can be outside of slide...
+        if (value == "slide") {
+          if (!treated.contains("slide")) {
+            //print("treating slides");
+            acceptSlide(p0, verbose: verbose, buffer: buffer);
           }
-          acceptSlide(p0, verbose: verbose, buffer: buffer);
-          if (noExercise) {
-            treated.add("exercise");
+          //else print("refusing slide");
+        } else if (value == "title") {
+          //print("treating title");
+          if (!treated.contains("title")) {
+            acceptTitle(p0, verbose: verbose, buffer: buffer);
           }
-        } else if (value == "title" && !treated.contains("title")) {
-          acceptTitle(p0, verbose: verbose, buffer: buffer);
-        } else if (value == "section"&& !treated.contains("section")) {
-          acceptSection(p0, verbose: verbose, buffer: buffer);
+          //else print("refusing title");
+        } else if (value == "section") {
+          if (!treated.contains("section")) {
+            acceptSection(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "exercise") {
         if (!treated.contains("exercise")) acceptExercise(p0, verbose: verbose, buffer: buffer);
+        //else print("refusing exercise");
         //else print("TT acceptPage no exercise");
         } else {
           valid = false;
-          errmsg += "page unknown element: ${p0.runtimeType} $p0\n";
+          errmsg.write("page unknown element: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "page unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("page unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -566,33 +607,40 @@ return this;
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       if (p0 is XmlElement) {
         if (value == "section") {
-          if (!treated.contains("section"))
-          acceptSection(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("section")) {
+            acceptSection(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "title") {
-          if (!treated.contains("title"))
-          acceptTitle(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("title")) {
+            acceptTitle(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "subtitle") {
-          if (!treated.contains("subtitle"))
-          acceptSubTitle(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("subtitle")) {
+            acceptSubTitle(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "list") {
-          if (!treated.contains("list"))
-          acceptList(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("list")) {
+            acceptList(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "para") {
-          if (!treated.contains("para"))
-          acceptPara(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("para")) {
+            acceptPara(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "note") {
-          if (!treated.contains("note"))
-          acceptNote(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("note")) {
+            acceptNote(p0, verbose: verbose, buffer: buffer);
+          }
         } else if (value == "exercise") {
-          if (!treated.contains("exercise"))
-          acceptExercise(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("exercise")) {
+            acceptExercise(p0, verbose: verbose, buffer: buffer);
+          }
         } else {
           valid = false;
-          errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
+          errmsg.write("Slide unknown stuff: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "Slide unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("Slide unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -640,7 +688,7 @@ return this;
         acceptPara(node, verbose: verbose, buffer: buffer);
       } else {
         valid = false;
-        errmsg += "Prerequisite unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Prerequisite unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -712,7 +760,7 @@ return this;
     //String scale = node.getAttribute("src")??"";
     if (src.isEmpty) {
       valid = false;
-      errmsg += "image: src is empty";
+      errmsg.write("image: src is empty");
     }
     for (var node in imgNode.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
@@ -720,7 +768,7 @@ return this;
         acceptLegend(node, verbose: verbose,buffer:buffer);
       } else {
         valid = false;
-        errmsg += "Image unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Image unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -755,7 +803,7 @@ return this;
         acceptRow(node, verbose: verbose,buffer: buffer);
       } else {
         valid = false;
-        errmsg += "Table unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Table unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -770,7 +818,7 @@ return this;
     String href = urlNode.getAttribute("href") ?? "";
     if (href.isEmpty) {
       valid = false;
-      errmsg += "url: href is empty";
+      errmsg.write("url: href is empty");
     }
     return this;
   }
@@ -804,7 +852,7 @@ return this;
         acceptText(node, verbose: verbose,buffer:buffer );
       } else {
         valid = false;
-        errmsg += "Table Col unknown stuff: ${node.runtimeType} $node\n";
+        errmsg.write("Table Col unknown stuff: ${node.runtimeType} $node\n");
       }
     }
     return this;
@@ -822,7 +870,7 @@ return this;
         acceptCol(node, verbose: verbose,buffer: buffer);
       } else {
         valid = false;
-        errmsg += "Table Row unknown stuff: ${node.runtimeType} $node";
+        errmsg.write("Table Row unknown stuff: ${node.runtimeType} $node");
       }
     }
     return this;
@@ -843,11 +891,11 @@ return this;
           acceptAnswer(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
-          errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
+          errmsg.write("exercise unknown stuff: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("exercise unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -866,11 +914,11 @@ return this;
           acceptItem(p0, verbose: verbose,buffer: buffer );
         } else {
           valid = false;
-          errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
+          errmsg.write("List unknown stuff: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "List unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("List unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -902,27 +950,37 @@ return this;
       String value = (p0 is XmlElement) ? p0.name.toString() : "node";
       //print("tt sec lvl: $level child[$value]: $p0");
       if (p0 is XmlElement) {
-        if (value == "title" && !treated.contains("title")) {
+        if (value == "title") {
           //print("tt sec title lvl: $level child: $p0");
-          acceptTitle(p0, verbose: verbose, buffer: buffer);
-        } else if (value == "section" && !treated.contains("section")) {
+          if (!treated.contains("title")) {
+            acceptTitle(p0, verbose: verbose, buffer: buffer);
+          }
+        } else if (value == "section") {
+          if (!treated.contains("section")) {
             acceptSection(p0, verbose: verbose, level: level + 1, buffer: buffer);
-        } else if (value == "para" && !treated.contains("para")) {
+          }
+        } else if (value == "para") {
           //print("tt sec para lvl: $level child: $p0");
-          acceptPara(p0, verbose: verbose, buffer: buffer);
-        } else if (value == "note" && !treated.contains("note")) {
+          if (!treated.contains("para")) {
+            acceptPara(p0, verbose: verbose, buffer: buffer);
+          }
+        } else if (value == "note") {
          // print("tt sec note lvl: $level child: $p0");
-          acceptNote(p0, verbose: verbose, buffer: buffer);
-        } else if (value == "exercise" && !treated.contains("exercise")) {
+          if (!treated.contains("note")) {
+            acceptNote(p0, verbose: verbose, buffer: buffer);
+          }
+        } else if (value == "exercise") {
           //print("tt sec exercise lvl: $level child: $p0");
-          acceptExercise(p0, verbose: verbose, buffer: buffer);
+          if (!treated.contains("exercise")) {
+            acceptExercise(p0, verbose: verbose, buffer: buffer);
+          }
         } else {
           valid = false;
-          errmsg += "Section unknown element: ${p0.runtimeType} $p0\n";
+          errmsg.write("Section unknown element: ${p0.runtimeType} $p0\n");
         }
       } else {
         valid = false;
-        errmsg += "Section unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("Section unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;
@@ -993,13 +1051,13 @@ return this;
           acceptPara(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
-          errmsg += "answer unknown element: ${p0.runtimeType} $p0\n";
+          errmsg.write("answer unknown element: ${p0.runtimeType} $p0\n");
         }
       } else if (p0 is XmlText) {
         acceptText(p0, verbose: verbose, buffer: buffer);
       } else {
         valid = false;
-        errmsg += "answer unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("answer unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     // TODO: implement acceptAnswer
@@ -1020,11 +1078,11 @@ return this;
           acceptPara(p0, verbose: verbose, buffer: buffer);
         } else {
           valid = false;
-          errmsg += "question unknown element: ${p0.runtimeType} $p0\n";
+          errmsg.write("question unknown element: ${p0.runtimeType} $p0\n");
         }
       }  else {
         valid = false;
-        errmsg += "question unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("question unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     return this;

@@ -27,6 +27,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptAnswer(XmlElement answNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen answer can't have null buffer...");
     super.acceptAnswer(answNode, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -34,7 +35,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptAuthor(XmlElement authorNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if (buffer == null) throw Exception("textgen Author can't have null buffer...");
     int level = stack.length;
     //print("============ acceptAuthor $authorNode $level $stack");
     if (level == 1) {
@@ -63,8 +64,9 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCDATA(XmlCDATA cnode,
       {required bool verbose, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen cdata can't have null buffer...");
     //print("CDATA : '${cnode.value}' ${cnode.innerText} ");
-    add(cnode.value.trim() + "\n", buffer: buffer);
+    add("${cnode.value.trim()}\n", buffer: buffer);
     super.acceptCDATA(cnode, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -72,6 +74,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCmd(XmlElement cmdNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen cmd can't have null buffer...");
     add("{\\texttt ", buffer: buffer);
     super.acceptCmd(cmdNode, verbose: verbose, buffer: buffer);
     add("} ", buffer: buffer);
@@ -81,6 +84,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCode(XmlElement codeNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen code can't have null buffer...");
     String proglang = (codeNode.getAttribute("lang") ?? "C").trim();
     String caption = codeNode.getAttribute("caption") ?? "";
     add("\\begin{lstlisting}[language=$proglang ${(caption.isNotEmpty)? ", caption=\"$caption\"":""}]\n", buffer: buffer);
@@ -92,6 +96,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptCol(XmlElement colNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen col can't have null buffer...");
     super.acceptCol(colNode, verbose: verbose, buffer: buffer);
     add("&", buffer: buffer);
     return this;
@@ -100,6 +105,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptComment(XmlElement cmtNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen comment can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       super.acceptComment(cmtNode, verbose: verbose, buffer: buffer);
@@ -114,6 +120,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptDate(XmlElement dateNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen date can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       add("\\date{",buffer: buffer);
@@ -129,6 +136,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptDependency(XmlElement dependency,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen dependency can't have null buffer...");
     //print("accept dependency, should treat stuff??");
     //super.acceptDependency(dependency, verbose: verbose, buffer: buffer);
     return this;
@@ -137,7 +145,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptDescription(XmlElement desc,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if (buffer == null) throw Exception("textgen description can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       StringBuffer refBuffer = StringBuffer();
@@ -146,7 +154,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       if (refBuffer.isNotEmpty && buffer.toString().contains("<SUBTITLE>")) {
         rpl = buffer
             .toString()
-            .replaceAll("<SUBTITLE>", "\\subtitle{$refBuffer}");
+            .replaceAll("<SUBTITLE>", "\\subtitle{${refBuffer.toString().trim()}}");
       } else if (buffer.toString().contains("<SUBTITLE>")) {
         rpl = buffer.toString().replaceAll("<SUBTITLE>", "");
       }
@@ -174,6 +182,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptDuration(XmlElement durNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen duration can't have null buffer...");
     super.acceptDuration(durNode, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -181,6 +190,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptEm(XmlElement emNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen em can't have null buffer...");
     add("\\emph{", buffer: buffer);
     super.acceptEm(emNode, verbose: verbose, buffer: buffer);
     //buffer = StringBuffer(buffer.toString().trim());
@@ -191,6 +201,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptEmail(XmlElement mailNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen email can't have null buffer...");
     //super.acceptEmail(node, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -198,8 +209,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptExercise(XmlElement exNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen Exercise can't have null buffer...");
     String restriction = exNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    if(!(restriction == "all" || restriction == selection)) {
+      print("textgen exercise $restriction != all of '$selection' bailing out");
+      return this;
+    }
     StringBuffer questBuf = StringBuffer();
     StringBuffer answBuf = StringBuffer();
     for (var p0 in exNode.children) {
@@ -210,7 +225,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
         acceptAnswer(p0, verbose: verbose, buffer: answBuf);
       } else {
         valid = false;
-        errmsg += "exercise unknown stuff: ${p0.runtimeType} $p0\n";
+        errmsg.write("exercise unknown stuff: ${p0.runtimeType} $p0\n");
       }
     }
     if (questBuf.isNotEmpty) {
@@ -230,6 +245,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptFile(XmlElement fileNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen file can't have null buffer...");
     add("{\\texttt ${fileNode.children.map((child) => child.toString().trim()).where((child) => child.isNotEmpty).join(" ")}}",
         buffer: buffer, trim: false);
     super.acceptFile(fileNode, verbose: verbose, buffer: buffer);
@@ -239,7 +255,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   acceptFormation(XmlElement formation,
       {bool verbose = false, StringBuffer? buffer}) {
-    buffer ??= content;
+    if(buffer == null) throw Exception("textgen formation can't have null buffer...");
     stack.add("formation");
     super.acceptFormation(formation, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
@@ -253,12 +269,18 @@ class VisitorTexgen extends VisitorTreeTraversor {
         buffer.clear();
         buffer.write(txt);
       }
+    else {
+      String txt = buffer.toString().replaceAll("<GLOSSARY>", "");
+      buffer.clear();
+      buffer.write(txt);
+    }
     return this;
   }
 
   @override
   Visitor acceptGlossary(XmlElement gloNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen glossary can't have null buffer...");
     //print("accept glossary, should treat stuff?? $node");
     String name = gloNode.getAttribute("name") ?? "";
     if (name.isNotEmpty) add(" \\gls{$name} ", buffer: buffer, trim: false);
@@ -275,6 +297,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptImage(XmlElement imgNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen image can't have null buffer...");
     String src = imgNode.getAttribute("src") ?? "";
     String scale = imgNode.getAttribute("scale") ?? "1";
     bool visible =
@@ -314,6 +337,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptInfo(XmlElement info,
       {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen info can't have null buffer...");
     int level = stack.length;
     //print("==============called acceptInfo with $level $stack");
 
@@ -381,7 +405,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       //print("acceptInfo lvl 3 $info");
       super.acceptInfo(info, verbose: verbose, buffer: buffer);
     } else {
-      print("don't know wjhat to do with info lvl $level $info");
+      print("don't know what to do with info lvl $level $info");
       super.acceptInfo(info, verbose: verbose, buffer: buffer);
     }
     return this;
@@ -390,6 +414,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptItem(XmlElement itemNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen item can't have null buffer...");
     int level = stack.length;
     if (level == 2 && stack.last == "objectives") {
       super.acceptItem(itemNode, verbose: verbose, buffer: buffer);
@@ -408,6 +433,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptLegend(XmlElement legNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen legend can't have null buffer...");
     super.acceptLegend(legNode, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -415,6 +441,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptLevel(XmlElement lvlNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen level can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       super.acceptLevel(lvlNode, verbose: verbose, buffer: buffer);
@@ -430,6 +457,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptList(XmlElement listNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen list can't have null buffer...");
     add("\\begin{itemize}\n", buffer: buffer);
     super.acceptList(listNode, verbose: verbose, buffer: buffer);
     add("\\end{itemize}\n", buffer: buffer);
@@ -439,6 +467,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptMath(XmlElement mathNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen math can't have null buffer...");
     String notation = mathNode.getAttribute("notation") ?? "html";
     add((notation == "tex") ? "\\begin{eqnarray}\n" : "{\\texttt ", buffer: buffer);
     super.acceptMath(mathNode, verbose: verbose, buffer: buffer);
@@ -450,6 +479,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptMenu(XmlElement menNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen menu can't have null buffer...");
     add("{\\bfseries \\large ", buffer: buffer);
     super.acceptMenu(menNode, verbose: verbose, buffer: buffer);
     add("} ", buffer: buffer);
@@ -459,6 +489,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptModule(XmlElement module,
       {bool verbose = false, StringBuffer? buffer, List<String> treated = const []}) {
+    if(buffer == null) throw Exception("textgen module can't have null buffer...");
     stack.add("module");
     super.acceptModule(module, verbose: verbose, buffer: buffer, treated: treated);
     if (answers.isNotEmpty) add("\\section{Answers}\n$answers", buffer: buffer);
@@ -473,8 +504,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptNote(XmlElement notNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen note can't have null buffer...");
     String restriction = notNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+      if(!(restriction == "all" || restriction == selection)) {
+      print("textgen note $restriction != all or '$selection' bailing out");
+      return this;
+    }
     String icon = notNode.getAttribute("icon") ?? "";
     bool trainer = ((notNode.getAttribute("trainer") ?? "0") == "1") ||
         ((notNode.getAttribute("trainer") ?? "0") == "true");
@@ -494,6 +529,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptObjectives(XmlElement object,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen objective can't have null buffer...");
     int level = stack.length;
     if (level == 0) level = 1; //happens only in testing
     if (level == 1) {
@@ -520,11 +556,19 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptPage(XmlElement pageNode,
       {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    //print("texgen accepting page");
+    if(buffer == null) throw Exception("textgen page can't have null buffer...");
+    //print("texgen  page buffer ok");
     String restriction = pageNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+    //print("texgen  page restriction= '$restriction' vs '$selection' ok");
+      if(!(restriction == "all" || restriction == selection)) {
+      print("texgen  page restriction= failed bailing out '$restriction' vs $selection ok");
+      return this;
+    }
     //print("accept Page, should treat stuff??");
     stack.add("page");
     //print("stack now $stack ${stack.length}");
+    //print("texgen sending page to super\n");
     super.acceptPage(pageNode, verbose: verbose, buffer: buffer, treated: treated);
     String removed = stack.removeLast();
     if (removed != "page") {
@@ -535,19 +579,25 @@ class VisitorTexgen extends VisitorTreeTraversor {
 
   @override
   Visitor acceptPara(XmlElement paraNode,
-      {bool verbose = false, String tag = "Para", StringBuffer? buffer}) {
+      {bool verbose = false, String tag = "Para", StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen para can't have null buffer...");
     String restriction = paraNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+      if(!(restriction == "all" || restriction == selection)) {
+      print("textgen para $restriction != all of '$selection' bailing out");
+      return this;
+    }
 
     //print("accept Para, $stack for $paraNode");
-    super.acceptPara(paraNode, verbose: verbose, buffer: buffer);
-    add("\n", buffer: buffer);
+    super.acceptPara(paraNode, verbose: verbose, buffer: buffer, treated: treated);
+    add("\n\n", buffer: buffer);
+    //print("para returns $buffer");
     return this;
   }
 
   @override
   Visitor acceptPrerequisite(XmlElement prereqNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen prerequisite can't have null buffer...");
     //print("accept Prerequisites, should treat stuff??");
     //super.acceptPrerequisite(node, verbose: verbose, buffer: buffer);
     return this;
@@ -556,6 +606,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptProofreaders(XmlElement proofRead,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen proofreader can't have null buffer...");
     //print("accept proofreader, should treat stuff??");
     //super.acceptProofreaders(node, verbose: verbose, buffer: buffer);
     return this;
@@ -564,6 +615,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptQuestion(XmlElement questNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen question can't have null buffer...");
     //print("accept question, should treat stuff??");
     super.acceptQuestion(questNode, verbose: verbose, buffer: buffer);
     return this;
@@ -572,6 +624,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptRatio(XmlElement ratioNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen ratio can't have null buffer...");
     super.acceptRatio(ratioNode, verbose: verbose, buffer: buffer);
     return this;
   }
@@ -579,7 +632,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptRef(XmlElement refNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    if (buffer == null) throw Exception("textgen can't have null buffer...");
+    if(buffer == null) throw Exception("textgen ref can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       StringBuffer refBuffer = StringBuffer();
@@ -600,10 +653,8 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptRow(XmlElement rowNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen row can't have null buffer...");
     bool border = ((rowNode.getAttribute("border") ?? "1") == "1");
-    if (buffer == null) {
-      throw Exception("buffer has to be set!");
-    }
     if (buffer.toString().contains("<COLDEF>")) {
       String replacement = "${(border) ? "|" : " "}c" * rowNode.children.length;
       String rpl = buffer.toString().replaceAll("<COLDEF>", replacement);
@@ -612,7 +663,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
     }
     super.acceptRow(rowNode, verbose: verbose, buffer: buffer);
     String rpl =
-        buffer.toString().replaceFirst(RegExp(r'&$'), '') + " \\\\ \\hline\n";
+        "${buffer.toString().replaceFirst(RegExp(r'&$'), '')} \\\\ \\hline\n";
     buffer.clear();
     buffer.write(rpl);
     return this;
@@ -621,8 +672,12 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSection(XmlElement secNode,
       {bool verbose = false, int level = 0, StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen section can't have null buffer...");
     String restriction = secNode.getAttribute("restriction") ?? "all";
-    if(restriction != "all" || restriction != selection) return this;
+      if(!(restriction == "all" || restriction == selection)) {
+      print("textgen section $restriction != all of '$selection' bailing out");
+      return this;
+    }
     level = stack.length;
     stack.add("section");
     //print("txtgen lvl: $level st: $stack");
@@ -639,6 +694,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSlide(XmlElement slidNode,
       {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen slide can't have null buffer...");
     stack.add("slide");
     super.acceptSlide(slidNode, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
@@ -651,6 +707,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSlideShow(XmlElement show,
       {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen slideshow can't have null buffer...");
     //print("accept slideshow, should treat stuff??");
     stack.add("slideshow");
     super.acceptSlideShow(show, verbose: verbose, buffer: buffer);
@@ -664,6 +721,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptState(XmlElement stateNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen state can't have null buffer...");
     int level = stack.length;
     if (level == 1) {
       super.acceptState(stateNode, verbose: verbose, buffer: buffer);
@@ -679,9 +737,11 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSubTitle(XmlElement subtitle,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen subtitle can't have null buffer...");
     if(stack.length == 1) {
       //TODO check if some other part needs subtitles
     super.acceptSubTitle(subtitle, verbose: verbose, buffer: buffer);
+    //print("accept SubTitle : $buffer");
     }
     return this;
   }
@@ -689,6 +749,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptSuggestion(XmlElement suggestion,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen suggestion can't have null buffer...");
     //print("accept suggestion, should treat stuff??");
     //super.acceptSuggestion(suggestion, verbose: verbose, buffer: buffer);
     return this;
@@ -697,6 +758,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptTable(XmlElement tblNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen table can't have null buffer...");
     bool border = ((tblNode.getAttribute("border") ?? "1") == "1")
         ? true
         : false; //TODO do something with border
@@ -710,6 +772,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptText(XmlText txtNode,
       {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen text can't have null buffer...");
     String txt =
         ((txtNode.value.isNotEmpty) ? txtNode.value : txtNode.innerText).trim();
     txt = txt.replaceAll("&", "\\&");
@@ -736,6 +799,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptTheme(XmlElement theme,
       {bool verbose = false, StringBuffer? buffer, List<String> treated =const []}) {
+    if(buffer == null) throw Exception("textgen theme can't have null buffer...");
     stack.add("theme");
     super.acceptTheme(theme, verbose: verbose, buffer: buffer);
     String removed = stack.removeLast();
@@ -748,6 +812,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptTitle(XmlElement title,
       {bool verbose = false, bool add = true, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen title can't have null buffer...");
     int level = stack.length;
     if (level == 2) {
       //print("----- TODO do something with theme info accept title $level/$sepLvl with $stack $title gives ${separators[sepLvl]}/$separators");
@@ -768,7 +833,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
       this.add("}\n", buffer: buffer);
     } else {
       if (level == 1) {
-        buffer!.write("<SUBJECT>\n \\title{");
+        buffer.write("<SUBJECT>\n \\title{");
       } else {
         this.add("${separators[sepLvl]}{", buffer: buffer);
       }
@@ -777,7 +842,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
         super.acceptTitle(title, verbose: verbose, buffer: buffer);
       }
       if (level == 1) {
-        buffer!.write("}\n<SUBTITLE>\n<AUTHOR>\n");
+        buffer.write("}\n<SUBTITLE>\n<AUTHOR>\n");
       } else {
         this.add("}\n", buffer: buffer);
       }
@@ -788,6 +853,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptUrl(XmlElement urlNode,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen url can't have null buffer...");
     String href = urlNode.getAttribute("href") ?? "";
     String name = urlNode.getAttribute("name") ?? "";
     if (name.isEmpty) name = href;
@@ -802,6 +868,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
   @override
   Visitor acceptVersion(XmlElement version,
       {bool verbose = false, StringBuffer? buffer}) {
+    if(buffer == null) throw Exception("textgen version can't have null buffer...");
      int level = stack.length;
      if(level == 1)
      {
@@ -817,17 +884,13 @@ class VisitorTexgen extends VisitorTreeTraversor {
     return this;
   }
 
-  add(String msg, {StringBuffer? buffer, bool trim = false}) {
-    if (buffer != null) {
+  add(String msg, {required StringBuffer buffer, bool trim = false}) {
       if (trim) {
         String trimmedString = buffer.toString().trim();
         buffer.clear();
         buffer.write(trimmedString);
       }
       buffer.write(msg);
-    } else {
-      throw UnsupportedError("add needs a buffer to write to!");
-    }
   }
 
   void clearAll() {
@@ -838,5 +901,5 @@ class VisitorTexgen extends VisitorTreeTraversor {
     stack.clear();
   }
 
-  VisitorTexgen({String? charte, bool? trainer, String? selection, String? lang, bool? cycle}):super( charte:charte, trainer: trainer, selection: selection, lang: lang, cycle: cycle);
+  VisitorTexgen({super.charte, super.trainer, super.selection, super.lang, super.cycle});
 }

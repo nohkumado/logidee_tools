@@ -5,9 +5,11 @@ import 'visitor.dart';
 
 class VisitorCheck extends VisitorTreeTraversor
 {
+  StringBuffer errors = StringBuffer();
   @override
   acceptFormation(XmlElement formation,{bool verbose = false, StringBuffer? buffer})
   {
+    valid &= checkAttributes(formation,{"background": {"option": true}});
     List<String> check = ["info","shortinfo","theme"];
     valid &= structureCheck(formation,check, verbose:verbose, tag: "Formation");
     super.acceptFormation(formation, verbose: verbose, buffer: buffer);
@@ -47,20 +49,18 @@ class VisitorCheck extends VisitorTreeTraversor
       if(value == "txt" && p0.toString().trim().isEmpty) continue;
       //print("SC: child ${value} in $check? ${check.any((key) => key == value)}");
       ret &= check.any((key) => key == value);
-      //print("SC: ${module.name} ret evolved to  $ret");
       if (!ret) {
         //print("####### Found problem text: '${p0.toString().trim()}' ${p0.parent}");
         if(value == "txt") print("####### Found problem text: '${p0.toString().trim()}' ${p0.parent}");
-        String msg = "$tag problem with ";
-        msg += "$value = '";
-        msg += (p0.toString().length > 80) ? ""+p0.toString().substring(0, 80).trim() + "' ..." : p0 .toString()+"'";
-        msg += "\nallowed tags: $check\nfound tags: [";
+        errmsg.write("$tag problem with ");
+        errmsg.write("$value = '");
+        errmsg.write((p0.toString().length > 80) ? ""+p0.toString().substring(0, 80).trim() + "' ..." : p0 .toString()+"'");
+        errmsg.write("\nallowed tags: $check\nfound tags: [");
         for (var p0 in module.children) {
-          if (p0 is XmlElement) msg += "${p0.name},";
+          if (p0 is XmlElement) errmsg.write("${p0.name},");
         }
-        msg += "]";
-        if(verbose) print(msg);
-        errmsg += msg;
+        errmsg.write("]");
+        if(verbose) print(errmsg);
       }
     }
     if(ret == false  && verbose) print("PROBLEM with $module gave '$errmsg'");
@@ -129,7 +129,7 @@ class VisitorCheck extends VisitorTreeTraversor
   }
 
   @override
-  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer}) {
+  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer, List<String> treated =const []}) {
     valid &= checkAttributes(paraNode,{"icon": {"option": true},"restriction": {"option": true}});
     List<String> check = ["txt","url", "image", "list", "em", "cmd", "menu", "file", "code", "table", "math", "glossary", "note"];
     valid &= structureCheck(paraNode,check, verbose:verbose, tag: tag);
@@ -206,9 +206,7 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   Visitor acceptCode(XmlElement codeNode, {bool verbose = false, StringBuffer? buffer}) {
-    valid &= checkAttributes(codeNode,{"lang": {"option": true}});
-    valid &= checkAttributes(codeNode,{"caption": {"option": true}});
-    // TODO: implement acceptCode
+    valid &= checkAttributes(codeNode,{"lang": {"option": true},"caption": {"option": true}});
     super.acceptCode(codeNode, verbose: verbose,buffer:buffer);
     return this;
   }
@@ -230,7 +228,6 @@ class VisitorCheck extends VisitorTreeTraversor
   @override
   Visitor acceptEm(XmlElement emNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptEm(emNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptEm
     return this;
   }
 
@@ -238,35 +235,30 @@ class VisitorCheck extends VisitorTreeTraversor
   Visitor acceptExercise(XmlElement exNode, {bool verbose = false, StringBuffer? buffer}) {
     valid &= checkAttributes(exNode,{"restriction": {"option": true}});
     super.acceptExercise(exNode, verbose: verbose, buffer: buffer);
-    // TODO: implement acceptExercise
     return this;
   }
 
   @override
   Visitor acceptFile(XmlElement fileNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptFile(fileNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptFile
     return this;
   }
 
   @override
   Visitor acceptGlossary(XmlElement gloNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptGlossary(gloNode, verbose: verbose, buffer: buffer);
-    // TODO: implement acceptGlossary
     return this;
   }
 
   @override
   Visitor acceptImage(XmlElement imgNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptImage(imgNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptImage
     return this;
   }
 
   @override
   Visitor acceptLegend(XmlElement legNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptLegend(legNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptLegend
     return this;
   }
 
@@ -274,7 +266,6 @@ class VisitorCheck extends VisitorTreeTraversor
   Visitor acceptLevel(XmlElement lvlNode, {bool verbose = false, StringBuffer? buffer}) {
     valid &= checkAttributes(lvlNode,{"value": {"option": false}});
     super.acceptLevel(lvlNode, verbose: verbose, buffer: buffer);
-    // TODO: implement acceptLevel
     return this;
   }
 
@@ -283,14 +274,12 @@ class VisitorCheck extends VisitorTreeTraversor
     List<String> check = ["item","list"];
     valid &= structureCheck(listNode,check, verbose:verbose, tag: "List");
     super.acceptList(listNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptList
     return this;
   }
 
   @override
   Visitor acceptMath(XmlElement mathNode, {bool verbose = false, StringBuffer? buffer}) {
     super.acceptMath(mathNode, verbose: verbose,buffer: buffer);
-    // TODO: implement acceptMath
     return this;
   }
 
@@ -406,17 +395,17 @@ class VisitorCheck extends VisitorTreeTraversor
     map.forEach((key, value) {
       if(value.containsKey("option") && value["option"] == false) obligatory.add(key);
     });
-    //if(obligatory.isNotEmpty) print("${node.name} oblig attr: $obligatory");
+    //if(obligatory.isNotEmpty) print("${node.name} oblige attr: $obligatory");
     for (var p0 in node.attributes) {
       if(!map.containsKey(p0.name.toString()))
         {
           ret = false;
-          errmsg += "${node.name} attribute problems: '${p0.name}' is not a valid attribute in  $map\n";
+          errmsg.write("${node.name} attribute problems: '${p0.name}' is not a valid attribute in  $map\n");
         }
       if(obligatory.contains(p0.name.toString())) obligatory.remove(p0.name.toString());
     }
     ret &= obligatory.isEmpty;
-    if(!ret) errmsg += "${node.name} attribute problems: missing required attributes : $obligatory\n";
+    if(!ret) errmsg.write("${node.name} attribute problems: missing required attributes : $obligatory\n");
 
     return ret;
   }

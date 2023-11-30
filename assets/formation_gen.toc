@@ -1,0 +1,22 @@
+\babel@toc {nil}{}\relax 
+\contentsline {part}{\numberline {I}Module}{5}{part.1}%
+\contentsline {chapter}{\numberline {1}Page with all para elements}{7}{chapter.1}%
+\contentsline {section}{\numberline {1.1}section sans info}{7}{section.1.1}%
+\contentsline {chapter}{\numberline {2}Page with glossary stuff}{9}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Para with glossary stuff}{9}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}subsection lvl1}{9}{subsection.2.1.1}%
+\contentsline {paragraph}{\nonumberline subsection lvl2}{9}{paragraph*.3}%
+\contentsline {paragraph}{\nonumberline subsection lvl3}{9}{paragraph*.5}%
+\contentsline {section}{\numberline {2.2}2nd top level section}{9}{section.2.2}%
+\contentsline {chapter}{\numberline {3}page with slides this title shouldn't show}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}page with slides}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Les caractëres spéciaux}{11}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}listing caractëres spéciaux}{11}{subsection.3.2.1}%
+\contentsline {section}{\numberline {3.3}Answers}{12}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Solution \ref {Écrivez un script qui imprime la table de multiplication de 1 à 10}}{12}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Solution \ref {combien font 2 plus 2 ? }}{12}{subsection.3.3.2}%
+\contentsline {chapter}{\numberline {4}Titre du diaporama}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}(première diapo)}{13}{section.4.1}%
+\contentsline {section}{\numberline {4.2}(deuxième diapo)}{13}{section.4.2}%
+\contentsline {section}{\numberline {4.3}(Nièmediapo)}{13}{section.4.3}%
+\providecommand \tocbasic@end@toc@file {}\tocbasic@end@toc@file 

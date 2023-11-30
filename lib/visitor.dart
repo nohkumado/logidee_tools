@@ -6,7 +6,7 @@ abstract class Visitor
   String lang = "fr";
   String theme = "default";
   bool valid = true;
-  String errmsg = "";
+  StringBuffer errmsg = StringBuffer();
   String charte = "default";
   bool trainer = false;
   String selection  = "all";
@@ -51,7 +51,7 @@ abstract class Visitor
 
   Visitor acceptRatio(XmlElement ratioNode, {bool verbose = false, StringBuffer? buffer});
 
-  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer});
+  Visitor acceptPara(XmlElement paraNode, {bool verbose = false, String tag= "Para", StringBuffer? buffer, List<String> treated =const []});
 
   Visitor acceptList(XmlElement listNode, {bool verbose = false, StringBuffer? buffer});
   Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer});
