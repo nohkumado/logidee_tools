@@ -120,10 +120,18 @@ class VisitorTreeTraversor extends Visitor {
         "wrong node addressed expected title got ${title.name}...");
     }
     for (var node in title.children) {
+      String value = (node is XmlElement) ? node.name.toString() : "node";
       if (node is XmlText) {
         acceptText(node, verbose: verbose, buffer: buffer);
-      } else {
-        print("found in title spurious stuff $node");
+      }
+      else if (node is XmlElement && value == "url") {
+        acceptUrl(node, verbose: verbose,buffer: buffer);
+      }
+      else if (node is XmlElement && value == "image") {
+        acceptImage(node, verbose: verbose,buffer: buffer);
+      }
+      else {
+        print("found in title spurious stuff($value) $node");
       }
     }
     return this;
@@ -159,7 +167,8 @@ class VisitorTreeTraversor extends Visitor {
     }
     for (var node in object.children) {
       String value = (node is XmlElement) ? node.name.toString() : "node";
-      if (node is XmlElement) {
+      if (node is XmlText && node.toString().trim().isEmpty) { }
+      else if (node is XmlElement) {
         if (value == "item") {
           acceptItem(node, verbose: verbose, buffer: buffer);
         } else {
@@ -402,6 +411,8 @@ return this;
           acceptCmd(p0, verbose: verbose,buffer: buffer);
         } else if (value == "url") {
           acceptUrl(p0, verbose: verbose,buffer: buffer);
+        } else if (value == "email") {
+            acceptEmail(p0, verbose: verbose,buffer: buffer);
         } else {
           valid = false;
           errmsg.write("Item unknown element: ${p0.runtimeType} $p0\n");

@@ -114,7 +114,7 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   Visitor acceptItem(XmlElement itemNode, {bool verbose = false, StringBuffer? buffer}) {
-    List<String> check = ["txt","list","para","cmd","url"];
+    List<String> check = ["txt","list","para","cmd","url", "email"];
     valid &= structureCheck(itemNode,check, verbose:verbose, tag: "Item");
     super.acceptItem(itemNode, verbose: verbose,buffer: buffer);
     return this;
@@ -177,7 +177,8 @@ class VisitorCheck extends VisitorTreeTraversor
 
   @override
   Visitor acceptTitle(XmlElement title, {bool verbose = false, bool add = true, StringBuffer? buffer}) {
-    // TODO: implement acceptTitle
+    List<String> check = ["url", "txt", "image"];
+    valid &= structureCheck(title,check, verbose:verbose, tag: "title");
     super.acceptTitle(title, verbose: verbose, buffer: buffer);
     return this;
   }

@@ -17,16 +17,16 @@ void main(List<String> arguments) {
 
   args..addOption('file',
       abbr: 'f',
-      help: "the xml file to parse")
+      help: "the xml file to parse <FILE>")
     ..addOption('lang',
         abbr: 'l',
-        help: "override preferred language")
+        help: "<LANG> override preferred language")
        ..addOption('create',
       abbr: 'c',
-      help: "create a project")
+      help: "create a project <NAME>")
        ..addOption('module',
       abbr: 'm',
-      help: "create a module in a project")
+      help: "create a module in a project <MODULE>")
        ..addFlag('install',
       abbr: 'i',
       help: "install sample project files")

@@ -137,7 +137,11 @@ class VisitorSlideGen extends VisitorTreeTraversor {
   @override
   Visitor acceptEmail(XmlElement mailNode,
       {bool verbose = false, StringBuffer? buffer}) {
-    //super.acceptEmail(node, verbose: verbose, buffer: buffer);
+    StringBuffer mailbuf = StringBuffer();
+    super.acceptEmail(mailNode, verbose: verbose, buffer: mailbuf);
+    if(mailbuf.isNotEmpty) {
+      add("\\href{mailto:${mailbuf}}{${mailbuf}}", buffer: buffer);
+    }
     return this;
   }
 
@@ -427,6 +431,18 @@ ${date.toString().trim()}
     return this;
   }
 
+  /*
+  TODO implement: Content type	Block	Syntax
+Generic/Standard	block	\begin{block}...\end{block}
+Highlighted Alert	alertblock	\begin{alertblock}...\end{alertblock}
+Examples 1	exampleblock	\begin{exampleblock} ... \end{block}
+Theorems	theorem	\begin{theorem} ... \end{theorem}
+Definition	definition	\begin{definition} ... \end{definition}
+Proofs	proof	\begin{proof} ... \end{proof}
+Lemmas	lemma	\begin{lemma} ... \end{lemma}
+Corollaries	corollary	\begin{corollary} ... \end{corollary}
+Examples 2	example	\begin{example} ... \end{example}
+   */
   @override
   Visitor acceptNote(XmlElement notNode,
       {bool verbose = false, StringBuffer? buffer}) {
@@ -444,7 +460,9 @@ ${date.toString().trim()}
       super.acceptNote(notNode, verbose: verbose, buffer: buffer);
       add("\n\\end{alertblock}\n", buffer: buffer);
     } else {
-      print("suppressed note $notNode, not a trainer");
+      add("\\begin{block}{Note}\n", buffer: buffer);
+      super.acceptNote(notNode, verbose: verbose, buffer: buffer);
+      add("\n\\end{block}\n", buffer: buffer);
     }
     return this;
   }
@@ -504,13 +522,12 @@ ${date.toString().trim()}
       title = titlebuf.toString().trim();
     }
     treated = [... treated,"title","para"];
+    if(title.isNotEmpty)buffer?.write("\\section{$title}");
     if(collate) {
       buffer?.write("\\begin{frame}");
       if (title.isNotEmpty) buffer?.write("{${title}}");
       if (title.isNotEmpty) buffer?.write("\n");
-      if (collate) {
-        buffer?.write("\\begin{itemize}\n");
-      }
+      buffer?.write("\\begin{itemize}\n");
     }
         super.acceptPage(pageNode, verbose: verbose, buffer: buffer, treated: treated);
         if(collate) {
