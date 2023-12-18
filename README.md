@@ -69,3 +69,13 @@ formatted_json = JSON.pretty_generate(parsed_data)
 
 puts formatted_json
 ```
+
+once you are in a directory with a formation.xml file you can run 
+
+for example:
+
+```
+TRAINER=true logidee -f formation.xml 
+```
+
+The parser will evenutally report if it doesn't like the xml and where, and otherwise guide you for the rest
