@@ -515,7 +515,7 @@ class VisitorTexgen extends VisitorTreeTraversor {
         ((notNode.getAttribute("trainer") ?? "0") == "true");
 
     //print("accept Note, should treat stuff??");
-    if (trainer) {
+    if ((trainer && this.trainer) ||!trainer) {
       add("\\begin{mybox}{Note}${(icon.isNotEmpty) ? "{$icon}" : ""}\n",
           buffer: buffer);
       super.acceptNote(notNode, verbose: verbose, buffer: buffer);
@@ -902,4 +902,5 @@ class VisitorTexgen extends VisitorTreeTraversor {
   }
 
   VisitorTexgen({super.charte, super.trainer, super.selection, super.lang, super.cycle});
+
 }

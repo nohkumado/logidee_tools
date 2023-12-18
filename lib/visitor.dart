@@ -20,6 +20,7 @@ abstract class Visitor
     if(cycle!= null) this.cycle = cycle;
   }
 
+
   Visitor accept(XmlDeclaration desc)
   {
     encoding = desc.getAttribute("encoding")??"";

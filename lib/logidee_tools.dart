@@ -69,6 +69,7 @@ class LogideeTools {
   }
   VisitorTexgen buildTexScript(String fname, {String outdir = "", bool verbose = false}) {
     VisitorTexgen txtVis = VisitorTexgen();
+
     if (document == null) {
       print("invocation of buildTexScript  impossible, document is null...");
       return txtVis;
@@ -84,12 +85,14 @@ class LogideeTools {
     //scriptsink = scriptfile.openWrite();
     if(parsevalid)
     {
-      String charte = (Platform.environment["CHARTE"] ?? "default").trim();
+      String charte = (Platform.environment["CHARTE"] ?? "default").trim(); //TODO do something with it!
       bool trainer = bool.parse(Platform.environment["TRAINER"]??"false");
       String selection = (Platform.environment["SELECTION"]??"all").trim();
-      bool cycle = bool.parse(Platform.environment["CYCLE"]??"false");
+      bool cycle = bool.parse(Platform.environment["CYCLE"]??"false"); //TODO do something with it!
       String lang = Platform.environment["LANG"]??"en";
       txtVis = VisitorTexgen(charte: charte, trainer: trainer, selection: selection, lang: lang);
+      print("env vars: TRAINER:$trainer SELECTION:$selection LANG:$lang CHARTE:$charte CYCLE:$cycle");
+      txtVis = VisitorTexgen(charte:charte, trainer:trainer, selection:selection, lang:lang, cycle:cycle);
 
 
 
@@ -176,7 +179,7 @@ class LogideeTools {
       String selection = Platform.environment["SELECTION"]??"all ";
       bool cycle = bool.parse(Platform.environment["CYCLE"]??"false");
       String lange = Platform.environment["LANG"]??"en";
-      txtVis = VisitorSlideGen(charte: charte, trainer: trainer, selection: selection, lang: lang);
+      txtVis = VisitorSlideGen(charte:charte, trainer:trainer, selection:selection, lang:lang, cycle:cycle);
       XmlElement? root = document?.getElement("formation");
       //print("PREPARATION OF visitor: $root");
       if(root != null) FormationChecker(root,txtVis);
